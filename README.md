@@ -27,5 +27,5 @@ This group of scripts does the following:
 
 ### Who do I talk to? ###
 
-* Repo owner or admin
-* Other community or team contact
+* Repo owner: lmadeo@wdrt.org
+* Other community or team contact: toconnor@wdrt.org, dklann@wdrt.org

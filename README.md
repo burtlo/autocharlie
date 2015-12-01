@@ -2,7 +2,8 @@
 
 Coded using Python 2.7
 
-This group of scripts does the following:
+### This group of scripts does the following: ###
+
 * Import a weekly radio station schedule from Spinitron
 * Allows admin to maintain and update a radio station weekly program schedule
 * Based on weekly schedule, create and update audio archives of radio programs

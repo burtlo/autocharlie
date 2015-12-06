@@ -67,6 +67,10 @@ def day2sched(dayString, day):
     return tempSched
     
 def readVal(valType, requestMsg, errorMsg):
+    '''
+    accept input string and validate that it successfully translates
+    to the desired data type
+    '''
     while True:
         val = input(requestMsg + ' ')
         try:
@@ -77,13 +81,44 @@ def readVal(valType, requestMsg, errorMsg):
             
 def selectShow(Sched):
     '''
+    The following characteristics should be sufficient to uniquely define a 
+    show:
+        ShowName
+        Day
+        StartTime
+            ex: There are two shows called Undercurrents on Sunday, one that
+            starts midnight, the other starts at 1a.m
+    returns:
+        show =
     '''
 
+    def getDayString():
+        '''
+        solicit input from user, get a number from 1 -7 that corresponds with 
+        a day of the week.  Returns an alpha string for that day
+        ex: 'Monday'  see SpinPapiLib.days
+        '''
+        
+        goodDay = False
+        goodInput = ['1','2','3','4','5','6','7']
+        while not(goodDay):
+            print;
+            for key in SPlib.Days:
+                print '<'+str(key+1)+'>   '+ SPlib.Days[key]
+            selectedDay = input ('Enter number to select a day:  ')
+            #print 'selectedDay = '+ selectedDay
+                
+            if selectedDay not in goodInput: #bad input
+                print 'Select a number that correpsonds with a day!!'
+                print 'Get with the program, dood'
+            else:
+                dayString = SPlib.Days[int(selectedDay)-1]
+                goodDay = True 
+        return dayString
         
     goodInput = False
     print
     while not(goodInput):
-        #print('Select show by <1> DAY or <2> SHOWNAME '),
         print ('Enter <1> to select show by DAY or <2> to select show by NAME'),
         reply = input('or enter <Q> to quit:  ')
         
@@ -92,39 +127,31 @@ def selectShow(Sched):
             
         if reply.strip() == '1': #select day
             goodInput = True
-            goodDay = False
-            while not(goodDay):
-                print;
-                for key in SPlib.Days:
-                    print '<'+str(key+1)+'>   '+ SPlib.Days[key]
-                selectedDay = input ('Enter number to select a day:  ')
-                #print 'selectedDay = '+ selectedDay
-                if int(selectedDay)-1 not in SPlib.Days:
-                    print 'Select a number that correpsonds with a day!!'
-                    print 'Get with the program, dood'
-                else:
-                    dayString = SPlib.Days[int(selectedDay)-1]
-                    goodDay = True
-
+            
+            ###
+            dayString = getDayString() 
+            ###
+            
             goodShow = False
-            daySched = day2sched(dayString,Sched[dayString])
+            daySched = day2sched(dayString,Sched[dayString]) #create one-day sched 
             while not (goodShow):    
                 #print day's schedule
                 print; print
                 SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
                 #select a show from a day's schedule
-                reply2 = readVal( int, 'ENTER number to select show', 'is not an integer')
+                reply2 = readVal( int, 'ENTER number to select show: ', 'is not an integer')
                 if reply2 - 1 in range(len(daySched[dayString])):
                     goodShow = True
+                    print '#TODO where to, now that show has been selected???'
                 else:
                     print 'Please enter a number between 1 and '+ str(len(daySched[dayString]))
 
                 
-        elif reply.strip() == '2':
+        elif reply.strip() == '2': #select by 1st char or substring
             goodAlpha = False
             while not goodAlpha:
                 print 'enter the first letter of the show name to see all shows '
-                print 'that start with that letter. OR enter any part of the name'
+                print 'that start with that letter. OR enter any part of the show name'
                 replyAlpha = input('to see all shows that contain substring.')
                 if len(replyAlpha) == 1:
                     goodAlpha = True
@@ -140,19 +167,23 @@ def selectShow(Sched):
                         #each dict --> ShowName, ShowDay
                     #For each dict in list:
                         #Print enumerated number + ShowName + ShowDay
+                else: #must be an empty string
+                    pass
         else:
             print 'Get with the program!!!'
             
 #MAIN
-
+            
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
 
-#print SPlib.Days
-print; print
+if __name__ == '__main__':
+
+    #print SPlib.Days
+    print; print
+        
+    SchedulePickle = 'Sched2.pkl'
     
-SchedulePickle = 'Sched2.pkl'
-
-WDRTsched = loadSchedule(SchedulePickle)
-
-selectShow(WDRTsched)
+    WDRTsched = loadSchedule(SchedulePickle)
+    
+    selectShow(WDRTsched)
 

@@ -208,7 +208,11 @@ class show(object):
     '''
     not using this right now ... 11/27/2015
     '''
-    def __init__(self, papiShow):
+    def __init__(self, myShow):
+        '''
+        myShow =
+        
+        '''
         pass
     
     def BuildShowDict(Schedule):

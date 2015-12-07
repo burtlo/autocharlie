@@ -18,6 +18,8 @@ v.0.4 - Nov 23 - Added notes on desired dict elements to add
 
 v.0.5 - Nov 27 2015 - Added desired dict elements; Sched2 = schema #2
 
+v.0.6 - Dec 6 2015 -
+
 """
 '''
 print type(show) #a show is a dict of show attributes
@@ -35,8 +37,8 @@ Day
             ??Can I find other instances of the same show on diff days, based on ShowID?
         Weekdays 
             ??Does Monday view block a full list of days that a show plays??
-        OnAirTime
-        OffAirTime
+        OnairTime
+        OffairTime
         ShowUrl
         ShowCategory
         ShwowUsers [{UserID:,DJName:}]
@@ -196,19 +198,20 @@ def OpenPickle(SchedulePickle):
     F = open(SchedulePickle, 'rb')
     return pickle.load(F)
 
-class shows(object):
+class day(object):
     '''
-    a dict of show objects
-    not using this right now 11/27/2015
+    a day is a dict of show objects
+    key is an integer, shows to be sorted by start time
+    
     '''
     def  __init__(self, Schedule):  
         self.showDict = {}
         
 class show(object):
     '''
-    not using this right now ... 11/27/2015
+    a show is a dict of show attributes
     '''
-    def __init__(self, myShow):
+    def __init__(self, aShow):
         '''
         myShow =
         
@@ -284,6 +287,16 @@ def PrettyPrintNewFields(show):
     print (tab+tab + show['OnairTime'] + tab + show['OffairTime']) 
     print (tab+tab + str(show['StartRecDelta']) + tab + str(show['EndRecDelta']) )
 
+def makeChronological(Schedule):
+    '''
+    accepts a Schedule
+    for each day in Scedule, put shows in chronological order, based on
+        OnairTime
+    returns sorted Schedule as described above
+    '''
+    for day in Schedule:
+        Schedule[day] = sorted (Schedule[day], key=itemgetter('OnairTime'))
+    return Schedule
     
 def TraverseShows (Schedule, showFunc = dudFunc, dayFunc = dudFunc):
     '''

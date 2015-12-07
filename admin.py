@@ -6,9 +6,21 @@ Created on Tue Nov 24 01:59:02 2015
 CRUD
 *SpinPapiTest, admin, and pickle files are currently assumed to all reside
 in the same folder
+
+0.1
+    what was committed on Dec 6 @ 1:30pm
+    
+0.2 - meh, don't do this, a list of dicts should work
+    convert from Sched[day] is a list of dicts
+        to Sched[day] is a dict of dicts
+        key will be an integer, shows will be sorted in each day
+        key will be unique within day, buy keys will be reused in
+            different days
+        this will break a bunch of functions!!!
 """
 import SpinPapiLib as SPlib
 import sys
+import re
 
 def loadSchedule(filename, directory=''):
     '''
@@ -79,6 +91,29 @@ def readVal(valType, requestMsg, errorMsg):
         except ValueError:
             print val + ' ' + errorMsg
             
+def ShowRegEx (Schedule, myRegEx):
+    '''
+    returns a list of shows where the ShowName attribute matches the
+    received regular expression (myRegEx)
+    List of shows is specified as a list of tuples:
+        (ShowName,Day,OnairTime)
+    '''
+    tempList = []
+    for day in Schedule:
+
+        #sort shows by start time
+        Schedule[day] = sorted (Schedule[day], key=SPlib.itemgetter('OnairTime'))
+        for (x,show) in enumerate(Schedule[day]):
+            ShowName = Schedule[day][x]['ShowName']
+            
+            if re.search(myRegEx,Schedule[day][x]['ShowName'].upper()):
+                OnairTime = Schedule[day][x]['OnairTime']
+                OffairTime = Schedule[day][x]['OffairTime']
+                tempList.append((ShowName, day, OnairTime, OffairTime))
+                
+    return tempList
+                
+            
 def selectShow(Sched):
     '''
     The following characteristics should be sufficient to uniquely define a 
@@ -89,7 +124,7 @@ def selectShow(Sched):
             ex: There are two shows called Undercurrents on Sunday, one that
             starts midnight, the other starts at 1a.m
     returns:
-        show =
+        show =Sched[day][list-index]
     '''
 
     def getDayString():
@@ -116,11 +151,12 @@ def selectShow(Sched):
                 goodDay = True 
         return dayString
         
+    Sched = SPlib.makeChronological(Sched)
     goodInput = False
     print
     while not(goodInput):
         print ('Enter <1> to select show by DAY or <2> to select show by NAME'),
-        reply = input('or enter <Q> to quit:  ')
+        reply = input('or enter <Q> to Quit:  ')
         
         if reply.upper() == 'Q': # Q is for quit, you quitter
             return
@@ -140,9 +176,10 @@ def selectShow(Sched):
                 SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
                 #select a show from a day's schedule
                 reply2 = readVal( int, 'ENTER number to select show: ', 'is not an integer')
-                if reply2 - 1 in range(len(daySched[dayString])):
+                listIndex = reply2 -1 
+                if listIndex in range(len(daySched[dayString])):
                     goodShow = True
-                    print '#TODO where to, now that show has been selected???'
+                    return Sched[dayString][listIndex]
                 else:
                     print 'Please enter a number between 1 and '+ str(len(daySched[dayString]))
 
@@ -150,30 +187,36 @@ def selectShow(Sched):
         elif reply.strip() == '2': #select by 1st char or substring
             goodAlpha = False
             while not goodAlpha:
-                print 'enter the first letter of the show name to see all shows '
-                print 'that start with that letter. OR enter any part of the show name'
-                replyAlpha = input('to see all shows that contain substring.')
+                print
+                print 'Enter the first letter of the show name to see all shows '
+                print 'that start with that letter. OR enter any part of the show name',
+                replyAlpha = input('to see all shows that contain substring. -->  ')
                 if len(replyAlpha) == 1:
                     goodAlpha = True
-                    #seach for first char(showname) = replyAlpha by ShowName, Day of Week
-                    #make list of dicts
-                        #each dict --> ShowName, ShowDay
-                    #For each dict in list:
-                        #Print enumerated number + ShowName + ShowDay
-                if len(replyAlpha) > 1:
+                    myRegEx = '^' + replyAlpha.upper()
+                    ShowList = ShowRegEx(Sched, myRegEx)
+                    #TODO showlist = showlist + RegEx, somehow stripping 'the' from the beginning of the line
+
+                if len(replyAlpha) >= 1:
                     goodAlpha = True
-                    #grep for replyAlpha in ShowName field of every show/day
-                    #make list of dicts
-                        #each dict --> ShowName, ShowDay
-                    #For each dict in list:
-                        #Print enumerated number + ShowName + ShowDay
+                    myRegEx = replyAlpha.upper()
+                    ShowList = ShowRegEx(Sched, myRegEx)
                 else: #must be an empty string
-                    pass
+                    print "Why you hit return?!?!"
+            if len(ShowList) == 0:
+                print; print 'No matches.  So Sorry!!!'; print
+            else:
+                for x, S in enumerate(ShowList):
+                    print '<'+str(x+1)+'>' +S[0]
+                    print tab + S[1] + tab + S[2] + tab + S[3] 
+                showPick = readVal(int,'select a show from list above: ','Please enter an integer')
+
+                
         else:
             print 'Get with the program!!!'
             
 #MAIN
-            
+tab = '\t'            
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
 
 if __name__ == '__main__':

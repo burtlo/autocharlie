@@ -17,6 +17,11 @@ in the same folder
         key will be unique within day, buy keys will be reused in
             different days
         this will break a bunch of functions!!!
+        
+12/7/2015
+    Test tail end of selectShow code
+    selectShow is good
+    now editShow needs help recursion is a diversion
 """
 import SpinPapiLib as SPlib
 import sys
@@ -51,11 +56,36 @@ def deleteShow():
     show will be deleted in all time slots that it exists
     '''
     
-def editShow():
+def editShow(aShow):
     '''
     prompt admin to modify various fields of show
+    gonna try to go crazy recursive style
     '''
-    
+    if type(aShow) == dict:
+        for key in aShow:
+            print str(key) +  '  ' + str( aShow[key]),
+            editShow(aShow[key])
+    elif type(aShow) == list:
+        for x,el in enumerate(aShow):
+            print 'Element #' +str(x),
+            editShow(el)
+    elif type(aShow) == bool:
+        print str(aShow);
+        tmp = readVal(bool,'press return to leave unmodified or ENTER True or False, first letter capitalized','Not a boolean!!!')  
+        if tmp != '':
+            aShow = tmp
+    elif type(aShow) == str:
+        if aShow == '':
+            print 'This field is currently empty.'
+        
+        tmp = readVal(str,'press RETURN to leave unmodified, or new info to update','This is not my beautiful house!')
+        if tmp != '':
+            aShow = tmp
+    elif type(aShow) == int:
+        tmp = readVal(int,'press RETURN to leave unmodified or enter an INTEGER!!',"Don't be a twint enter an int")
+        if tmp != tmp:
+            aShow = tmp
+            
 def displayDay():
     pass
 
@@ -78,6 +108,21 @@ def day2sched(dayString, day):
     tempSched[dayString] = day
     return tempSched
     
+def readVal2(valType, requestMsg, errorMsg):
+    '''
+    accept input string and validate that it successfully translates
+    to the desired data type
+    '''
+    while True:
+        val = input(requestMsg + ' ')
+        if val == '':
+            return val
+        try:
+            val = valType(val)
+            return val
+        except ValueError:
+            print val + ' ' + errorMsg  
+            
 def readVal(valType, requestMsg, errorMsg):
     '''
     accept input string and validate that it successfully translates
@@ -96,7 +141,7 @@ def ShowRegEx (Schedule, myRegEx):
     returns a list of shows where the ShowName attribute matches the
     received regular expression (myRegEx)
     List of shows is specified as a list of tuples:
-        (ShowName,Day,OnairTime)
+        (ShowName,Day,OnairTime, OffairTime)
     '''
     tempList = []
     for day in Schedule:
@@ -159,7 +204,7 @@ def selectShow(Sched):
         reply = input('or enter <Q> to Quit:  ')
         
         if reply.upper() == 'Q': # Q is for quit, you quitter
-            return
+            return #exit selectShow, nothing returned, means quitting time
             
         if reply.strip() == '1': #select day
             goodInput = True
@@ -171,49 +216,68 @@ def selectShow(Sched):
             goodShow = False
             daySched = day2sched(dayString,Sched[dayString]) #create one-day sched 
             while not (goodShow):    
-                #print day's schedule
                 print; print
+                #print day's schedule
                 SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
                 #select a show from a day's schedule
                 reply2 = readVal( int, 'ENTER number to select show: ', 'is not an integer')
                 listIndex = reply2 -1 
                 if listIndex in range(len(daySched[dayString])):
                     goodShow = True
-                    return Sched[dayString][listIndex]
+                    return Sched[dayString][listIndex] #exit selectShow() here
                 else:
                     print 'Please enter a number between 1 and '+ str(len(daySched[dayString]))
 
                 
         elif reply.strip() == '2': #select by 1st char or substring
-            goodAlpha = False
-            while not goodAlpha:
+            goodInput = True
+            goodSearchString = False
+            while not goodSearchString:
                 print
                 print 'Enter the first letter of the show name to see all shows '
                 print 'that start with that letter. OR enter any part of the show name',
                 replyAlpha = input('to see all shows that contain substring. -->  ')
                 if len(replyAlpha) == 1:
-                    goodAlpha = True
+                    goodSearchString = True
                     myRegEx = '^' + replyAlpha.upper()
                     ShowList = ShowRegEx(Sched, myRegEx)
                     #TODO showlist = showlist + RegEx, somehow stripping 'the' from the beginning of the line
 
                 if len(replyAlpha) >= 1:
-                    goodAlpha = True
+                    goodSearchString = True
                     myRegEx = replyAlpha.upper()
                     ShowList = ShowRegEx(Sched, myRegEx)
                 else: #must be an empty string
                     print "Why you hit return?!?!"
-            if len(ShowList) == 0:
-                print; print 'No matches.  So Sorry!!!'; print
-            else:
+                    continue
+                    
+                #at this point, we have created a showList
+                #see function: ShowRegEx()
+                if len(ShowList) == 0:
+                    print; print 'No matches.  So Sorry!!!'; print
+                    goodSearchString = False
+                else:
+                    goodSearchString = True
+            goodShow = False
+            while not goodShow:
+                #print show list
                 for x, S in enumerate(ShowList):
                     print '<'+str(x+1)+'>' +S[0]
                     print tab + S[1] + tab + S[2] + tab + S[3] 
-                showPick = readVal(int,'select a show from list above: ','Please enter an integer')
+                #solicit choice
+                goodChoice = False
+                while not goodChoice:
+                    showPick = readVal(int,'select a show from list above: ','Please enter an integer')
+                    if not(showPick - 1 in range(len(ShowList))):
+                        continue
+                    else:
+                        goodChoice = True # this line not necessary ...
+                        return Sched[ShowList[showPick-1][1]][showPick - 1] #exit selectShow() here
 
                 
         else:
             print 'Get with the program!!!'
+            continue #goto while not goodInput and try again
             
 #MAIN
 tab = '\t'            
@@ -228,5 +292,8 @@ if __name__ == '__main__':
     
     WDRTsched = loadSchedule(SchedulePickle)
     
-    selectShow(WDRTsched)
+    aShow = selectShow(WDRTsched)
+    print; print #aShow
+    newShow = editShow(aShow)
+    print; print newShow
 

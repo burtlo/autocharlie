@@ -22,6 +22,8 @@ in the same folder
     Test tail end of selectShow code
     selectShow is good
     now editShow needs help recursion is a diversion
+    
+    This version contains the attempt at a recursive edit function, it's going bye bye
 """
 import SpinPapiLib as SPlib
 import sys

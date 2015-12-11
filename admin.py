@@ -22,6 +22,8 @@ in the same folder
     Test tail end of selectShow code
     selectShow is good
     now editShow needs help recursion is a diversion
+    
+12/10/2015
 """
 import SpinPapiLib as SPlib
 import sys
@@ -61,31 +63,24 @@ def editShow(aShow):
     prompt admin to modify various fields of show
     gonna try to go crazy recursive style
     '''
-    if type(aShow) == dict:
-        for key in aShow:
-            print str(key) +  '  ' + str( aShow[key]),
-            editShow(aShow[key])
-    elif type(aShow) == list:
-        for x,el in enumerate(aShow):
-            print 'Element #' +str(x),
-            editShow(el)
-    elif type(aShow) == bool:
-        print str(aShow);
-        tmp = readVal(bool,'press return to leave unmodified or ENTER True or False, first letter capitalized','Not a boolean!!!')  
-        if tmp != '':
-            aShow = tmp
-    elif type(aShow) == str:
-        if aShow == '':
-            print 'This field is currently empty.'
-        
-        tmp = readVal(str,'press RETURN to leave unmodified, or new info to update','This is not my beautiful house!')
-        if tmp != '':
-            aShow = tmp
-    elif type(aShow) == int:
-        tmp = readVal(int,'press RETURN to leave unmodified or enter an INTEGER!!',"Don't be a twint enter an int")
-        if tmp != tmp:
-            aShow = tmp
-            
+    a = aShow
+    print 'For each show attribute, enter new value, or press <ENTER> to'
+    print 'leave the show attribute unchanged.'
+    a['ShowName'] = readVal2(a['ShowName'],str,'ShowName-> '+a['ShowName'],"whatchoo doin' Willis?")
+    #we won't edit a['Weekdays'] right now
+    a['Scheduled'] = readVal2(a['Scheduled'],bool,'Scheduled-> '+a['Scheduled'], 'Only True and False are valid!')
+    a['ShowDescription'] = readVal2(a['ShowDescription'],str,'ShowDescription-> ' +a['ShowDescription'], 'How did you enter a non-string???')
+    a['ShowID'] = readVal2(a['ShowID'],int,str(a['ShowID'])+ ' please leave the same','enter a *number*')
+    #TODO time validation using time & date objects    
+    a['OnairTime'] = readVal2(a['OnairTime'],str, "OnairTime = " + a['OnairTime'],'how you enter non-string???')
+    a['OffairTime'] = readVal2(a['OffairTime'],str, "OffairTime = " + a['OffairTime'],'how you enter non-string???') 
+    #TODO validate url 
+    a['ShowUrl'] = readVal2(a['ShowUrl'],str, 'ShowURL = ' + a['ShowURL'], 'just looking for a string ...')
+    a['ShowCategory'] = readVal2(a['ShowCategory'],str,'ShowCategory-> ' + a['ShowCategory'], "I'm all strung out")
+    for user in a['ShowUsers']:
+        #edit, delete, or add ShowUser
+    #edit all new fields that I have added
+         
 def displayDay():
     pass
 
@@ -108,16 +103,22 @@ def day2sched(dayString, day):
     tempSched[dayString] = day
     return tempSched
     
-def readVal2(valType, requestMsg, errorMsg):
+   
+
+def readVal2(default, valType, requestMsg, errorMsg):
     '''
     accept input string and validate that it successfully translates
     to the desired data type
+    if val = '' return default value (generally unaltered original value)
     '''
+    
     while True:
         val = input(requestMsg + ' ')
         if val == '':
-            return val
+            return oldVal
         try:
+            #afraid to try
+            #val = type(oldVal)(val) to cast new val to type of oldVal
             val = valType(val)
             return val
         except ValueError:

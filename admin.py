@@ -23,7 +23,10 @@ in the same folder
     selectShow is good
     now editShow needs help recursion is a diversion
     
-12/10/2015
+
+
+
+
 """
 import SpinPapiLib as SPlib
 import sys
@@ -78,6 +81,7 @@ def editShow(aShow):
     a['ShowUrl'] = readVal2(a['ShowUrl'],str, 'ShowURL = ' + a['ShowURL'], 'just looking for a string ...')
     a['ShowCategory'] = readVal2(a['ShowCategory'],str,'ShowCategory-> ' + a['ShowCategory'], "I'm all strung out")
     for user in a['ShowUsers']:
+        pass        
         #edit, delete, or add ShowUser
     #edit all new fields that I have added
          
@@ -115,7 +119,7 @@ def readVal2(default, valType, requestMsg, errorMsg):
     while True:
         val = input(requestMsg + ' ')
         if val == '':
-            return oldVal
+            return default
         try:
             #afraid to try
             #val = type(oldVal)(val) to cast new val to type of oldVal

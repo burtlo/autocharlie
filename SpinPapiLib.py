@@ -224,14 +224,50 @@ class show(object):
         and return a dict of show objects
         '''
         pass
-
-def BuildDJdict(Schedule):
-    '''
-    take a week's (scrubbed) schedule
-    and return a dict of DJs
-    '''
-    pass
     
+
+def BuildDJList(Schedule):
+    '''
+    take a week's  schedule
+    and return a *list* of DJs
+    list is sorted by UserID
+    each DJ is a 2 element dict
+        UserID = unique int
+        DJName = unique string
+    '''
+    def GrabShowUsers(aShow):
+        '''
+        within a show, grab both elements of a ShowUser dict
+        and add them to the UserIDList and the DJNameList
+        '''
+        for User in aShow['ShowUsers']:
+            if User['UserID'] not in UserIDList:
+                if User['DJName'] in DJNameList:
+                    print; print; print 'ERROR DJName list not one-to-one!!!!'; print
+                else: #new User to add to lists
+                    UserIDList.append(User['UserID'])
+                    DJNameList.append(User['DJName'])
+            else: #UserID already is in list
+                if User['DJName'] not in DJNameList:
+                    print User['DJName']
+                    print 'ERROR UserID in list, but not DJName?!?!'; print
+    
+    DJList = []
+    UserIDList = []
+    DJNameList = []
+    
+    for day in Schedule:
+        #sort shows by start time
+        Schedule[day] = sorted (Schedule[day], key=itemgetter('OnairTime'))
+        for show in Schedule[day]:
+            GrabShowUsers(show) 
+            
+        
+    for user, dj in zip(UserIDList, DJNameList):
+        #print str(user) + '   ' +  dj
+        DJList.append({'UserID':user,'DJName':dj})
+        DJList = sorted(DJList, key = itemgetter('UserID'))
+    return DJList
     
 def OverLap(Schedule):
     '''

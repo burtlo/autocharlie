@@ -185,6 +185,7 @@ for day in Sched:
         '''
         for thingy in show:
             print thingy + tab, show[thingy]
+            print tab + str(type(show[thingy]))
 
             
         break #cuz I just want to look at one show ...

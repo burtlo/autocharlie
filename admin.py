@@ -23,14 +23,124 @@ in the same folder
     selectShow is good
     now editShow needs help recursion is a diversion
     
+12/28/2015
+    editShow is - done
+    add new elements to all shows - done
+    #TODO: finish off editUser
+    
 
-
-
-
+Day
+    Show
+        Scheduled (boolean)
+        ShowDescription
+        ShowID  
+            ??Can I find other instances of the same show on diff days, based on ShowID?
+        Weekdays 
+            ??Does Monday view block a full list of days that a show plays??
+        OnairTime
+        OffairTime
+        ShowUrl
+        ShowCategory
+        ShwowUsers [{UserID:,DJName:}]
+        ShowName
+        
+elements to add to Show dict: 
+    #these have been added to Sched2.pkl 11/28/2015
+        StartRecDelta
+            negative is earlier, positive is later
+            hour: minute format, with plus or minus prefix
+            default to zero, since shows seem to be either on time or late
+        EndRecDelta
+            negative is earlier, positive is later
+            hour: minute format, with plus or minus prefix
+            default to +5 to catch end of overrunning shows
+                or default to start plus 4 hours for DRMC regulations
+        Folder
+            file folder location to put mp3/ogg archive file
+        Subshow - boolean
+            True if show is a segment within another show
+            This will prevent SchedLinter from posting an error
+            for double-booked shows
+            
+further elements to add to Show dict:
+    #these have been added to Sched2.pkl 11/28/2015
+        SchedInfo object:
+        AlternatingSchedule (boolean)
+            Set to True if different shows alternate during the same day/time slot
+            example: Sonic Landscapes / Chris & Larry Show
+            (1) alternationMethod (from list) default = 'Every Week'
+            (2) evenOdd: from list: (Even, Odd, All, or N/A)
+            (3) WeekOfTheMonth:     List of integers from the set 1-5, representing weeks of the month
+        MultiDay (boolean)
+            Set to True if show plays more than once in the same week
+            QQQ #TODO How to handle 2nd cup of coffee: same show, different DJs?
 """
 import SpinPapiLib as SPlib
 import sys
 import re
+import os
+
+
+class SchedInfo(object):
+    '''
+    '''
+    alternationMethodList = ['Every Week','Alternate','Week of the Month']
+    evenOddList = ['Even','Odd','All','N/A']
+    WOTMList = [1,2,3,4,5]
+    
+    def __init__(self, alternationMethod ='Every Week', evenOdd = 'All', WOTMList = [1,2,3,4,5]):
+        '''
+        create SchedInfo object with default values
+        '''
+        self.alternationMethod = alternationMethod
+        self.evenOdd = evenOdd
+        self.weekOfTheMonth = WOTMList #how does scope deal with definitions at top of class???
+
+def metafy(Sched,comment):
+    '''
+    Accepts a sched
+    returns a two element dict, ready to be pickled:
+    '''
+    dud = {}
+    dud['comment'] = comment
+    dud['schedule'] = Sched
+    return dud
+    
+def demetafy(NewSched):
+    '''
+    Accepts new style sched
+    strips comment and returns old-style sched + comment
+    '''
+    oldSched = NewSched['schedule']
+    comment = NewSched['comment']
+    return oldSched, comment
+    
+    
+def batchShowUpdate(sched):
+    '''
+    Accepts a Sched, consisting of at least one day and one show per day.
+    For each show in each day, new elements are added to the show dict
+    elements are set to default values
+    returns updated Sched
+    '''
+    StartRecDelta = -1
+    EndRecDelta = 3
+    Folder = ''
+    Subshow = False
+    MultiDay = False
+    
+    for day in sched:
+        for show in sched[day]:
+            print show           
+            print type(show['StartRecDelta'])
+            show['StartRecDelta'] = StartRecDelta
+            show['EndRecDelta'] = EndRecDelta
+            show['Folder'] = Folder
+            show['Subshow'] = Subshow
+            show['MultiDay'] = MultiDay #TODO: use logic to determine Multidy status of shows
+            show['SchedInfo'] = SchedInfo() #see SchedInfo class
+                #no parameters means default values are used
+    return sched
 
 def to6columns(DJList):
     '''
@@ -87,16 +197,19 @@ def loadSchedule(filename, directory=''):
     else:
         print 'error: non-current working directory search not implemented'
 
-def saveSchedule(filename, SchedDict, directory):
+def saveSchedule(filename, Sched, directory=''):
     '''
     serialized/pickled Schedule
     perhaps tage date onto filename to have a log of previous schedules???
-    '''
+
     if directory == '': #TODO concat directory + filename
-        SPlib.PickleDump(filename, SchedDict)
+        SPlib.PickleDump(filename, Sched)
     else:
         print 'error: non-current working directory search not implemented'
-        
+    '''
+    fullFilename = directory + filename
+    SPlib.PickleDump (fullFilename, Sched)
+       
 def addShow():
     '''
     prompt admin for all the info
@@ -179,10 +292,18 @@ def editUserList(userList):
 
         #case: delete user
         if reply == 'D':
-            UserIDList = [x['UserID'] for x in UL]
+            UserIDList = map(str,[x['UserID'] for x in UL])
             prettyPrintDJs(UL)
             #pick DJ to delete from this show, or return to Exit
-            reply3 = readVal3( dud, dud, dud)
+            reply3 = readVal3(UserIDList,'select DJ by number or enter <return> to exit','Please pick a UserID from the list, or enter <return>')
+            if reply3 == 'Quit':
+                return UL
+            else: #delete a user time
+                for user in UL:
+                    if user['UserID'] == int(reply3):
+                        UL.remove(user)
+                return UL
+                
 
     
     
@@ -207,7 +328,30 @@ def editShow(aShow):
     print
     print 'ShowUsers -> '
     a['ShowUsers'] = editUserList(a['ShowUsers'])
-    #edit all new fields that I have added
+    
+    #all fields below are locally created extensions to the original fields as 
+    #downloaded from Spinitron
+    
+    a['StartRecDelta'] = readVal2(a['StartRecDelta'],int, 'StartRecDelta -> '+ a['EndRecDelta'] + ' (minutes represented as integers)', 'Please enter an integer!')
+    a['EndRecDelta'] = readVal2(a['EndRecDelta'],int,'EndRecDelta-> ' + a['EndRecDelta']+ ' (minutes represented as integers)', "Please enter an integer")
+    a['Folder'] = readVal2(a['Folder'],str,'Folder-> ' + a['ShowCategory']+' no folder validation, leave it to Larry', "I'm all strung out")
+    a['Subshow'] = readVal2(a['Subshow'],bool,'Subshow-> ' + a['ShowCategory'], "Try entering True or False. Case matters.")
+    #TODO: use logic to determine Multiday status of shows #Lint
+    a['MultiDay'] = readVal2(a['ShowCategory'],bool,'ShowCategory-> ' + a['ShowCategory'], "Try entering True or False. Case matters.") 
+    
+    #Initialize SchedInfo object, set default values
+    a['SchedInfo'] = SchedInfo() 
+    a['SchedInfo'].alternationMethod = readVal5(SchedInfo.alternationMethodList)
+    a['SchedInfo'].evenOdd = readVal5(SchedInfo.evenOddList)
+    a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList)
+    
+def editList(WOTMList):
+    '''
+    accept a list of integers
+    allow user to toggle integers into and out of the list
+    returns edited list
+    '''
+    pass
          
 def displayDay():
     pass
@@ -266,6 +410,30 @@ def readVal4(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
                 return val
         print errorMsg
 
+def readVal5(acceptableList, requestMsg = 'Select choice by number -> ', errorMsg = 'is not an integer. Please reenter-> ', default = None):
+    '''
+    readVal5 takes a list of acceptable inputs, displays an enumerated list of 
+    acceptable inputs, then returns a verified value from acceptableList, once
+    the user enters a valid input
+    if val = '' return default value
+    '''
+    strList = map(str,acceptableList)
+    while True:
+        for (x, el) in enumerate(acceptableList):
+            print '<'+str(x+1)+'>' +str(el)
+        
+        val = input(requestMsg)
+        if val == '':
+            return default
+
+        try: 
+            val = int(val) #if input not int, kick off except clause
+            if val-1 in range(len(acceptableList)):
+                return acceptableList[val-1]
+            else:
+                print 'Please enter a number between 1 and ' + str(len(acceptableList))
+        except ValueError:
+            print val + ' ' + errorMsg 
             
 def readVal3(acceptableList, requestMsg, errorMsg, valType = int, default = 'Quit'):
     '''
@@ -443,7 +611,7 @@ def selectShow(Sched):
                     print "Why you hit return?!?!"
                     continue
                     
-                #at this point, we have created a showList
+                #at this point, we have created a ShowList
                 #see function: ShowRegEx()
                 if len(ShowList) == 0:
                     print; print 'No matches.  So Sorry!!!'; print
@@ -464,7 +632,19 @@ def selectShow(Sched):
                         continue
                     else:
                         goodChoice = True # this line not necessary ...
-                        return Sched[ShowList[showPick-1][1]][showPick - 1] #exit selectShow() here
+                        '''
+                        thisDay = str(Sched[ShowList[showPick-1][1]])
+                        print
+                        daySched = day2sched(thisDay,Sched[thisDay]) #create one-day sched 
+                        SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
+                        '''
+                        pick = -1
+                        for (x,show) in enumerate(Sched[ShowList[showPick-1][1]]):
+                            if show['ShowName'] == ShowList[showPick-1][0]:
+                                pick = x
+                                break
+                            
+                        return Sched[ShowList[showPick-1][1]][pick]
 
                 
         else:
@@ -478,18 +658,31 @@ if sys.version[0] == '2': input = raw_input #alias py2 to py3
 if __name__ == '__main__':
 
     #print SPlib.Days
-    print; print
+    print
         
     SchedulePickle = 'Sched2.pkl'
+    NewSchedPickle = 'Sched3.pkl'
+    path = '/home/adude/anaconda/MyProjects/WDRT/AutoCharlie/'    
+    NewPicklePath = path + 'PickleCurrent/'
     
-    WDRTsched = loadSchedule(SchedulePickle)
+    #WDRTsched = loadSchedule(SchedulePickle)
+    WDRTsched = loadSchedule(NewPicklePath+NewSchedPickle)
     
     DJList = SPlib.BuildDJList(WDRTsched)
     #prettyPrintDJs(DJList)
+    
+    '''
+    comment = 'input was Sched2.pkl; new show dict elemetns have been added to'
+    comment += ' all shows in schedule 12/28/2015'
+    newSched = batchShowUpdate(WDRTsched)
+    newNewSched = metafy(WDRTsched,comment)
+    saveSchedule(NewSchedPickle, newNewSched, NewPicklePath)
+    '''
+    
 
-        
-
+    '''
     aShow = selectShow(WDRTsched)
     print; print #aShow
     newShow = editShow(aShow)
     print; print newShow
+    '''

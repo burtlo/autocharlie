@@ -27,6 +27,10 @@ in the same folder
     editShow is - done
     add new elements to all shows - done
     #TODO: finish off editUser
+
+01/03/2016
+    #TODO: StartRecDelta should be negative, not positive
+    #TODO: Folder, Subshow, ShowCategory = "Talk" ????????????????
     
 
 Day
@@ -235,17 +239,17 @@ def createUser(DJName):
     newUser['UserID'] = max([ x['UserID'] for x in DJList]) + 1
     return newUser
 
-def editUserList(userList):
+def editUserList(aShow):
     '''
     edits user list for a particular show in a particular time slot
     returns updated list of users
     '''
-    UL = userList
+    UL =aShow['ShowUsers']
     #display UserList(of show)
     for U in UL:
         print tab+'<'+ str(U['UserID']) + '>' + tab + U['DJName']
     reply = ''
-    msgOne = 'Options: ENTER <A> to add user, <D> to delete a user, or press <ENTER> to edit next field'
+    msgOne = 'Options: ENTER <A> to add user, <D> to delete a user, or press <ENTER> if DJ list for this show is correct'
     errorMsg = "Don't even know how you got here!!!"
     msg2 = 'ENTER <Number> of existing DJ to add to ShowUsers for this Show '
     msg3 = 'or <C> to Create a totally-new-to-WDRT DJ '
@@ -307,7 +311,7 @@ def editUserList(userList):
 
     
     
-def editShow(aShow):
+def editShow(aShow, dayString):
     '''
     prompt admin to modify various fields of show
     '''
@@ -327,13 +331,13 @@ def editShow(aShow):
     a['ShowCategory'] = readVal2(a['ShowCategory'],str,'ShowCategory-> ' + a['ShowCategory'], "I'm all strung out")
     print
     print 'ShowUsers -> '
-    a['ShowUsers'] = editUserList(a['ShowUsers'])
+    a['ShowUsers'] = editUserList(a)
     
     #all fields below are locally created extensions to the original fields as 
     #downloaded from Spinitron
     
-    a['StartRecDelta'] = readVal2(a['StartRecDelta'],int, 'StartRecDelta -> '+ a['EndRecDelta'] + ' (minutes represented as integers)', 'Please enter an integer!')
-    a['EndRecDelta'] = readVal2(a['EndRecDelta'],int,'EndRecDelta-> ' + a['EndRecDelta']+ ' (minutes represented as integers)', "Please enter an integer")
+    a['StartRecDelta'] = readVal2(a['StartRecDelta'],int, 'StartRecDelta -> '+ str(a['EndRecDelta']) + ' (minutes represented as integers)', 'Please enter an integer!')
+    a['EndRecDelta'] = readVal2(a['EndRecDelta'],int,'EndRecDelta-> ' + str(a['EndRecDelta']) + ' (minutes represented as integers)', "Please enter an integer")
     a['Folder'] = readVal2(a['Folder'],str,'Folder-> ' + a['ShowCategory']+' no folder validation, leave it to Larry', "I'm all strung out")
     a['Subshow'] = readVal2(a['Subshow'],bool,'Subshow-> ' + a['ShowCategory'], "Try entering True or False. Case matters.")
     #TODO: use logic to determine Multiday status of shows #Lint
@@ -343,16 +347,39 @@ def editShow(aShow):
     a['SchedInfo'] = SchedInfo() 
     a['SchedInfo'].alternationMethod = readVal5(SchedInfo.alternationMethodList)
     a['SchedInfo'].evenOdd = readVal5(SchedInfo.evenOddList)
-    a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList)
+    WOTMmessage = 'Enter integer to toggle the list of ' + dayString +'s that the '+ a['ShowName'] + ' show broadcasts or press <RETURN> to accept current list of active show broadcast days/month -->'
+    a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList, [1,2,3,4,5],WOTMmessage, dayString)
     
-def editList(WOTMList):
+def editList(inList, completeList, requestMsg, day, errorMsg = 'is not an integer!!!'):
     '''
     accept a list of integers
     allow user to toggle integers into and out of the list
     returns edited list
+    #TODO modify this function to import day of week string, in order to make
+        verbiage more accurate
     '''
-    pass
-         
+    newList = inList
+    outList = [x for x in completeList if x not in inList]
+    while True:
+        print 'Show plays during the ' + str(inList) + day + 's of the month'
+        print 'Show DOES NOT play during the ' + str(outList) + day + 's of the month'
+        val = input(requestMsg + ' ')
+        if val == '':
+            return inList
+        try: 
+            val = int(val) #if input not int, kick off except clause
+            if val in completeList:
+                if val in inList:
+                    inList.remove(val)
+                    outList.append(val).sort()
+                else:
+                    outList.remove(val)
+                    inList.append(val).sort()
+                
+            else:
+                print 'Please enter a number between ' +str(min(completeList)) + '  and ' + str(max(completeList))
+        except ValueError:
+            print val + ' ' + errorMsg 
 def displayDay():
     pass
 
@@ -569,9 +596,7 @@ def selectShow(Sched):
         if reply.strip() == '1': #select day
             goodInput = True
             
-            ###
             dayString = getDayString() 
-            ###
             
             goodShow = False
             daySched = day2sched(dayString,Sched[dayString]) #create one-day sched 
@@ -584,12 +609,12 @@ def selectShow(Sched):
                 listIndex = reply2 -1 
                 if listIndex in range(len(daySched[dayString])):
                     goodShow = True
-                    return Sched[dayString][listIndex] #exit selectShow() here
+                    return Sched[dayString][listIndex], dayString #exit selectShow() here
                 else:
                     print 'Please enter a number between 1 and '+ str(len(daySched[dayString]))
 
                 
-        elif reply.strip() == '2': #select by 1st char or substring
+        elif reply.strip() == '2': #select  a show by 1st char or substring of showName
             goodInput = True
             goodSearchString = False
             while not goodSearchString:
@@ -632,9 +657,9 @@ def selectShow(Sched):
                         continue
                     else:
                         goodChoice = True # this line not necessary ...
+                        
+                        dayString = str(Sched[ShowList[showPick-1][1]])
                         '''
-                        thisDay = str(Sched[ShowList[showPick-1][1]])
-                        print
                         daySched = day2sched(thisDay,Sched[thisDay]) #create one-day sched 
                         SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
                         '''
@@ -644,7 +669,7 @@ def selectShow(Sched):
                                 pick = x
                                 break
                             
-                        return Sched[ShowList[showPick-1][1]][pick]
+                        return Sched[ShowList[showPick-1][1]][pick], dayString
 
                 
         else:
@@ -666,7 +691,8 @@ if __name__ == '__main__':
     NewPicklePath = path + 'PickleCurrent/'
     
     #WDRTsched = loadSchedule(SchedulePickle)
-    WDRTsched = loadSchedule(NewPicklePath+NewSchedPickle)
+    WDRTsched, comment = demetafy(loadSchedule(NewPicklePath+NewSchedPickle))
+    #print comment
     
     DJList = SPlib.BuildDJList(WDRTsched)
     #prettyPrintDJs(DJList)
@@ -680,9 +706,9 @@ if __name__ == '__main__':
     '''
     
 
-    '''
-    aShow = selectShow(WDRTsched)
+
+    aShow, dayString = selectShow(WDRTsched)
     print; print #aShow
-    newShow = editShow(aShow)
+    newShow = editShow(aShow, dayString)
     print; print newShow
-    '''
+

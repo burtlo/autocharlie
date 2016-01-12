@@ -136,218 +136,137 @@ def demetafy(NewSched):
     comment = NewSched['comment']
     return oldSched, comment
     
-    
-def batchShowUpdate(sched):
+def selectShow(Sched):
     '''
-    Accepts a Sched, consisting of at least one day and one show per day.
-    For each show in each day, new elements are added to the show dict
-    elements are set to default values
-    returns updated Sched
+    The following characteristics should be sufficient to uniquely define a 
+    show:
+        ShowName
+        Day
+        StartTime
+            ex: There are two shows called Undercurrents on Sunday, one that
+            starts midnight, the other starts at 1a.m
+    returns:
+        show =Sched[day][list-index], dayString  (ex. 'Monday')
+        if user quits, return = 'QUIT', 'QUIT'
     '''
-    StartRecDelta = -1
-    EndRecDelta = 3
-    Folder = ''
-    Subshow = False
-    MultiDay = False
-    
-    for day in sched:
-        for show in sched[day]:
-            print show           
-            print type(show['StartRecDelta'])
-            show['StartRecDelta'] = StartRecDelta
-            show['EndRecDelta'] = EndRecDelta
-            show['Folder'] = Folder
-            show['Subshow'] = Subshow
-            show['MultiDay'] = MultiDay #TODO: use logic to determine Multidy status of shows
-            show['SchedInfo'] = SchedInfo() #see SchedInfo class
-                #no parameters means default values are used
-    return sched
 
-def to6columns(DJList):
-    '''
-    accepts DJList
-    returrns a list of rows, each row has 6 elements (3 pairs of ID#/DJName)
-    last row is padded with empty strings, if necessary
-    QQQ edge cases of very short DJList???
-
-
-    '''
-    def myAppend(destRow,SrcDict):
-        destRow.append('<'+str(SrcDict['UserID'])+'>')
-        destRow.append(SrcDict['DJName'])
-        return destRow
-    rows = []
-    numrows = len(DJList)//3 # number of rows in target list of rows, 6 columns per row
-    for x in range(numrows):
-        y = x + numrows
-        z = x + 2*numrows
-        #make rows[x] a list with 6 elements for pretty printing
-        rows.append([])
-        rows[x] = myAppend(rows[x],DJList[x])
-        rows[x] = myAppend(rows[x],DJList[y])
-        rows[x] = myAppend(rows[x],DJList[z])
-    if len(DJList) % 3 == 1:
-        rows.append([])
-        rows[numrows] = myAppend(rows[numrows],DJList[len(DJList)-1])
-        rows[numrows].extend(['',''])
-        rows[numrows].extend(['',''])
-    elif len(DJList) % 3 == 2:
-        rows.append([])
-        rows[numrows] = myAppend(rows[numrows],DJList[len(DJList)-2])
-        rows[numrows] = myAppend(rows[numrows],DJList[len(DJList)-1]) 
-        rows[numrows].extend(['',''])
-    return rows
+    def getDayString():
+        '''
+        solicit input from user, get a number from 1 -7 that corresponds with 
+        a day of the week.  Returns an alpha string for that day
+        ex: 'Monday'  see SpinPapiLib.days
+        '''
         
-def prettyPrintDJs(DJList):
-    '''
-    accepts DJList
-    prints out list of userIDs + DJNames in 6 columns
-    '''
-    rows = to6columns(DJList)
-    widths = [max(map(len, map(str,col))) for col in zip(*rows)]
-    for row in rows:
-        print " ".join((val.ljust(width) for val, width in zip(row, widths)))
-        
-        
-def loadSchedule(filename, directory=''):
-    '''
-    serialized/pickled Schedule
-    '''  
-    if directory == '': #TODO concat directory + filename
-        return SPlib.OpenPickle(filename)
-    else:
-        print 'error: non-current working directory search not implemented'
-
-def saveSchedule(filename, Sched, directory=''):
-    '''
-    serialized/pickled Schedule
-    perhaps tage date onto filename to have a log of previous schedules???
-
-    if directory == '': #TODO concat directory + filename
-        SPlib.PickleDump(filename, Sched)
-    else:
-        print 'error: non-current working directory search not implemented'
-    '''
-    fullFilename = directory + filename
-    SPlib.PickleDump (fullFilename, Sched)
-       
-def addShow():
-    '''
-    prompt admin for all the info
-    '''
-    
-def deleteShow():
-    '''
-    show will be deleted in all time slots that it exists
-    '''
-def editUser(aUser):
-    '''
-    '''
-    pass
-
-def createUser(DJName):
-    '''
-    assign UserID = max(allUserIDs) + 1
-    '''
-    newUser = {}
-    newUser['DJName'] = DJName
-    DJList = SPlib.BuildDJList(WDRTsched)
-    newUser['UserID'] = max([ x['UserID'] for x in DJList]) + 1
-    return newUser
-
-def editUserListOLD(aShow):
-    '''
-    This function moved to separate file for reference, if needed
-    '''
-    pass
+        goodDay = False
+        goodInput = ['1','2','3','4','5','6','7']
+        while not(goodDay):
+            print;
+            for key in SPlib.Days:
+                print '<'+str(key+1)+'>   '+ SPlib.Days[key]
+            selectedDay = input ('Enter number to select a day:  ')
+            #print 'selectedDay = '+ selectedDay
                 
-
-def editUserList(aShow):
-    '''
-    edits user list for a particular show in a particular time slot
-    returns updated list of users
-    '''
-    UL =aShow['ShowUsers']
-    #display UserList(of show)
-    for U in UL:
-        print tab+'<'+ str(U['UserID']) + '>' + tab + U['DJName']
-    reply = ''
-    msgOne = 'Options: ENTER <A> to add user, <D> to delete a user, or press <ENTER> if DJ list for this show is correct'
-    errorMsg = "Don't even know how you got here!!!"
-    msg2 = 'ENTER <Number> of existing DJ to add to ShowUsers for this Show '
-    msg3 = 'or <C> to Create a totally-new-to-WDRT DJ '
-    msg4 = 'or hit <ENTER> to move on to next field'
-    requestMsg = msg2+msg3+msg4
-    
-    #options: <A> add user, <D> delete user, <return> translates to 'quit'
-    reply = readCharVal('Quit','ad', msgOne, errorMsg)
-    if reply == 'Quit':
-        return UL
-    
-    while reply != 'Quit':
+            if selectedDay not in goodInput: #bad input
+                print 'Select a number that correpsonds with a day!!'
+                print 'Get with the program, dood'
+            else:
+                dayString = SPlib.Days[int(selectedDay)-1]
+                goodDay = True 
+        return dayString
         
-        #display list of available DJs
-        print
-        print '=============AVAILABLE DJs:==================='
-        prettyPrintDJs(DJList)
-        #acceptable list = UserIDs + 'c'
-        DJIDList = [x['UserID'] for x in DJList]
-        acceptableList = map(str,DJIDList) #cast ints to strings
-        acceptableList.append('c') #c for create new DJ
-        acceptableList.append('C') #just want it to work!!!!
-        #case: add user
-        if reply == 'A': #add DJ to this show's ShowUsers
+    Sched = SPlib.makeChronological(Sched)
+    goodInput = False
+    print
+    while not(goodInput):
+        print ('Enter <1> to select show by DAY or <2> to select show by NAME'),
+        reply = input('or enter <Q> to Quit:  ')
+        
+        if reply.upper() == 'Q': # Q is for quit, you quitter
+            return 'QUIT','QUIT' #exit selectShow, nothing returned, means quitting time
+            
+        if reply.strip() == '1': #select day
+            goodInput = True
+            
+            dayString = getDayString() 
+            
+            goodShow = False
+            daySched = day2sched(dayString,Sched[dayString]) #create one-day sched 
+            while not (goodShow):    
+                print; print
+                #print day's schedule
+                SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
+                #select a show from a day's schedule
+                reply2 = readVal( int, 'Enter NUMBER to select show: ', 'is not an integer')
+                listIndex = reply2 -1 
+                if listIndex in range(len(daySched[dayString])):
+                    goodShow = True
+                    return Sched[dayString][listIndex], dayString #exit selectShow() here
+                else:
+                    print 'Please enter a number between 1 and '+ str(len(daySched[dayString]))
 
-            #options: select DJ to ad, create new DJ to add, or <return> to exit
-            reply2 = readVal3a(acceptableList, requestMsg,'number please, or <c>, or <enter>')
-            reply2 = reply2.upper()
-
-            if reply2 == 'QUIT':
-                return UL
-            elif reply2 == 'C':  #create new DJ
-                ExistingDJs = [x['DJName'] for x in DJList]
-                #no naming conventions currently imposed on newDJName
-                newDJName = readVal4a(ExistingDJs, 'Enter name of new DJ','This DJ already exists')
-                newUser = createUser(newDJName)
-                #add newUser to userList
-                UL.append(newUser)
-
-                #update overall DJList
-                DJList.append(newUser) #UserID sorting will remain intact
-                print
-                print '====UPDATED ShowUser List for'+ aShow['ShowName'] + '==========='
-                print
-                prettyPrintDJs(UL) #Just DJs for this show
-                #return UL
-            #add pre-existing DJ to this show's UserList
-            else: #what can reply2 be besides a legit UserID, so add this user to 
-                  #UserID List for this show,  type = str???
-                for x in DJList:
-                    if x['UserID'] == int(reply2):
-                        UL.append(x)
-                        break
-                print '====UPDATED ShowUser List for'+ aShow['ShowName'] + '==========='
-                prettyPrintDJs(UL) #Just DJs for this show
-                #return UL
-
-        #case: delete user
-        if reply == 'D':
-            UserIDList = map(str,[x['UserID'] for x in UL])
-            prettyPrintDJs(UL)
-            #pick DJ to delete from this show, or return to Exit
-            reply3 = readVal3(UserIDList,'select DJ by number or enter <return> to exit','Please pick a UserID from the list, or enter <return>')
-            if reply3 == 'Quit':
-                return UL
-            else: #delete a user
-                for user in UL:
-                    if user['UserID'] == int(reply3):
-                        UL.remove(user)
-                        #return UL                 
                 
-        reply = readCharVal('Quit','ad', msgOne, errorMsg)
-        
-    return UL
-    
+        elif reply.strip() == '2': #select  a show by 1st char or substring of showName
+            goodInput = True
+            goodSearchString = False
+            while not goodSearchString:
+                print
+                print 'Enter the first letter of the show name to see all shows '
+                print 'that start with that letter. OR enter any part of the show name',
+                replyAlpha = input('to see all shows that contain substring. -->  ')
+                if len(replyAlpha) == 1:
+                    goodSearchString = True
+                    myRegEx = '^' + replyAlpha.upper()
+                    ShowList = ShowRegEx(Sched, myRegEx)
+                    #TODO showlist = showlist + RegEx, somehow stripping 'the' from the beginning of the line
+
+                if len(replyAlpha) >= 1:
+                    goodSearchString = True
+                    myRegEx = replyAlpha.upper()
+                    ShowList = ShowRegEx(Sched, myRegEx)
+                else: #must be an empty string
+                    print "Why you hit return?!?!"
+                    continue
+                    
+                #at this point, we have created a ShowList
+                #see function: ShowRegEx()
+                if len(ShowList) == 0:
+                    print; print 'No matches.  So Sorry!!!'; print
+                    goodSearchString = False
+                else:
+                    goodSearchString = True
+            goodShow = False
+            while not goodShow:
+                #print show list
+                for x, S in enumerate(ShowList):
+                    print '<'+str(x+1)+'>' +S[0]
+                    print tab + S[1] + tab + S[2] + tab + S[3] 
+                #solicit choice
+                goodChoice = False
+                while not goodChoice:
+                    showPick = readVal(int,'select a show from list above: ','Please enter an integer')
+                    if not(showPick - 1 in range(len(ShowList))):
+                        continue
+                    else:
+                        goodChoice = True # this line not necessary ...
+                        
+                        dayString = str(Sched[ShowList[showPick-1][1]])
+                        '''
+                        daySched = day2sched(thisDay,Sched[thisDay]) #create one-day sched 
+                        SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
+                        '''
+                        pick = -1
+                        for (x,show) in enumerate(Sched[ShowList[showPick-1][1]]):
+                            if show['ShowName'] == ShowList[showPick-1][0]:
+                                pick = x
+                                break
+                            
+                        return Sched[ShowList[showPick-1][1]][pick], dayString
+
+                
+        else:
+            print 'Get with the program!!!\n'
+            continue #goto while not goodInput and try again
+            
 def editShow(aShow, dayString):
     '''
     prompt admin to modify various fields of show
@@ -450,6 +369,182 @@ def editShow(aShow, dayString):
     
     a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList, [1,2,3,4,5],WOTMmessage, dayString)
     return a
+        
+def prettyPrintDJs(DJList):
+    '''
+    accepts DJList
+    prints out list of userIDs + DJNames in 6 columns
+    '''
+    rows = to6columns(DJList)
+    widths = [max(map(len, map(str,col))) for col in zip(*rows)]
+    for row in rows:
+        print " ".join((val.ljust(width) for val, width in zip(row, widths)))
+        
+        
+def loadSchedule(filename, directory=''):
+    '''
+    serialized/pickled Schedule
+    '''  
+    if directory == '': #TODO concat directory + filename
+        return SPlib.OpenPickle(filename)
+    else:
+        print 'error: non-current working directory search not implemented'
+
+def saveSchedule(filename, Sched, directory=''):
+    '''
+    serialized/pickled Schedule
+    perhaps tage date onto filename to have a log of previous schedules???
+
+    if directory == '': #TODO concat directory + filename
+        SPlib.PickleDump(filename, Sched)
+    else:
+        print 'error: non-current working directory search not implemented'
+    '''
+    fullFilename = directory + filename
+    SPlib.PickleDump (fullFilename, Sched)
+    
+def addShow():
+    '''
+    prompt admin for all the info
+    '''
+    
+def deleteShow():
+    '''
+    show will be deleted in all time slots that it exists
+    '''
+def editUser(aUser):
+    '''
+    '''
+    pass
+
+def createUser(DJName):
+    '''
+    assign UserID = max(allUserIDs) + 1
+    '''
+    newUser = {}
+    newUser['DJName'] = DJName
+    DJList = SPlib.BuildDJList(WDRTsched)
+    newUser['UserID'] = max([ x['UserID'] for x in DJList]) + 1
+    return newUser
+
+def displayDay():
+    pass
+
+def displayShow():
+    pass
+    
+def schedLint():
+    '''
+    look for overlapping shows
+    and possible other problems with schedule
+    '''
+    
+def day2sched(dayString, day):
+    '''
+    recieves a day, which is a list of shows and a dayString and 
+    returns a one-day Schedule, with dayString as the key and day as the value
+    each show is a dict of show attributes
+    '''
+    tempSched = {}
+    tempSched[dayString] = day
+    return tempSched
+       
+
+
+def editUserListOLD(aShow):
+    '''
+    This function moved to separate file for reference, if needed
+    '''
+    pass
+                
+
+def editUserList(aShow):
+    '''
+    edits user list for a particular show in a particular time slot
+    returns updated list of users
+    '''
+    UL =aShow['ShowUsers']
+    #display UserList(of show)
+    for U in UL:
+        print tab+'<'+ str(U['UserID']) + '>' + tab + U['DJName']
+    reply = ''
+    msgOne = 'Options: ENTER <A> to add user, <D> to delete a user, or press <ENTER> if DJ list for this show is correct'
+    errorMsg = "Don't even know how you got here!!!"
+    msg2 = 'ENTER <Number> of existing DJ to add to ShowUsers for this Show '
+    msg3 = 'or <C> to Create a totally-new-to-WDRT DJ '
+    msg4 = 'or hit <ENTER> to move on to next field'
+    requestMsg = msg2+msg3+msg4
+    
+    #options: <A> add user, <D> delete user, <return> translates to 'quit'
+    reply = readCharVal('Quit','ad', msgOne, errorMsg)
+    if reply == 'Quit':
+        return UL
+    
+    while reply != 'Quit':
+        
+        #display list of available DJs
+        print
+        print '=============AVAILABLE DJs:==================='
+        prettyPrintDJs(DJList)
+        #acceptable list = UserIDs + 'c'
+        DJIDList = [x['UserID'] for x in DJList]
+        acceptableList = map(str,DJIDList) #cast ints to strings
+        acceptableList.append('c') #c for create new DJ
+        acceptableList.append('C') #just want it to work!!!!
+        #case: add user
+        if reply == 'A': #add DJ to this show's ShowUsers
+
+            #options: select DJ to ad, create new DJ to add, or <return> to exit
+            reply2 = readVal3a(acceptableList, requestMsg,'number please, or <c>, or <enter>')
+            reply2 = reply2.upper()
+
+            if reply2 == 'QUIT':
+                return UL
+            elif reply2 == 'C':  #create new DJ
+                ExistingDJs = [x['DJName'] for x in DJList]
+                #no naming conventions currently imposed on newDJName
+                newDJName = readVal4a(ExistingDJs, 'Enter name of new DJ','This DJ already exists')
+                newUser = createUser(newDJName)
+                #add newUser to userList
+                UL.append(newUser)
+
+                #update overall DJList
+                DJList.append(newUser) #UserID sorting will remain intact
+                print
+                print '====UPDATED ShowUser List for'+ aShow['ShowName'] + '==========='
+                print
+                prettyPrintDJs(UL) #Just DJs for this show
+                #return UL
+            #add pre-existing DJ to this show's UserList
+            else: #what can reply2 be besides a legit UserID, so add this user to 
+                  #UserID List for this show,  type = str???
+                for x in DJList:
+                    if x['UserID'] == int(reply2):
+                        UL.append(x)
+                        break
+                print '====UPDATED ShowUser List for'+ aShow['ShowName'] + '==========='
+                prettyPrintDJs(UL) #Just DJs for this show
+                #return UL
+
+        #case: delete user
+        if reply == 'D':
+            UserIDList = map(str,[x['UserID'] for x in UL])
+            prettyPrintDJs(UL)
+            #pick DJ to delete from this show, or return to Exit
+            reply3 = readVal3(UserIDList,'select DJ by number or enter <return> to exit','Please pick a UserID from the list, or enter <return>')
+            if reply3 == 'Quit':
+                return UL
+            else: #delete a user
+                for user in UL:
+                    if user['UserID'] == int(reply3):
+                        UL.remove(user)
+                        #return UL                 
+                
+        reply = readCharVal('Quit','ad', msgOne, errorMsg)
+        
+    return UL
+    
+
     
 def editList(inList, completeList, requestMsg, day, errorMsg = 'is not an integer!!!'):
     '''
@@ -484,27 +579,69 @@ def editList(inList, completeList, requestMsg, day, errorMsg = 'is not an intege
                 print 'Please enter a number between ' +str(min(completeList)) + '  and ' + str(max(completeList))
         except ValueError:
             print val + ' ' + errorMsg 
-def displayDay():
-    pass
+            
 
-def displayShow():
-    pass
+
+def batchShowUpdate(sched):
+    '''
+    Accepts a Sched, consisting of at least one day and one show per day.
+    For each show in each day, new elements are added to the show dict
+    elements are set to default values
+    returns updated Sched
+    '''
+    StartRecDelta = -1
+    EndRecDelta = 3
+    Folder = ''
+    Subshow = False
+    MultiDay = False
     
-def schedLint():
+    for day in sched:
+        for show in sched[day]:
+            print show           
+            print type(show['StartRecDelta'])
+            show['StartRecDelta'] = StartRecDelta
+            show['EndRecDelta'] = EndRecDelta
+            show['Folder'] = Folder
+            show['Subshow'] = Subshow
+            show['MultiDay'] = MultiDay #TODO: use logic to determine Multidy status of shows
+            show['SchedInfo'] = SchedInfo() #see SchedInfo class
+                #no parameters means default values are used
+    return sched
+
+def to6columns(DJList):
     '''
-    look for overlapping shows
-    and possible other problems with schedule
+    accepts DJList
+    returrns a list of rows, each row has 6 elements (3 pairs of ID#/DJName)
+    last row is padded with empty strings, if necessary
+    QQQ edge cases of very short DJList???
+
+
     '''
-    
-def day2sched(dayString, day):
-    '''
-    recieves a day, which is a list of shows and a dayString and 
-    returns a one-day Schedule, with dayString as the key and day as the value
-    each show is a dict of show attributes
-    '''
-    tempSched = {}
-    tempSched[dayString] = day
-    return tempSched
+    def myAppend(destRow,SrcDict):
+        destRow.append('<'+str(SrcDict['UserID'])+'>')
+        destRow.append(SrcDict['DJName'])
+        return destRow
+    rows = []
+    numrows = len(DJList)//3 # number of rows in target list of rows, 6 columns per row
+    for x in range(numrows):
+        y = x + numrows
+        z = x + 2*numrows
+        #make rows[x] a list with 6 elements for pretty printing
+        rows.append([])
+        rows[x] = myAppend(rows[x],DJList[x])
+        rows[x] = myAppend(rows[x],DJList[y])
+        rows[x] = myAppend(rows[x],DJList[z])
+    if len(DJList) % 3 == 1:
+        rows.append([])
+        rows[numrows] = myAppend(rows[numrows],DJList[len(DJList)-1])
+        rows[numrows].extend(['',''])
+        rows[numrows].extend(['',''])
+    elif len(DJList) % 3 == 2:
+        rows.append([])
+        rows[numrows] = myAppend(rows[numrows],DJList[len(DJList)-2])
+        rows[numrows] = myAppend(rows[numrows],DJList[len(DJList)-1]) 
+        rows[numrows].extend(['',''])
+    return rows
     
 def readCharVal(default, acceptable,requestMsg, errorMsg):
     '''
@@ -698,136 +835,7 @@ def ShowRegEx (Schedule, myRegEx):
     return tempList
                 
             
-def selectShow(Sched):
-    '''
-    The following characteristics should be sufficient to uniquely define a 
-    show:
-        ShowName
-        Day
-        StartTime
-            ex: There are two shows called Undercurrents on Sunday, one that
-            starts midnight, the other starts at 1a.m
-    returns:
-        show =Sched[day][list-index], dayString  (ex. 'Monday')
-        if user quits, return = 'QUIT', 'QUIT'
-    '''
 
-    def getDayString():
-        '''
-        solicit input from user, get a number from 1 -7 that corresponds with 
-        a day of the week.  Returns an alpha string for that day
-        ex: 'Monday'  see SpinPapiLib.days
-        '''
-        
-        goodDay = False
-        goodInput = ['1','2','3','4','5','6','7']
-        while not(goodDay):
-            print;
-            for key in SPlib.Days:
-                print '<'+str(key+1)+'>   '+ SPlib.Days[key]
-            selectedDay = input ('Enter number to select a day:  ')
-            #print 'selectedDay = '+ selectedDay
-                
-            if selectedDay not in goodInput: #bad input
-                print 'Select a number that correpsonds with a day!!'
-                print 'Get with the program, dood'
-            else:
-                dayString = SPlib.Days[int(selectedDay)-1]
-                goodDay = True 
-        return dayString
-        
-    Sched = SPlib.makeChronological(Sched)
-    goodInput = False
-    print
-    while not(goodInput):
-        print ('Enter <1> to select show by DAY or <2> to select show by NAME'),
-        reply = input('or enter <Q> to Quit:  ')
-        
-        if reply.upper() == 'Q': # Q is for quit, you quitter
-            return 'QUIT','QUIT' #exit selectShow, nothing returned, means quitting time
-            
-        if reply.strip() == '1': #select day
-            goodInput = True
-            
-            dayString = getDayString() 
-            
-            goodShow = False
-            daySched = day2sched(dayString,Sched[dayString]) #create one-day sched 
-            while not (goodShow):    
-                print; print
-                #print day's schedule
-                SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
-                #select a show from a day's schedule
-                reply2 = readVal( int, 'Enter NUMBER to select show: ', 'is not an integer')
-                listIndex = reply2 -1 
-                if listIndex in range(len(daySched[dayString])):
-                    goodShow = True
-                    return Sched[dayString][listIndex], dayString #exit selectShow() here
-                else:
-                    print 'Please enter a number between 1 and '+ str(len(daySched[dayString]))
-
-                
-        elif reply.strip() == '2': #select  a show by 1st char or substring of showName
-            goodInput = True
-            goodSearchString = False
-            while not goodSearchString:
-                print
-                print 'Enter the first letter of the show name to see all shows '
-                print 'that start with that letter. OR enter any part of the show name',
-                replyAlpha = input('to see all shows that contain substring. -->  ')
-                if len(replyAlpha) == 1:
-                    goodSearchString = True
-                    myRegEx = '^' + replyAlpha.upper()
-                    ShowList = ShowRegEx(Sched, myRegEx)
-                    #TODO showlist = showlist + RegEx, somehow stripping 'the' from the beginning of the line
-
-                if len(replyAlpha) >= 1:
-                    goodSearchString = True
-                    myRegEx = replyAlpha.upper()
-                    ShowList = ShowRegEx(Sched, myRegEx)
-                else: #must be an empty string
-                    print "Why you hit return?!?!"
-                    continue
-                    
-                #at this point, we have created a ShowList
-                #see function: ShowRegEx()
-                if len(ShowList) == 0:
-                    print; print 'No matches.  So Sorry!!!'; print
-                    goodSearchString = False
-                else:
-                    goodSearchString = True
-            goodShow = False
-            while not goodShow:
-                #print show list
-                for x, S in enumerate(ShowList):
-                    print '<'+str(x+1)+'>' +S[0]
-                    print tab + S[1] + tab + S[2] + tab + S[3] 
-                #solicit choice
-                goodChoice = False
-                while not goodChoice:
-                    showPick = readVal(int,'select a show from list above: ','Please enter an integer')
-                    if not(showPick - 1 in range(len(ShowList))):
-                        continue
-                    else:
-                        goodChoice = True # this line not necessary ...
-                        
-                        dayString = str(Sched[ShowList[showPick-1][1]])
-                        '''
-                        daySched = day2sched(thisDay,Sched[thisDay]) #create one-day sched 
-                        SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
-                        '''
-                        pick = -1
-                        for (x,show) in enumerate(Sched[ShowList[showPick-1][1]]):
-                            if show['ShowName'] == ShowList[showPick-1][0]:
-                                pick = x
-                                break
-                            
-                        return Sched[ShowList[showPick-1][1]][pick], dayString
-
-                
-        else:
-            print 'Get with the program!!!\n'
-            continue #goto while not goodInput and try again
             
 #MAIN
 tab = '\t'            

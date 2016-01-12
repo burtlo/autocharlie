@@ -25,13 +25,12 @@ in the same folder
 12/28/2015
     editShow is - done
     add new elements to all shows - done
-    #TODO: finish off editUser
+
 
 01/03/2016
     #TODO: StartRecDelta should be negative, not positive
 
 01/05/2016
-    #TODO: Fix editing of SchedInfo elements
     #TODO: Fix input: enter name of new DJ
     #FIXED: Instead of returning nada, Quitting selectShow returns aShow = 'QUIT', dayString = 'QUIT'
     
@@ -109,7 +108,15 @@ class SchedInfo(object):
         print tab + self.alternationMethod
         print tab + self.evenOdd
         print tab + str(self.weekOfTheMonth)
+        
+    def __repr__(self):
 
+        a = str( "{* ")
+        a +=  str(self.alternationMethod) + ' , '
+        a +=  str(self.evenOdd) + ', '
+        a +=  str(self.weekOfTheMonth) + ' *}'
+        return a
+        
 def metafy(Sched,comment):
     '''
     Accepts a sched
@@ -241,7 +248,6 @@ def editUser(aUser):
 def createUser(DJName):
     '''
     assign UserID = max(allUserIDs) + 1
-    TODO: This function not tested yet, as of 12/17/2015 !!!!!
     '''
     newUser = {}
     newUser['DJName'] = DJName
@@ -291,15 +297,11 @@ def editUserList(aShow):
         acceptableList.append('C') #just want it to work!!!!
         #case: add user
         if reply == 'A': #add DJ to this show's ShowUsers
-            print
-            print 'reply == A !!!!!!!!!'
-            print
+
             #options: select DJ to ad, create new DJ to add, or <return> to exit
             reply2 = readVal3a(acceptableList, requestMsg,'number please, or <c>, or <enter>')
             reply2 = reply2.upper()
-            print
-            print 'reply2 -> ' + reply2
-            print
+
             if reply2 == 'QUIT':
                 return UL
             elif reply2 == 'C':  #create new DJ
@@ -309,12 +311,14 @@ def editUserList(aShow):
                 newUser = createUser(newDJName)
                 #add newUser to userList
                 UL.append(newUser)
-                print 'added new user, this is what I got:'
-                print UL
+
                 #update overall DJList
                 DJList.append(newUser) #UserID sorting will remain intact
+                print
                 print '====UPDATED ShowUser List for'+ aShow['ShowName'] + '==========='
+                print
                 prettyPrintDJs(UL) #Just DJs for this show
+                #return UL
             #add pre-existing DJ to this show's UserList
             else: #what can reply2 be besides a legit UserID, so add this user to 
                   #UserID List for this show,  type = str???
@@ -324,6 +328,7 @@ def editUserList(aShow):
                         break
                 print '====UPDATED ShowUser List for'+ aShow['ShowName'] + '==========='
                 prettyPrintDJs(UL) #Just DJs for this show
+                #return UL
 
         #case: delete user
         if reply == 'D':
@@ -333,13 +338,15 @@ def editUserList(aShow):
             reply3 = readVal3(UserIDList,'select DJ by number or enter <return> to exit','Please pick a UserID from the list, or enter <return>')
             if reply3 == 'Quit':
                 return UL
-            else: #delete a user time
+            else: #delete a user
                 for user in UL:
                     if user['UserID'] == int(reply3):
                         UL.remove(user)
-                return UL 
+                        #return UL                 
                 
         reply = readCharVal('Quit','ad', msgOne, errorMsg)
+        
+    return UL
     
 def editShow(aShow, dayString):
     '''
@@ -349,7 +356,20 @@ def editShow(aShow, dayString):
     a = aShow
     print 'For each show attribute, enter new value, or press <ENTER> to'
     print 'leave the show attribute unchanged.'
+    
+    '''
+    oldShowName = a['ShowName'] 
+        showNameUpdated = False
     a['ShowName'] = readVal2(a['ShowName'],str,'ShowName-> '+a['ShowName'],"whatchoo doin' Willis?")
+    if a['ShowName'] != oldShowName:
+        ShowNameUpdated = True
+    '''
+    print
+    print 'ShowName-> '+a['ShowName']
+    print
+    print 'ShowName attribute is not editable.  If you want to change the name of this show, ',
+    print 'you will need to delete this show and create a new show with a new name.'
+    
     #we won't edit a['Weekdays'] right now
     a['Scheduled'] = readVal2(a['Scheduled'],bool,'Scheduled-> '+str(a['Scheduled']), 'Only True and False are valid!')
     a['ShowDescription'] = readVal2(a['ShowDescription'],str,'ShowDescription-> '+'"'+ a['ShowDescription']+'"', 'How did you enter a non-string???')
@@ -362,30 +382,68 @@ def editShow(aShow, dayString):
     a['ShowCategory'] = readVal2(a['ShowCategory'],str,'ShowCategory-> ' + a['ShowCategory'], "I'm all strung out")
     print
     print 'ShowUsers -> '
+    print 'FYI: ShowUser is synonymous with "DJ"'
+    print '====List of DJ/ShowUsers associated with ' + a['ShowName'] + ' ===='
+    
     a['ShowUsers'] = editUserList(a)
     
     #all fields below are locally created extensions to the original fields as 
     #downloaded from Spinitron
     
-    a['StartRecDelta'] = readVal2(a['StartRecDelta'],int, 'StartRecDelta -> '+ str(a['EndRecDelta']) + ' (minutes represented as integers)', 'Please enter an integer!')
+    recFAQ = 'StartRecDelta -> '+ str(a['EndRecDelta']) + ' (minutes represented as integers)'
+    recFAQ += '\n (negative number = earlier, positive number means later, chronologically)'
+    
+    a['StartRecDelta'] = readVal2(a['StartRecDelta'],int, recFAQ , 'Please enter an integer!')
     a['EndRecDelta'] = readVal2(a['EndRecDelta'],int,'EndRecDelta-> ' + str(a['EndRecDelta']) + ' (minutes represented as integers)', "Please enter an integer")
-    a['Folder'] = readVal2(a['Folder'],str,'Folder-> ' + a['Folder']+' no folder validation, leave it to Larry', "I'm all strung out")
-    a['Subshow'] = readVal2(a['Subshow'],bool,'Subshow-> ' + str(a['Subshow']), "Try entering True or False. Case matters.")
+    
+    folderFAQ ='Folder-> "' + a['Folder']+'" this is the target folder in which to place\n'
+    folderFAQ += 'audio archives for the ' + a['ShowName'] + ' show.'
+    folderFAQ += 'at present, please do not modify this parameter'
+    a['Folder'] = readVal2(a['Folder'],str, folderFAQ, "I'm all strung out")
+    
+    subShowFAQ = 'SubShow: Only True only if ' +a['ShowName'] + ' is a subshow of another show.'
+    print; print subShowFAQ,    
+    a['Subshow'] = readVal2(a['Subshow'],bool,'Subshow-> ' + str(a['Subshow']), 'Try entering "True" or "False". Case matters.')
+    
     #TODO: use logic to determine Multiday status of shows #Lint
+    multiDayFAQ = 'If ' + a['ShowName'] + ' airs more than one day in a week, the MultiDay should be "True"'
+    print; print multiDayFAQ,
     a['MultiDay'] = readVal2(a['MultiDay'],bool,'MultiDay-> ' + str(a['MultiDay']), 'Try entering "True" or "False". Case matters.') 
     print
     
     #Initialize SchedInfo object, set default values
-    a['SchedInfo'] = SchedInfo() 
+    try: 
+        #any of the three following lines will kick control to the except clause
+        #if SchedInfo object hasn't been initialized
+        tryDud = 'alternationMethod-> ' + str(a['SchedInfo'].alternationMethod)
+        tryDud2 = 'evenOdd-> ' + str(a['SchedInfo'].evenOdd)
+        tryDud3 = 'WOTMList-> ' + str( a['SchedInfo'].WOTMList)
+        #print tryDud; print tryDud2; print tryDud3
+        #print 'try: line 412 ************'
+    except:
+        print '**** Uninitialized SchedInfo object *********'
+        #Initial values for SchedInfo, since they weren't set before
+        a['SchedInfo'] = SchedInfo()         
     
-    a['SchedInfo'].alternationMethod = readVal5(SchedInfo.alternationMethodList)
-    a['SchedInfo'].evenOdd = readVal5(SchedInfo.evenOddList)
+    altFAQ = 'Alternation Method:\n'
+    altFAQ += 'A show can either <1> play every week, <2> play every other week, or,'
+    altFAQ += '<3> Week of the Month, for example Kickapoo Barn Dance might broadcast '
+    altFAQ += 'on the second Sunday of the month.'
+    print altFAQ
     print
-    print 'DAYSTRING'
-    print type(dayString)
-    print dayString
+    print 'alternationMethod -> current setting = ' + str(a['SchedInfo'].alternationMethod)
     print
-    WOTMmessage = ('Enter integer to toggle the list of ' + dayString +'s that the '+ 
+    a['SchedInfo'].alternationMethod = readVal5(SchedInfo.alternationMethodList, default=a['SchedInfo'].alternationMethod)
+    
+    print
+    print 'evenOdd-> current setting = ' + str(a['SchedInfo'].evenOdd)
+
+    a['SchedInfo'].evenOdd = readVal5(SchedInfo.evenOddList, default = a['SchedInfo'].evenOdd)
+
+    print
+    print '=====SELECT '+ dayString.upper() + 'S OF THE MONTH ============='
+    print '+++++ for the '+ a['ShowName'].upper() + ' show ++++++++++'
+    WOTMmessage = ('Enter integer to toggle the list of *' + dayString +'s* that the '+ 
                 a['ShowName'] + 
                 ' show broadcasts or press <RETURN> to accept list of days of month this show plays ->')
     print WOTMmessage
@@ -471,7 +529,6 @@ def readVal4a(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
         for validation
     if val = '' return default value
     '''
-#TODO fix this to resemble recent changes to readVal3    
     while True:
         val = input(requestMsg + ' ')
         if val == '':
@@ -479,7 +536,8 @@ def readVal4a(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
         if val not in excluded:
             return val
         print errorMsg      
-        
+
+      
 def readVal4(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
     '''
     accept input string and validate that it is *not* on the *list* of excluded inputs
@@ -487,8 +545,9 @@ def readVal4(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
         if the string does not represent an int, only the first char counts
         for validation
     if val = '' return default value
+    **** It appears that this function is not called at all!!!!!!!!!!
     '''
-#TODO fix this to resemble recent changes to readVal3    
+
     while True:
         val = input(requestMsg + ' ')
         if val == '':
@@ -501,17 +560,19 @@ def readVal4(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
                 return val
         print errorMsg
 
-def readVal5(acceptableList, requestMsg = 'Select choice by number -> ', errorMsg = 'is not an integer. Please reenter-> ', default = None):
+
+def readVal5(acceptableList, requestMsg = 'Select choice by Number or <ENTER> to accept current value -> ',
+             errorMsg = 'is not an integer. Please reenter-> ', default = None):
     '''
     readVal5 takes a list of acceptable inputs, displays an enumerated list of 
     acceptable inputs, then returns a verified value from acceptableList, once
     the user enters a valid input
-    if val = '' return default value
+    if val = "" return default value
     '''
     strList = map(str,acceptableList)
     while True:
         for (x, el) in enumerate(acceptableList):
-            print '<'+str(x+1)+'>' +str(el)
+            print '<'+str(x+1)+'> ' +str(el)
         
         val = input(requestMsg)
         if val == '':
@@ -697,7 +758,7 @@ def selectShow(Sched):
                 #print day's schedule
                 SPlib.TraverseShows2(daySched,SPlib.AdminPrintShow, SPlib.myPrint)
                 #select a show from a day's schedule
-                reply2 = readVal( int, 'ENTER number to select show: ', 'is not an integer')
+                reply2 = readVal( int, 'Enter NUMBER to select show: ', 'is not an integer')
                 listIndex = reply2 -1 
                 if listIndex in range(len(daySched[dayString])):
                     goodShow = True
@@ -765,7 +826,7 @@ def selectShow(Sched):
 
                 
         else:
-            print 'Get with the program!!!'
+            print 'Get with the program!!!\n'
             continue #goto while not goodInput and try again
             
 #MAIN
@@ -800,9 +861,14 @@ if __name__ == '__main__':
 
 
     aShow, dayString = selectShow(WDRTsched)
-    print; print #aShow
+    print; print
     if aShow != 'QUIT':
         newShow = editShow(aShow, dayString)
         print; print newShow
+    else:
+        print 'QUIT'
+        print str(aShow)
+        print 'QUIT#2'
+        
     #TODO: confirm that all fields in Show dict are there, and they print correctly
 

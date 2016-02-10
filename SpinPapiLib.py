@@ -62,7 +62,7 @@ elements to add to Show dict:
             This will prevent SchedLinter from posting an error
             for double-booked shows
             
-further elements to add to Show dict:
+further elements *have* been added to Show dict:
         AlternatingSchedule (boolean)
             Set to True if different shows alternate during the same time slot
             example: Sonic Landscapes / Chris & Larry Show
@@ -81,6 +81,9 @@ import requests
 import json
 import pickle
 import copy
+
+import local
+import key
 
 def uniFix(uniStr):
     '''
@@ -476,22 +479,21 @@ Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
         4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
 testDays = { 0: 'Sunday' , 1 : 'Monday' }
 
-#TODO where is the following line needed? What is most appropriate spot?
-client = Papi.SpinPapiClient('db2b837164b6385c', '868378c8f16f1c77')
-
+#key.py should be obtained locally, not available from repository
+client = Papi.SpinPapiClient(key.userid, key.secret)
 
 if __name__ == '__main__':
     
-    mySchedulePickle = 'mySchedule.pkl'
+    mySchedulePickle = local.path + 'mySchedule.pkl'
     Sched1 = OpenPickle(mySchedulePickle)
     print 'Pickle Opened'
     
     '''
     Sched2 = Sched1toSched2(Sched1)
     print; print 'Sched2: '+ str(Sched2)
-    PickleDump('Sched2.pkl', Sched2)
+    PickleDump(local.path+'Sched2.pkl', Sched2)
     '''
-    Sched2 = OpenPickle('Sched2.pkl')
+    Sched2 = OpenPickle(local.path+'Sched2.pkl')
     #print tabbed version of weekly shedule
     TraverseShows(Sched2,PrettyPrintNewFields, myPrint)
     print; print type(Sched2)

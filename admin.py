@@ -85,6 +85,11 @@ import SpinPapiLib as SPlib
 import sys
 import re
 import os
+import glob
+import time
+
+import local #this is a local file which points to local paths for file discovery
+
 
 
 class SchedInfo(object):
@@ -117,14 +122,16 @@ class SchedInfo(object):
         a +=  str(self.weekOfTheMonth) + ' *}'
         return a
         
-def metafy(Sched,comment):
+def metafy(Sched, comment, timeStamp = ''):
     '''
     Accepts a sched
-    returns a two element dict, ready to be pickled:
+    returns a three element dict, ready to be pickled:
     '''
+    mytime = time.strftime("%Y-%m-%d %H:%M") + '\n'
     dud = {}
     dud['comment'] = comment
     dud['schedule'] = Sched
+    dud['timeStamp'] = mytime + timeStamp
     return dud
     
 def demetafy(NewSched):
@@ -134,7 +141,11 @@ def demetafy(NewSched):
     '''
     oldSched = NewSched['schedule']
     comment = NewSched['comment']
-    return oldSched, comment
+    try:
+        timeStamp = NewSched['timeStamp']
+    except:
+        timeStamp = ''
+    return oldSched, comment, timeStamp
     
 def selectShow(Sched):
     '''
@@ -383,22 +394,19 @@ def prettyPrintDJs(DJList):
         
 def loadSchedule(filename, directory=''):
     '''
-    serialized/pickled Schedule
+    returns serialized/pickled Schedule
+    next, run demetafy()
     '''  
-    if directory == '': #TODO concat directory + filename
-        return SPlib.OpenPickle(filename)
-    else:
-        print 'error: non-current working directory search not implemented'
+    
+    return SPlib.OpenPickle(directory + filename)
+
 
 def saveSchedule(filename, Sched, directory=''):
     '''
-    serialized/pickled Schedule
-    perhaps tage date onto filename to have a log of previous schedules???
+    saves serialized/pickled Schedule
+    to get with the program, metafy() the schedule before you
+        save it to the pickle formate
 
-    if directory == '': #TODO concat directory + filename
-        SPlib.PickleDump(filename, Sched)
-    else:
-        print 'error: non-current working directory search not implemented'
     '''
     fullFilename = directory + filename
     SPlib.PickleDump (fullFilename, Sched)
@@ -833,8 +841,31 @@ def ShowRegEx (Schedule, myRegEx):
                 tempList.append((ShowName, day, OnairTime, OffairTime))
                 
     return tempList
-                
-            
+    
+def showEdit (show, key, valFunc):
+    '''
+    used in conjunction with batchEditShows to modify values associated with
+    a particular key for a particular show
+    '''
+    show[key] = valFunc
+    
+def NegOne():
+    return -1
+    
+def batchEditShows (Sched, key, valFunc):
+    '''
+    for every show in Sched: 
+        set key = valFunc
+    example function code:
+    batchEditShows(Sched, 'StartRecDelta', NegOne)
+    '''
+    for day in Sched:
+        #dayFunc (day)
+        #sort shows by start time
+        #Schedule[day] = sorted (Schedule[day], key=itemgetter('OnairTime'))
+        for show in Sched[day]:
+            showEdit(show, key, valFunc)          
+          
 
             
 #MAIN
@@ -843,30 +874,47 @@ if sys.version[0] == '2': input = raw_input #alias py2 to py3
 
 if __name__ == '__main__':
 
-    #print SPlib.Days
-    print
-        
+
+
     SchedulePickle = 'Sched2.pkl'
     NewSchedPickle = 'Sched3.pkl'
-    path = '/home/adude/anaconda/MyProjects/WDRT/AutoCharlie/'    
+    path = local.path
     NewPicklePath = path + 'PickleCurrent/'
     
+    os.chdir(NewPicklePath)
+    NewestPickle = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
+    print NewestPickle
+    print 'break'
+    exit
     #WDRTsched = loadSchedule(SchedulePickle)
-    WDRTsched, comment = demetafy(loadSchedule(NewPicklePath+NewSchedPickle))
+    WDRTsched, comment, timeStamp = demetafy(loadSchedule(NewPicklePath + NewestPickle))
     #print comment
     
     DJList = SPlib.BuildDJList(WDRTsched)
     #prettyPrintDJs(DJList)
     
+    #####################################################################
+    # BATCH UPDATE SECTION
+    #####################################################################
+    
+    batchEditShows(WDRTsched, 'StartRecDelta', NegOne)
+    show2save = metafy(WDRTsched, comment)
+    saveName = time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
+    saveSchedule (saveName, show2save, NewPicklePath)
+    print "success!!!????"
+    
     '''
-    comment = 'input was Sched2.pkl; new show dict elemetns have been added to'
+    comment = 'input was Sched2.pkl; new show dict elements have been added to'
     comment += ' all shows in schedule 12/28/2015'
     newSched = batchShowUpdate(WDRTsched)
     newNewSched = metafy(WDRTsched,comment)
     saveSchedule(NewSchedPickle, newNewSched, NewPicklePath)
     '''
     
-
+    '''
+    ######################################################################
+    # INTERACTIVE SHOW EDITING SECTION
+    ######################################################################
 
     aShow, dayString = selectShow(WDRTsched)
     print; print
@@ -877,6 +925,6 @@ if __name__ == '__main__':
         print 'QUIT'
         print str(aShow)
         print 'QUIT#2'
-        
+    '''    
     #TODO: confirm that all fields in Show dict are there, and they print correctly
 

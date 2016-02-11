@@ -181,24 +181,33 @@ def SchedScrub(ScheduleDict):
         mySched[day] = ScheduleDict[day]['results']
     return mySched
     
-def PickleDump (f,d):
+def PickleDump (f,d, dumpPath = local.pklDestPath):
     '''
     d is a nested dict containing one week of schedules
     actually, d can be about any damn thing
-    f = string containing file location of Schedule Pickle
-    goes to default/current directory
+    f = string containing name of Schedule Pickle (.pkl included)
+    dumpPath = string: absolute path (trailing backslash included)
+        to destination folder to place .pkl files
     '''
+
+
+    f = dumpPath + f
     F = open(f, 'wb')
     pickle.dump(d,F)
     F.close()
     
-def OpenPickle(SchedulePickle):
+def OpenPickle(SchedulePickle, srcFolder = local.pklSourcePath ):
     '''
+    SchedulePickle = string that contains name of .pkl file, no path
+        prepended!
+    srcFolder = string: absolute path to folder that contains pickle files
+        trailing backslash included
     returns serialized schedule, or any other pickled object
     note:
         serialized and saved to disk is synonymouse with pickled
     '''
-    F = open(SchedulePickle, 'rb')
+    
+    F = open(srcFolder + SchedulePickle, 'rb')
     return pickle.load(F)
 
 class day(object):
@@ -484,16 +493,16 @@ client = Papi.SpinPapiClient(key.userid, key.secret)
 
 if __name__ == '__main__':
     
-    mySchedulePickle = local.path + 'mySchedule.pkl'
+    mySchedulePickle = 'mySchedule.pkl'
     Sched1 = OpenPickle(mySchedulePickle)
     print 'Pickle Opened'
     
     '''
     Sched2 = Sched1toSched2(Sched1)
     print; print 'Sched2: '+ str(Sched2)
-    PickleDump(local.path+'Sched2.pkl', Sched2)
+    PickleDump('Sched2.pkl', Sched2)
     '''
-    Sched2 = OpenPickle(local.path+'Sched2.pkl')
+    Sched2 = OpenPickle('Sched2.pkl')
     #print tabbed version of weekly shedule
     TraverseShows(Sched2,PrettyPrintNewFields, myPrint)
     print; print type(Sched2)

@@ -392,24 +392,25 @@ def prettyPrintDJs(DJList):
         print " ".join((val.ljust(width) for val, width in zip(row, widths)))
         
         
-def loadSchedule(filename, directory=''):
+def loadSchedule(filename):
     '''
     returns serialized/pickled Schedule
-    next, run demetafy()
+    after running loadSchedule(), run demetafy()
+    default path = local.pklSourcePath
     '''  
     
-    return SPlib.OpenPickle(directory + filename)
+    return SPlib.OpenPickle(filename)
 
 
-def saveSchedule(filename, Sched, directory=''):
+def saveSchedule(filename, Sched):
     '''
     saves serialized/pickled Schedule
-    to get with the program, metafy() the schedule before you
-        save it to the pickle formate
-
+    before running saveSchedule, run metafy() on the schedule
+    *do not specify path in 'filename'*
+    path is specified here:
+        local.pklDestPath
     '''
-    fullFilename = directory + filename
-    SPlib.PickleDump (fullFilename, Sched)
+    SPlib.PickleDump (filename, Sched)
     
 def addShow():
     '''
@@ -879,7 +880,7 @@ if __name__ == '__main__':
     SchedulePickle = 'Sched2.pkl'
     NewSchedPickle = 'Sched3.pkl'
     path = local.path
-    NewPicklePath = path + 'PickleCurrent/'
+    NewPicklePath = local.pklDestPath
     
     os.chdir(NewPicklePath)
     NewestPickle = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
@@ -887,7 +888,7 @@ if __name__ == '__main__':
     print 'break'
     exit
     #WDRTsched = loadSchedule(SchedulePickle)
-    WDRTsched, comment, timeStamp = demetafy(loadSchedule(NewPicklePath + NewestPickle))
+    WDRTsched, comment, timeStamp = demetafy(loadSchedule(NewestPickle))
     #print comment
     
     DJList = SPlib.BuildDJList(WDRTsched)

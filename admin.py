@@ -89,39 +89,9 @@ import glob
 import time
 
 import local #this is a local file which points to local paths for file discovery
+from myClasses import SchedInfo
 
 
-
-class SchedInfo(object):
-    '''
-    '''
-    alternationMethodList = ['Every Week','Alternate','Week of the Month']
-    evenOddList = ['Even','Odd','All','N/A']
-    WOTMList = [1,2,3,4,5]
-    
-    def __init__(self, alternationMethod ='Every Week', evenOdd = 'All', WOTMList = [1,2,3,4,5]):
-        '''
-        create SchedInfo object with default values
-        '''
-        self.alternationMethod = alternationMethod
-        self.evenOdd = evenOdd
-        self.weekOfTheMonth = WOTMList #how does scope deal with definitions at top of class???
-        
-    def __str__(self):
-        tab = '    '
-        print
-        print tab + self.alternationMethod
-        print tab + self.evenOdd
-        print tab + str(self.weekOfTheMonth)
-        
-    def __repr__(self):
-
-        a = str( "{* ")
-        a +=  str(self.alternationMethod) + ' , '
-        a +=  str(self.evenOdd) + ', '
-        a +=  str(self.weekOfTheMonth) + ' *}'
-        return a
-        
 def metafy(Sched, comment, timeStamp = ''):
     '''
     Accepts a sched
@@ -876,32 +846,32 @@ if sys.version[0] == '2': input = raw_input #alias py2 to py3
 if __name__ == '__main__':
 
 
-
-    SchedulePickle = 'Sched2.pkl'
-    NewSchedPickle = 'Sched3.pkl'
+    #SchedulePickle = 'Sched2.pkl'
+    #NewSchedPickle = 'Sched3.pkl'
     path = local.path
     NewPicklePath = local.pklDestPath
     
     os.chdir(NewPicklePath)
     NewestPickle = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
     print NewestPickle
-    print 'break'
-    exit
-    #WDRTsched = loadSchedule(SchedulePickle)
+    #print 'break'
+    #exit
+    
+    WDRTsched = loadSchedule(NewestPickle)
     WDRTsched, comment, timeStamp = demetafy(loadSchedule(NewestPickle))
     #print comment
     
     DJList = SPlib.BuildDJList(WDRTsched)
     #prettyPrintDJs(DJList)
-    
+        
     #####################################################################
     # BATCH UPDATE SECTION
     #####################################################################
     
-    batchEditShows(WDRTsched, 'StartRecDelta', NegOne)
+    batchEditShows(WDRTsched, 'StartRecDelta', NegOne())
     show2save = metafy(WDRTsched, comment)
     saveName = time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
-    saveSchedule (saveName, show2save, NewPicklePath)
+    saveSchedule (saveName, show2save)
     print "success!!!????"
     
     '''

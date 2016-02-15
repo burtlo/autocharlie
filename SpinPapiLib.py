@@ -82,8 +82,14 @@ import json
 import pickle
 import copy
 
+import glob
+import os
+
 import local
 import key
+import admin #cuz I'm crazy
+from myClasses import SchedInfo, NegOne
+
 
 def uniFix(uniStr):
     '''
@@ -206,9 +212,31 @@ def OpenPickle(SchedulePickle, srcFolder = local.pklSourcePath ):
     note:
         serialized and saved to disk is synonymouse with pickled
     '''
+    print 'SchedulePickle -> '+SchedulePickle
+    print 'srcFolder -> '+srcFolder
     
     F = open(srcFolder + SchedulePickle, 'rb')
     return pickle.load(F)
+    
+def newestPickle(path = local.pklSourcePath):
+    '''
+    returns string containing path + file name of newest pickle
+    in the 'path'
+    typical parameters for this function:
+    path = local.pklDestPath
+    path = local.pklSourcePath
+    '''
+    '''
+    #newest file of any file type ...
+    dud = max(os.listdir(os.getcwd()), key = os.path.getctime)
+    print dud
+    '''
+    #newest file of type *.pkl
+
+    os.chdir(path)
+    NP = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
+    print 'Newest Pickle ->', NP
+    return NP
 
 class day(object):
     '''
@@ -492,21 +520,30 @@ testDays = { 0: 'Sunday' , 1 : 'Monday' }
 client = Papi.SpinPapiClient(key.userid, key.secret)
 
 if __name__ == '__main__':
-    
-    mySchedulePickle = 'mySchedule.pkl'
-    Sched1 = OpenPickle(mySchedulePickle)
+    '''
+    mySchedulePickle = 'Sched3.pkl'
+    Sched3 = OpenPickle(mySchedulePickle)
     print 'Pickle Opened'
+    '''
     
     '''
     Sched2 = Sched1toSched2(Sched1)
     print; print 'Sched2: '+ str(Sched2)
     PickleDump('Sched2.pkl', Sched2)
     '''
-    Sched2 = OpenPickle('Sched2.pkl')
+    dud = local.pklSourcePath
+    print dud
+    
+    current = os.getcwd()
+    newestSched = OpenPickle(newestPickle(local.pklSourcePath))
+    newestSched, comment, timestamp = admin.demetafy(newestSched)
+    os.chdir(current)
+
     #print tabbed version of weekly shedule
-    TraverseShows(Sched2,PrettyPrintNewFields, myPrint)
-    print; print type(Sched2)
-    print type(Sched2['Monday'])
+    TraverseShows(newestSched,PrettyPrintNewFields, myPrint)
+    print; print type(newestSched)
+    print type(newestSched['Monday'])
+
     
     '''
     for i in 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx':

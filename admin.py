@@ -89,7 +89,7 @@ import glob
 import time
 
 import local #this is a local file which points to local paths for file discovery
-from myClasses import SchedInfo
+from myClasses import SchedInfo, TempTime
 
 
 def metafy(Sched, comment, timeStamp = ''):
@@ -382,6 +382,25 @@ def saveSchedule(filename, Sched):
     '''
     SPlib.PickleDump (filename, Sched)
     
+def loadNewestSchedule(NewPicklePath = local.pklSourcePath):
+    '''
+    load newest schedule from default path (from local.py)
+    demetafy is called, 
+    returns:
+        stripped downNewestSched
+        comment
+        timeStamp
+    '''
+    os.chdir(NewPicklePath)
+    NewestPickle = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
+    #print NewestPickle
+    
+    # First load, then demetafy
+    NewestSched = loadSchedule(NewestPickle)
+    NewestSched, comment, timeStamp = demetafy(loadSchedule(NewestPickle))
+    #print comment
+    return NewestSched, comment, timeStamp
+    
 def addShow():
     '''
     prompt admin for all the info
@@ -409,8 +428,33 @@ def createUser(DJName):
 def displayDay():
     pass
 
-def displayShow():
-    pass
+def displayShow(aShow):
+    typeList = ('bool','unicode','int','list','str')
+    for k in aShow:
+        #strip str(type(obj)) down to actual type name
+        typeName = str(type(aShow[k]))
+        dud = typeName.partition("'")
+        typeName = dud[2] #tail after paren
+        dud = typeName.partition("'")
+        typeName = dud[0] #head before paren
+
+        if typeName in typeList:
+            print str(k)+' -> ' + str(aShow[k])
+        else:
+            if 'SchedInfo' in typeName:
+                print typeName
+                print tab +'alternationMethod -> ' + aShow['SchedInfo'].alternationMethod
+                print tab + 'evenOdd -> ' + aShow['SchedInfo'].evenOdd
+                print tab + 'WOTM -> ' + str(aShow['SchedInfo'].weekOfTheMonth)
+
+
+def setDerivedTime(aShow):
+    '''
+    called by SP.traverseShows()
+    for each show:
+        set time values correctly for current time
+    '''
+    aShow['TempTime'] = TempTime
     
 def schedLint():
     '''
@@ -837,8 +881,20 @@ def batchEditShows (Sched, key, valFunc):
         for show in Sched[day]:
             showEdit(show, key, valFunc)          
           
+def grabShow(sched):
+    '''
+    For debugging, it's often handy to have a representative show to work with
+    input: accepts a demetafied schedule
+    returns: 
+        (1) first show from first day in sched (dict - attributes:values)
+        (2) first day in sched (str)
+    '''
+    for day in sched:
+        for show in sched[day]:
+            return show, day
+  
 
-            
+        
 #MAIN
 tab = '\t'            
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
@@ -846,24 +902,31 @@ if sys.version[0] == '2': input = raw_input #alias py2 to py3
 if __name__ == '__main__':
 
 
-    #SchedulePickle = 'Sched2.pkl'
-    #NewSchedPickle = 'Sched3.pkl'
     path = local.path
     NewPicklePath = local.pklDestPath
     
-    os.chdir(NewPicklePath)
-    NewestPickle = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
-    print NewestPickle
-    #print 'break'
-    #exit
-    
-    WDRTsched = loadSchedule(NewestPickle)
-    WDRTsched, comment, timeStamp = demetafy(loadSchedule(NewestPickle))
+    ######################################################################
+    # GRAB NEWEST PICKLE from default paths
+    ######################################################################
+    WDRTsched, comment, timeStamp = loadNewestSchedule()
     #print comment
+
+    ######################################################################
+    # GRAB FIRST SHOW THAT I COME ACROSS
+    ######################################################################
+    aShow, aDay = grabShow(WDRTsched)
+    displayShow(aShow)
+    print
+    print 'day -> ',str(aDay)  
+
     
+    ######################################################################
+    #  CREATING DJ LIST IS NECESSARY STEP FOR SOME SUBSEQUENT STEPS
+    ######################################################################
     DJList = SPlib.BuildDJList(WDRTsched)
     #prettyPrintDJs(DJList)
-        
+    
+    '''    
     #####################################################################
     # BATCH UPDATE SECTION
     #####################################################################
@@ -873,6 +936,7 @@ if __name__ == '__main__':
     saveName = time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
     saveSchedule (saveName, show2save)
     print "success!!!????"
+    '''
     
     '''
     comment = 'input was Sched2.pkl; new show dict elements have been added to'

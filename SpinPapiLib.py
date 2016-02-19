@@ -212,8 +212,8 @@ def OpenPickle(SchedulePickle, srcFolder = local.pklSourcePath ):
     note:
         serialized and saved to disk is synonymouse with pickled
     '''
-    print 'SchedulePickle -> '+SchedulePickle
-    print 'srcFolder -> '+srcFolder
+    #print 'SchedulePickle -> '+SchedulePickle
+    #print 'srcFolder -> '+srcFolder
     
     F = open(srcFolder + SchedulePickle, 'rb')
     return pickle.load(F)
@@ -226,16 +226,14 @@ def newestPickle(path = local.pklSourcePath):
     path = local.pklDestPath
     path = local.pklSourcePath
     '''
-    '''
-    #newest file of any file type ...
-    dud = max(os.listdir(os.getcwd()), key = os.path.getctime)
-    print dud
-    '''
-    #newest file of type *.pkl
 
+    #newest file of any file type ...
+    #dud = max(os.listdir(os.getcwd()), key = os.path.getctime)
+    
+    #newest file of type *.pkl
     os.chdir(path)
     NP = max(glob.iglob('*.[Pp][Kk][Ll]'), key =os.path.getctime)
-    print 'Newest Pickle ->', NP
+    #print 'Newest Pickle ->', NP
     return NP
 
 class day(object):

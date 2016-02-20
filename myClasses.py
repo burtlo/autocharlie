@@ -25,6 +25,9 @@ class CurrentTime(object):
         now = now + relativedelta(hour=0, minute=0, second=0, microsecond=0)
         self.now = now
         self.today = DT.date.today()
+        #TODO: analyze which code needs to share this broadened num2day dict
+        #which includes the day before the beginning of the week and the day
+        #after
         self.num2day = { -1: 'SaturdayBEFORE', 0: 'Sunday' , 1 : 'Monday' , 
                         2 : 'Tuesday' , 
                         3 :'Wednesday',  4 : 'Thursday' , 5 : 'Friday' , 

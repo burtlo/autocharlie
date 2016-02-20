@@ -14,10 +14,14 @@ This program is intended to be called hourly as a cron job (5 min past hour)
         actually were saved to the correct archive folder
 '''
 
-#load program database
-    #??? other ways to traverse a database without loading the whole thing?
+#load schedule
+#create CurrentTime object
+#for each show in Schedule:
+    #append time sensitive attributes to show as follows:
+    #aShow['TempTime'] = TempTime(aShow, aDay)
 
-#for each show in database:
+#for each day in Schedule:
+    #for yesterday and today:
 
     #for each time slot the show plays:
 

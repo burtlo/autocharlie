@@ -89,7 +89,7 @@ import glob
 import time
 
 import local #this is a local file which points to local paths for file discovery
-from myClasses import SchedInfo, TempTime
+from myClasses import SchedInfo, SchedTempTime
 
 
 def metafy(Sched, comment, timeStamp = ''):

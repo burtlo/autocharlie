@@ -36,7 +36,7 @@ class CurrentTime(object):
         self.now = CTnow
         self.today = DT.date.today()
         self.week = self.setWeek() # dict of datetimes for each day in week
-        self.OWOMdict = {} #Ordinal Week of Month key=int, value = OWOM
+        self.OWOMdict = {} #Ordinal Week of Month key=DayInt, value = OWOM
         for day in self.week:
             self.OWOMdict[day] = setOrdinalWeekdayOfMonth(self,week[day])
         self.isEvenWeek = setIsEvenWeek(self)
@@ -109,6 +109,11 @@ class SchedTempTime(object):
         '''
         accepts aShow, and OrdinalWeekOfMonth dict
         returns true if aShow happens this week
+        OWOMdict example:
+            Tuesday, Feb 23rd, 2016 is the *4th* Tuesday of the month,
+                and Tuesday is the third day of the US Calendar week (2 is third
+                starting from zero)
+            so, OWOMdict[2(for Tuesday)] = 4 (for 4th Tuesday of Feb 2016)
         '''
         if aShow['SchedInfo'].alternationMethod == 'Every Week':
             return True
@@ -117,6 +122,7 @@ class SchedTempTime(object):
                 print 'AlternationMethod = Alternate, but evenOdd = all ...'
                 admin.displayShow(aShow)
                 print 'Fix this Shite!'
+                #err1
                 continue ## maybe get to error handling situation
             if aShow['SchedInfo'].evenOdd == 'Even':
                 if CTobj.obj.isEvenWeek:
@@ -137,10 +143,13 @@ class SchedTempTime(object):
                 return True
             else:
                 return False
-        else:
-            print 'you got to the bottom of the setHappensThisWeek function.'
-            print "You're so effed!"
-            admin.displayShow(aShow)
+        #Code below should only execute if:
+            #if you came from #err1
+            #alternation method = 'Alternate', but evenOdd = 'All'
+            #alternation method = 'Alternate', but evenOdd = 'N/A'
+        print 'you got to the bottom of the setHappensThisWeek function.'
+        print "You're so effed!"
+        admin.displayShow(aShow)
                 
         
     def setDayOffset(self, aShow):

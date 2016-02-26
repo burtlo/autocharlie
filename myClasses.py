@@ -115,41 +115,49 @@ class SchedTempTime(object):
                 starting from zero)
             so, OWOMdict[2(for Tuesday)] = 4 (for 4th Tuesday of Feb 2016)
         '''
-        if aShow['SchedInfo'].alternationMethod == 'Every Week':
-            return True
-        elif aShow['SchedInfo'].alternationMethod == 'Alternate':
-            if aShow['SchedInfo'].evenOdd == 'All':
-                print 'AlternationMethod = Alternate, but evenOdd = all ...'
-                admin.displayShow(aShow)
-                print 'Fix this Shite!'
-                #err1
-                continue ## maybe get to error handling situation
-            if aShow['SchedInfo'].evenOdd == 'Even':
-                if CTobj.obj.isEvenWeek:
-                    return True
-                else:
-                    return False
-            if aShow['SchedInfo'].evenOdd == 'Odd':
-                if CTobj.obj.isEvenWeek:
-                    return False
-                else:
-                    return True
-            if aShow['SchedInfo'].evenOdd == 'N/A':
-                print 'alternation = Alternate, but evenOdd = N/A!!!'
-                print 'Fix this Schtuff!!!!
-                continue # maybe get to bottom error condition???
-        elif aShow['SchedInfo'].alternationMethod == "Week of the Month":
-            if self.OWOM is in aShow['SchedInfo'].weekOfTheMonth:
+        ready2bail = False
+        while True #I don't want to loop, but I want break/continue functionality
+            if aShow['SchedInfo'].alternationMethod == 'Every Week':
                 return True
-            else:
-                return False
-        #Code below should only execute if:
-            #if you came from #err1
-            #alternation method = 'Alternate', but evenOdd = 'All'
-            #alternation method = 'Alternate', but evenOdd = 'N/A'
-        print 'you got to the bottom of the setHappensThisWeek function.'
-        print "You're so effed!"
-        admin.displayShow(aShow)
+            elif aShow['SchedInfo'].alternationMethod == 'Alternate':
+                if aShow['SchedInfo'].evenOdd == 'All':
+                    print 'AlternationMethod = Alternate, but evenOdd = all ...'
+                    admin.displayShow(aShow)
+                    print 'Fix this Shite!'
+                    #err1
+                    ready2bail = True
+                    break ## maybe get to error handling situation
+                if aShow['SchedInfo'].evenOdd == 'Even':
+                    if CTobj.obj.isEvenWeek:
+                        return True
+                    else:
+                        return False
+                if aShow['SchedInfo'].evenOdd == 'Odd':
+                    if CTobj.obj.isEvenWeek:
+                        return False
+                    else:
+                        return True
+                if aShow['SchedInfo'].evenOdd == 'N/A':
+                    print 'alternation = Alternate, but evenOdd = N/A!!!'
+                    print 'Fix this Schtuff!!!!
+                    ready2bail = True
+                    break # maybe get to bottom error condition???
+            elif aShow['SchedInfo'].alternationMethod == "Week of the Month":
+                if self.OWOM is in aShow['SchedInfo'].weekOfTheMonth:
+                    return True
+                else:
+                    return False
+        if ready2bail:
+            #Code below should only execute if:
+                #if you came from #err1
+                #alternation method = 'Alternate', but evenOdd = 'All'
+                #alternation method = 'Alternate', but evenOdd = 'N/A'
+            print 'you got to the bottom of the setHappensThisWeek function.'
+            print "You're so effed!"
+            admin.displayShow(aShow)
+        else: #not ready to bail
+            print "Not ready to bail!!!!"
+            print "should never get here!!!"
                 
         
     def setDayOffset(self, aShow):

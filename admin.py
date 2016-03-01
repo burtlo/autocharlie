@@ -728,9 +728,9 @@ def readYesNo(requestMsg = 'Please enter <y>es, or <n>o ', errorMsg = 'Please re
     while True:
         val = input(requestMsg, ' ')
         val2 = val2.upper()[0]
-        if val2 = 'Y':
+        if val2 == 'Y':
             return True
-        if val2 = 'N':
+        if val2 == 'N':
             return False
         print errorMsg
         

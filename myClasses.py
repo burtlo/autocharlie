@@ -20,6 +20,7 @@ class CurrentTime(object):
         own copy
     '''   
     CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
+    initialized = False
     
     def __init__(self, CTnow):
         '''
@@ -40,6 +41,7 @@ class CurrentTime(object):
         for day in self.week:
             self.OWOMdict[day] = setOrdinalWeekdayOfMonth(self,week[day])
         self.isEvenWeek = setIsEvenWeek(self)
+        CurrentTime.initialized = True
         
     def setWeek(self):
         '''
@@ -108,7 +110,7 @@ class SchedTempTime(object):
     def setHappensThisWeek(self, aShow, OWOMdict, CTobj):
         '''
         accepts aShow, and OrdinalWeekOfMonth dict
-        returns true if aShow happens this week
+        returns bool indicating if aShow happens this week (Sunday - Sat)
         OWOMdict example:
             Tuesday, Feb 23rd, 2016 is the *4th* Tuesday of the month,
                 and Tuesday is the third day of the US Calendar week (2 is third
@@ -116,17 +118,17 @@ class SchedTempTime(object):
             so, OWOMdict[2(for Tuesday)] = 4 (for 4th Tuesday of Feb 2016)
         '''
         ready2bail = False
-        while True #I don't want to loop, but I want break/continue functionality
+        while True: #I don't want to loop, but I want break/continue functionality
             if aShow['SchedInfo'].alternationMethod == 'Every Week':
                 return True
             elif aShow['SchedInfo'].alternationMethod == 'Alternate':
                 if aShow['SchedInfo'].evenOdd == 'All':
-                    print 'AlternationMethod = Alternate, but evenOdd = all ...'
-                    admin.displayShow(aShow)
-                    print 'Fix this Shite!'
-                    #err1
+                    #print 'AlternationMethod = Alternate, but evenOdd = all ...'
+                    #admin.displayShow(aShow)
+                    #print 'Fix this Shite!'
+                    errmsg = "err1"
                     ready2bail = True
-                    break ## maybe get to error handling situation
+                    return errmsg
                 if aShow['SchedInfo'].evenOdd == 'Even':
                     if CTobj.obj.isEvenWeek:
                         return True
@@ -138,15 +140,27 @@ class SchedTempTime(object):
                     else:
                         return True
                 if aShow['SchedInfo'].evenOdd == 'N/A':
-                    print 'alternation = Alternate, but evenOdd = N/A!!!'
-                    print 'Fix this Schtuff!!!!
+                    #print 'alternation = Alternate, but evenOdd = N/A!!!'
+                    #print 'Fix this Schtuff!!!!
                     ready2bail = True
-                    break # maybe get to bottom error condition???
+                    errmsg = "err2"
+                    return errmsg
             elif aShow['SchedInfo'].alternationMethod == "Week of the Month":
-                if self.OWOM is in aShow['SchedInfo'].weekOfTheMonth:
+                if self.OWOM  in aShow['SchedInfo'].weekOfTheMonth:
+                #example: This Tuesday is the 2nd Tuesday of the month, 
+                #and aShow happens on Tuesday
+                #and the part on the left side of the boolean test above = [2,4]
+                #in this example, this boolean statement tests to True
                     return True
                 else:
-                    return False
+                    if self.OWOM == []:
+                        errmsg = "err3"
+                        return errmsg
+                    elif aShow['SchedInfo'].weekOfTheMonth == []:
+                        errmsg = "err4"
+                        return errmsg
+                    else:
+                        return False
         if ready2bail:
             #Code below should only execute if:
                 #if you came from #err1
@@ -203,14 +217,20 @@ class SchedInfo(object):
     alternationMethodList = ['Every Week','Alternate','Week of the Month']
     evenOddList = ['Even','Odd','All','N/A']
     WOTMList = [1,2,3,4,5]
+    defaultAltMethod = 'Every Week'
+    defaultEvenOdd = 'Even'
+    defaultWOTMList = [1,2,3,4,5]
     
-    def __init__(self, alternationMethod ='Every Week', evenOdd = 'All', WOTMList = [1,2,3,4,5]):
+    def __init__(self, alternationMethod = defaultAltMethod, evenOdd = defaultEvenOdd, WOTMList = defaultEvenOdd):
         '''
-        create SchedInfo object with default values
+        create SchedInfo object with default values (or not)
+        ***SchedInfo object should only be called by admin.addSchedInfo(aShow) to 
+            avoid inadvertent overwrites
         '''
         self.alternationMethod = alternationMethod
         self.evenOdd = evenOdd
         self.weekOfTheMonth = WOTMList #how does scope deal with definitions at top of class???
+        self.unverified = True #This should be true until default values are modified
         
     def __str__(self):
         tab = '    '

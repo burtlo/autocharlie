@@ -88,7 +88,7 @@ import os
 import local
 import key
 import admin #cuz I'm crazy
-from myClasses import SchedInfo, NegOne
+from myClasses import SchedInfo, NegOne, CurrentTime, SchedTempTime
 
 
 def uniFix(uniStr):
@@ -405,7 +405,7 @@ def TraverseShows2 (Schedule, showFunc = dudFunc, dayFunc = dudFunc):
         for (x,show) in enumerate(Schedule[day]):
             showFunc(show,str(x+1))  
     
-def FreshPapi():
+def FreshPapiOld():
     '''
     This function
     uses SpinPapi to grab a fresh copy of the weekly schedule
@@ -444,32 +444,88 @@ def FreshPapi():
     print 'Schedule1 saved as ',Schedule1Pickle
     #save scrubbed data to a second Pickle file
     PickleDump(Schedule1Pickle, ScheduleDict1)
+    
+def enchilada():
+    '''
+    create new
+    '''
 
+def FreshPapi(NewSched ='today'):
+    '''
+    This function
+    (1) use SpinPapi to grab a fresh copy of the weekly schedule
+    (2) strip extra Requests fields
+    
+    returns a schedule as Sched2, no metafication yet
+    '''
+    
+    Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
+            4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
+    
+    #get raw schedule from SpinPapi
+    SpinScheduleDict = myGetSchedule(Days)
+    print 'New Schedule obtained from Spinitron'
+    
+    #take SpinPapi schedule & strip extra Requests fields (keep)
+    ScheduleDict1 = SchedScrub(SpinScheduleDict)
+    
+    #Sched2 = Sched1 + startDelta, endDelta, targetFolder & subfolder (bool)
+    #Sched2 also adds SchedInfo object
+    Sched2 = Sched1toSched2(ScheduleDict1)
+    return Sched2
+
+
+def Sched2toSched3(Sched3):
+    '''
+    (1) set CurrentTime first - precondition for initializing SchedTempTime
+    (2) then attach a TempTime object to each show
+    returns updatedSched(Sched3), currentTimeObject(charlieTime)
+    TODO: Not sure if deepcopy is necessary here, maybe it will come back to
+        bite me ???
+    '''
+
+    #only instantiate charlieTime if it hasn't been instantiated yet
+    try:
+        dud = CurrentTime.initialized
+        if dud != True:
+            charlieTime = CurrentTime(CurrentTime.CTnow)
+    except:
+        charlieTime = CurrentTime(CurrentTime.CTnow)
+    
+    for day in Sched3:
+        for show in Sched3[day]:
+            try:  #I don't have it in me to individually test each attribute
+                #of the TempTime object right now
+                dud = show['TempTime']
+            except:
+                show['TempTime'] = SchedTempTime(show,charlieTime)
+    
+    return Sched3, charlieTime
+    #where to save this totally new, up-to-date sched?
+    
 def Sched1toSched2(Sched):
     '''
     This function accepts a schedule (in the format that SchedScrub() creates
     and adds the following elements to each show
 
         add the following fields to a show dict:
-            StartRecDelta (float)
+            StartRecDelta (int)
                 negative is earlier, positive is later
                 denominated in minutes
                 default to zero, since shows seem to be either on time or late
-            EndRecDelta (float)
+            EndRecDelta (int)
                 negative is earlier, positive is later
                 denominated in minutes
                 default to +5 to catch end of overrunning shows
-                    or default to start plus 4 hours for DRMC regulations
+                    ??? or default to start plus 4 hours for DRMC regulations
             Folder (string)
-                file folder location to put mp3/ogg archive file
+                file folder location to put processed mp3/ogg archive file
             Subshow (boolean)
                 True if show is a segment within another show
                 This will prevent SchedLinter from posting an error
                 for double-booked shows
-                
-        #don't want to figure out how to use TraverseShows to traverse 
-                temp dict and original dict
-        '''
+        NOTE: admin.batchShowUpdate() duplicates the functionality of Sched1toSched2
+    '''
     x=1
     #make deepcopy
     tempSched = copy.deepcopy(Sched)
@@ -481,27 +537,38 @@ def Sched1toSched2(Sched):
         Sched[day] = sorted (Sched[day], key=itemgetter('OnairTime'))
         tempSched[day] = sorted(tempSched[day], key=itemgetter('OnairTime'))
         for show in tempSched[day]:
-            print tempSched ['Monday']
-            print x
-            x += 1
+            '''
             print type(show) #a show is a dict
             print type(day)  #a day is a key (of type string) for dict of shows
             print type (Sched[day]) #key=day, value = list of shows
-            #print type (tempSched[day]show)
-            #print type(Sched[day][show])
-
-            #print day
-            #print Sched[day][show]
             '''
-            Sched[day][show]['StartRecDelta'] = 0.    
-            Sched[day][show]['EndRecDelta'] = 5. 
-            Sched[day][show]['Folder'] = '' 
-            Sched[day][show]['Subshow'] = False 
-            '''
-            show['StartRecDelta'] = 0.    
-            show['EndRecDelta'] = 5. 
-            show['Folder'] = '' 
-            show['Subshow'] = False             
+            try:
+                myStart = show['StartRecDelta']
+            except:
+                show['StartRecDelta'] = 0  
+                
+            try:
+                myEnd = show['EndRecDelta']
+            except:
+                show['EndRecDelta'] = 5
+                
+            try:
+                myFolder = show['Folder']
+            except:
+                show['Folder'] = None
+                
+            try:
+                mySubshow = show['Subshow']
+            except:                
+                show['Subshow'] = False 
+            
+            try:
+                myVerified = show['Verified']
+            except:
+                show['Verified'] = False
+            
+            addSchedInfo(show)
+            
     return tempSched
             
             

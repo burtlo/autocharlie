@@ -310,21 +310,65 @@ def editShow(aShow, dayString):
     print; print multiDayFAQ,
     a['MultiDay'] = readVal2(a['MultiDay'],bool,'MultiDay-> ' + str(a['MultiDay']), 'Try entering "True" or "False". Case matters.') 
     print
+
+    a = addSchedInfo(a)
+    a = editSchedInfo(a)
+
+    return a #a is an updated show
     
-    #Initialize SchedInfo object, set default values
+def addSchedInfo(aShow):
+    '''
+    accepts aShow "object"
+    returns aShow object with updated SchedInfo atrributes
+        *if*
+    
+    '''
+    a = aShow
+    defaultAltMethod = SchedInfo.defaultAltMethod
+    defaultEvenOdd = SchedInfo.defaultEvenOdd
+    defaultWOTMList = SchedInfo.defaultWOTMList
+    
+    ##############################################################
+    #Initialize unitialized SchedInfo attributes to default values
+    ##############################################################
+    
     try: 
-        #any of the three following lines will kick control to the except clause
-        #if SchedInfo object hasn't been initialized
-        tryDud = 'alternationMethod-> ' + str(a['SchedInfo'].alternationMethod)
-        tryDud2 = 'evenOdd-> ' + str(a['SchedInfo'].evenOdd)
-        tryDud3 = 'WOTMList-> ' + str( a['SchedInfo'].WOTMList)
-        #print tryDud; print tryDud2; print tryDud3
-        #print 'try: line 412 ************'
+        #next line will trigger error if SchedInfo hasn't been fully initialized
+        myAM = str(a['SchedInfo'].alternationMethod)
+        if myAM not in SchedInfo.alternationMethodList:
+            myAM = defaultAltMethod
     except:
-        print '**** Uninitialized SchedInfo object *********'
-        #Initial values for SchedInfo, since they weren't set before
-        a['SchedInfo'] = SchedInfo()         
-    
+        myAM = defaultAltMethod
+        
+    try: 
+        #next line will trigger error if SchedInfo hasn't been fully initialized
+        myEvenOdd = str(a['SchedInfo'].evenOdd)
+        if myEvenOdd not in SchedInfo.evenOddList:
+            myEvenOdd = defaultEvenOdd
+    except:
+        myEvenOdd = defaultEvenOdd
+        
+    try: 
+        #next line will trigger error if SchedInfo hasn't been fully initialized
+        myWOTMList = str( a['SchedInfo'].WOTMList)
+        if not(set(myWOTMList).issubset(set(SchedInfo.WOTMList))):
+            myWOTMList = defaultWOTMList
+    except:
+        myWOTMList = defaultWOTMList
+        
+    a['SchedInfo'] = SchedInfo(myAM, myEvenOdd, myWOTMList)
+        
+    return a
+
+def editSchedInfo(aShow):
+    '''
+    accepts aShow "object"
+    returns aShow object with updated SchedInfo atrributes
+    this function is verbose!!!
+    '''        
+    ##################################################################
+    # Give user chance to modify default values of SchedInfo object
+    ##################################################################
     altFAQ = 'Alternation Method:\n'
     altFAQ += 'A show can either <1> play every week, <2> play every other week, or,'
     altFAQ += '<3> Week of the Month, for example Kickapoo Barn Dance might broadcast '
@@ -349,6 +393,13 @@ def editShow(aShow, dayString):
     print WOTMmessage
     
     a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList, [1,2,3,4,5],WOTMmessage, dayString)
+    
+    unverifiedMsg1 = "Are you certain that the Alternation Method, Week of The Month List '
+    unverifiedMsg2 = "and associated data is accurate? "
+    print unverifiedMsg1
+    print unverifiedMsg2
+    a['SchedInfo'].unverified = readYesNo()
+    
     return a
         
 def prettyPrintDJs(DJList):
@@ -611,8 +662,10 @@ def batchShowUpdate(sched):
     For each show in each day, new elements are added to the show dict
     elements are set to default values
     returns updated Sched
+    #NOTE This function duplicates SpinPapiLib.Sched1toSched2
+    #probably not a good thing
     '''
-    StartRecDelta = -1
+    StartRecDelta = 0
     EndRecDelta = 3
     Folder = ''
     Subshow = False
@@ -627,6 +680,7 @@ def batchShowUpdate(sched):
             show['Folder'] = Folder
             show['Subshow'] = Subshow
             show['MultiDay'] = MultiDay #TODO: use logic to determine Multidy status of shows
+            #SchedInfo() should only be called by addSchedInfo
             show['SchedInfo'] = SchedInfo() #see SchedInfo class
                 #no parameters means default values are used
     return sched
@@ -666,6 +720,20 @@ def to6columns(DJList):
         rows[numrows].extend(['',''])
     return rows
     
+def readYesNo(requestMsg = 'Please enter <y>es, or <n>o ', errorMsg = 'Please re-enter'):
+    '''
+    accept input string, deal with capitalization
+    returns boolean: yes = True, no = False
+    '''
+    while True:
+        val = input(requestMsg, ' ')
+        val2 = val2.upper()[0]
+        if val2 = 'Y':
+            return True
+        if val2 = 'N':
+            return False
+        print errorMsg
+        
 def readCharVal(default, acceptable,requestMsg, errorMsg):
     '''
     accept input string and determine if val[0] is in list of
@@ -680,6 +748,7 @@ def readCharVal(default, acceptable,requestMsg, errorMsg):
             return default
         if val[0].upper() in acceptable:
             return val[0].upper()
+        print errorMsg
             
 def readVal4a(excluded, requestMsg, errorMsg, valType = int, default = 'Quit'):
     '''

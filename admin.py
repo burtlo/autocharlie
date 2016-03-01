@@ -394,7 +394,7 @@ def editSchedInfo(aShow):
     
     a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList, [1,2,3,4,5],WOTMmessage, dayString)
     
-    unverifiedMsg1 = "Are you certain that the Alternation Method, Week of The Month List '
+    unverifiedMsg1 = "Are you certain that the Alternation Method, Week of The Month List "
     unverifiedMsg2 = "and associated data is accurate? "
     print unverifiedMsg1
     print unverifiedMsg2

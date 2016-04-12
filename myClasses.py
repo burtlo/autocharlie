@@ -77,10 +77,10 @@ class CurrentTime(object):
         OWOM = aDT.day / 7 + 1 # int division works in Python 2.x
         return OWOM
             
-class SchedTempTime(object):
+class ShowTempTime(object):
     '''
-    CurrentTime object should be initialized before SchedTempTime
-    TempTime contains *show attributes* that need to be calculated each time
+    CurrentTime object should be initialized before ShowTempTime
+    ShowTempTime contains *show attributes* that need to be calculated each time
     the Sched is loaded from the drive, presumably by autoCharlie, then 
     attached to a show (see TempTime.__init__ docstring)
     '''
@@ -109,6 +109,7 @@ class SchedTempTime(object):
         
     def setHappensThisWeek(self, aShow, OWOMdict, CTobj):
         '''
+        as in "set/initialize the HappensThisWeek variable"
         accepts aShow, and OrdinalWeekOfMonth dict
         returns bool indicating if aShow happens this week (Sunday - Sat)
         OWOMdict example:

@@ -88,7 +88,7 @@ import os
 import local
 import key
 import admin #cuz I'm crazy
-from myClasses import SchedInfo, NegOne, CurrentTime, SchedTempTime
+from myClasses import SchedInfo, NegOne, CurrentTime, ShowTempTime
 
 
 def uniFix(uniStr):
@@ -475,16 +475,19 @@ def FreshPapi(NewSched ='today'):
     return Sched2
 
 
-def Sched2toSched3(Sched3):
+def Sched2toSched3(Sched2):
     '''
-    (1) set CurrentTime first - precondition for initializing SchedTempTime
-    (2) then attach a TempTime object to each show
+    This function does the following:
+    (1) set CurrentTime if it hasn't been set yet - this is a precondition for 
+        initializing ShowTempTime
+    (2) then attach a ShowTempTime object to each show:
+        sh
     returns updatedSched(Sched3), currentTimeObject(charlieTime)
     TODO: Not sure if deepcopy is necessary here, maybe it will come back to
         bite me ???
     '''
 
-    #only instantiate charlieTime if it hasn't been instantiated yet
+    #instantiate charlieTime, but only if it hasn't been instantiated yet
     try:
         dud = CurrentTime.initialized
         if dud != True:
@@ -492,14 +495,16 @@ def Sched2toSched3(Sched3):
     except:
         charlieTime = CurrentTime(CurrentTime.CTnow)
     
-    for day in Sched3:
-        for show in Sched3[day]:
+    #for each show, add ShowTempTime attributes
+    for day in Sched2:
+        for show in Sched2[day]:
             try:  #I don't have it in me to individually test each attribute
-                #of the TempTime object right now
+                #of the ShowTempTime object right now
                 dud = show['TempTime']
             except:
-                show['TempTime'] = SchedTempTime(show,charlieTime)
-    
+                show['TempTime'] = ShowTempTime(show,charlieTime)
+                
+    Sched3 = Sched2
     return Sched3, charlieTime
     #where to save this totally new, up-to-date sched?
     

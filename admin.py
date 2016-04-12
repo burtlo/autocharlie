@@ -89,7 +89,7 @@ import glob
 import time
 
 import local #this is a local file which points to local paths for file discovery
-from myClasses import SchedInfo, SchedTempTime
+from myClasses import SchedInfo, ShowTempTime
 
 
 def metafy(Sched, comment, timeStamp = ''):
@@ -312,7 +312,7 @@ def editShow(aShow, dayString):
     print
 
     a = addSchedInfo(a)
-    a = editSchedInfo(a)
+    a = editSchedInfo(a, dayString)
 
     return a #a is an updated show
     
@@ -360,12 +360,13 @@ def addSchedInfo(aShow):
         
     return a
 
-def editSchedInfo(aShow):
+def editSchedInfo(aShow, dayString):
     '''
-    accepts aShow "object"
+    accepts aShow "object", dayString
     returns aShow object with updated SchedInfo atrributes
     this function is verbose!!!
-    '''        
+    '''     
+    a = aShow
     ##################################################################
     # Give user chance to modify default values of SchedInfo object
     ##################################################################
@@ -375,7 +376,7 @@ def editSchedInfo(aShow):
     altFAQ += 'on the second Sunday of the month.'
     print altFAQ
     print
-    print 'alternationMethod -> current setting = ' + str(a['SchedInfo'].alternationMethod)
+    print 'alternationMethod -> current setting = ' , str(a['SchedInfo'].alternationMethod)
     print
     a['SchedInfo'].alternationMethod = readVal5(SchedInfo.alternationMethodList, default=a['SchedInfo'].alternationMethod)
     
@@ -394,7 +395,7 @@ def editSchedInfo(aShow):
     
     a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList, [1,2,3,4,5],WOTMmessage, dayString)
     
-    unverifiedMsg1 = "Are you certain that the Alternation Method, Week of The Month List '
+    unverifiedMsg1 = "Are you certain that the Alternation Method, Week of The Month List "
     unverifiedMsg2 = "and associated data is accurate? "
     print unverifiedMsg1
     print unverifiedMsg2
@@ -727,10 +728,10 @@ def readYesNo(requestMsg = 'Please enter <y>es, or <n>o ', errorMsg = 'Please re
     '''
     while True:
         val = input(requestMsg, ' ')
-        val2 = val2.upper()[0]
-        if val2 = 'Y':
+        val2 = val.upper()[0]
+        if val2 == 'Y':
             return True
-        if val2 = 'N':
+        if val2 == 'N':
             return False
         print errorMsg
         

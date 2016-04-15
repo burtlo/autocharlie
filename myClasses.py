@@ -40,9 +40,21 @@ class CurrentTime(object):
         self.week = self.setWeek() # dict of datetimes for each day in week
         self.OWOMdict = {} #Ordinal Week of Month key=DayInt, value = OWOM
         for day in self.week:
-            self.OWOMdict[day] = setOrdinalWeekdayOfMonth(self,week[day])
-        self.isEvenWeek = setIsEvenWeek(self)
+            self.OWOMdict[day] = self.setOrdinalWeekdayOfMonth(self.week[day])
+        self.isEvenWeek = self.setIsEvenWeek()
         CurrentTime.initialized = True
+    
+    def __str__(self):
+        '''
+        '''
+        parts = [ 'self.now -> ',str(self.now),'\n',
+          'self.today -> ',str(self.today), '\n',
+          'self.week-. ',str(self.week), '\n',
+          'OrdinalWeekOfMonthDict ->', '\n',
+          '    ',str(self.OWOMdict), '\n',
+          'isEvenWeek -> ', str(self.isEvenWeek)]
+        ret = ''.join(parts)
+        return ret
         
     def setWeek(self):
         '''
@@ -61,7 +73,7 @@ class CurrentTime(object):
         '''
         '''
         jan1 = DT.datetime(year = self.now.year, month =1, day =1)
-        diff = now - jan1
+        diff = self.now - jan1
         weeks = (diff.days)/7
         if weeks % 2 == 0:
             return True
@@ -255,3 +267,14 @@ def NegOne():
 ### MAIN ###
 if __name__ == '__main__':
     print 'myClasses.py'
+    
+    print CurrentTime.initialized
+    print CurrentTime.CTnow
+    print CTnow
+    #CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
+    myCurrentTime = CurrentTime(CurrentTime.CTnow)
+    print CTnow
+    
+    print myCurrentTime.isEvenWeek
+    print myCurrentTime
+    #print str(myCurrentTime)

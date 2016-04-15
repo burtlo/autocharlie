@@ -11,13 +11,14 @@ import calendar
 
 class CurrentTime(object):
     '''
+    The CurrentTime object contains date/time data that all the shows in the 
+        sched can reference as necessary, instead of each show maintaining its
+        own copy
     CurrentTime is an object that needs to be instantiated each time 
     autoCharlie runs, presumably every hour, 15 minutes after the hour
     possible usage:
     charlieTime = CurrentTime()
-    The CurrentTime object contains date/time data that all the shows in the 
-        sched can reference as necessary, instead of each show maintaining its
-        own copy
+
     '''   
     CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
     initialized = False

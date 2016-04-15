@@ -27,9 +27,6 @@ in the same folder
     add new elements to all shows - done
 
 
-01/03/2016
-    #TODO: StartRecDelta should be negative, not positive
-
 01/05/2016
     #TODO: Fix input: enter name of new DJ
     #FIXED: Instead of returning nada, Quitting selectShow returns aShow = 'QUIT', dayString = 'QUIT'

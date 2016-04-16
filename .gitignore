@@ -3,3 +3,5 @@
 *.bak
 *.old
 *.pkl
+key.py
+local.py

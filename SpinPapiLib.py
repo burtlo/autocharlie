@@ -90,6 +90,8 @@ import key
 import admin #cuz I'm crazy
 from myClasses import SchedInfo, NegOne, CurrentTime, ShowTempTime
 
+tab = '  '
+
 
 def uniFix(uniStr):
     '''
@@ -334,14 +336,37 @@ def myPrint(anObject):
     kind of a hack
     '''
     print anObject
+    
 
 def PrettyPrintShow(show):
     '''
     can be used in conjunction with TraverseShows to print formatted schedule
     '''
-    tab = '   '    
-    print (tab + show['ShowName'])
-    print (tab+tab + show['OnairTime'] + tab + show['OffairTime'])    
+    tab = '   '
+    print tab + show['ShowName']
+    print tab + tab + show['OnairTime']+ tab +show['OffairTime'] 
+    
+def PrettyPrintShow2(show):
+    '''
+    a show is a dict, of course
+    can be used in conjunction with TraverseShows to print a more
+    complete formatted schedule
+    '''
+    #don't apply uniFix to the "other" object types
+    others = [bool, int, SchedInfo, list, dict]
+    tab = '   '
+    print tab , show['ShowName']
+    dex = 0
+    for el in show:
+        dex +=1
+        print dex
+        if type(show[el]) not in others:
+            #print tab, tab , el,'-> ', str(type(show[el])), str(show[el])
+            print tab, tab, el, '-> ', str(uniFix(show[el]))
+        
+        else:
+            print tab, tab, el, '-> ', str(show[el])
+            
     
 def AdminPrintShow(show, x):
     '''

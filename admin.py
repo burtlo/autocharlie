@@ -84,6 +84,9 @@ import re
 import os
 import glob
 import time
+import copy
+
+import random
 
 import local #this is a local file which points to local paths for file discovery
 from myClasses import SchedInfo, ShowTempTime
@@ -430,6 +433,13 @@ def saveSchedule(filename, Sched):
         local.pklDestPath
     '''
     SPlib.PickleDump (filename, Sched)
+    
+def printSchedule(Sched):
+    '''
+    print *demeatafied* schedule
+    TODO: enable conditional printing of Class: ShowTempTime
+    '''
+    SPlib.TraverseShows(Sched,SPlib.PrettyPrintShow2, SPlib.myPrint)
     
 def loadNewestSchedule(NewPicklePath = local.pklSourcePath):
     '''
@@ -951,7 +961,7 @@ def batchEditShows (Sched, key, valFunc):
 def grabShow(sched):
     '''
     For debugging, it's often handy to have a representative show to work with
-    input: accepts a demetafied schedule
+    input: accepts a *demetafied* schedule
     returns: 
         (1) first show from first day in sched (dict - attributes:values)
         (2) first day in sched (str)
@@ -960,10 +970,35 @@ def grabShow(sched):
         for show in sched[day]:
             return show, day
   
-
+def buildTestSched(sched):
+    '''
+    accepts *dematfied" sched
+    returns a sched with two randomly selected shows per day in sched
+    '''
+    TestSched = {}
+    for day in sched:
+        print day
+        dayLen = len(sched[day])
+        TestSched[day] = []
+        #print 'dayLen -> ', str(dayLen)
+        if dayLen <= 2:
+            TestSched[day] = copy.deepcopy(sched[day])
+        else: #randomly select two shows from day
+            TestSched[day].append(random.choice(sched[day]))
+            #SPlib.PrettyPrintShow2(TestSched[day][0])
+            while True: #randomly pick a non-duplicating 2nd show from day
+                AnotherShow = random.choice(sched[day])
+                if AnotherShow != TestSched[day][0]:
+                    break
+            ############
+            #SPlib.PrettyPrintShow2(AnotherShow)
+            ###########
+            TestSched[day].append(AnotherShow)
+    return TestSched
+        
         
 #MAIN
-tab = '\t'            
+tab = '  '          
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
 
 if __name__ == '__main__':
@@ -983,8 +1018,19 @@ if __name__ == '__main__':
     ######################################################################
     aShow, aDay = grabShow(WDRTsched)
     displayShow(aShow)
+    
+    print type(aShow)
     print
     print 'day -> ',str(aDay)  
+    print type(WDRTsched)
+    print range(len (WDRTsched['Monday']))
+    
+    #####################################################################
+    # CREATE A TEST SCHEDULE
+    #####################################################################
+    
+    TestSched = buildTestSched(WDRTsched)
+    printSchedule(TestSched)
 
     
     ######################################################################

@@ -248,10 +248,12 @@ class SchedInfo(object):
         
     def __str__(self):
         tab = '    '
+        retStr = ''
         print
-        print tab + self.alternationMethod
-        print tab + self.evenOdd
-        print tab + str(self.weekOfTheMonth)
+        retStr = retStr+ tab + self.alternationMethod+ '\n'
+        retStr = retStr+ tab + self.evenOdd+ '\n'
+        retStr = retStr+ tab + str(self.weekOfTheMonth)+ '\n'
+        return retStr
         
     def __repr__(self):
 

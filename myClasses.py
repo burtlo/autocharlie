@@ -47,12 +47,25 @@ class CurrentTime(object):
     def __str__(self):
         '''
         '''
-        parts = [ 'self.now -> ',str(self.now),'\n',
+        tab = '   '
+        part1 = ['CT.now -> ',str(self.now),'\n',
           'self.today -> ',str(self.today), '\n',
-          'self.week-. ',str(self.week), '\n',
+          'self.week-. \n']
+        part2 = []
+        for el in self.week:
+            tmp = [tab,str(el),': ',str(self.week[el]), '\n']
+            part2.extend(tmp)
+        part3 = [
           'OrdinalWeekOfMonthDict ->', '\n',
           '    ',str(self.OWOMdict), '\n',
           'isEvenWeek -> ', str(self.isEvenWeek)]
+        part4 = '========================'
+        #print part3
+        parts =[]
+        parts.extend(part1)
+        parts.extend(part2)
+        parts.extend(part3)
+        parts.extend(part4)
         ret = ''.join(parts)
         return ret
         
@@ -95,7 +108,7 @@ class ShowTempTime(object):
     CurrentTime object should be initialized before ShowTempTime
     ShowTempTime contains *show attributes* that need to be calculated each time
     the Sched is loaded from the drive, presumably by autoCharlie, then 
-    attached to a show (see TempTime.__init__ docstring)
+    attached to a show (see ShowTempTime.__init__ docstring)
     '''
     Num2Day = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
                4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday',
@@ -108,17 +121,35 @@ class ShowTempTime(object):
     def __init__(self, aShow, CTobj):
         '''
         instantiate  like so:
-        aShow['TempTime'] = TempTime(aShow, aDay, CTobj)
+        aShow['TempTime'] = ShowTempTime(aShow, CTobj)
         CTobj is a CurrentTime object that has already been instantiated
         '''
         #following line is separate for sake of possible future debugging
-        self.DayOffset = setDayOffset(self, aShow) # zero or one
-        self.fixedWeekday = D2Num[aShow['Weekdays']] + self.DayOffset #int
+        self.DayOffset = self.setDayOffset(aShow) # zero or one
+        self.fixedWeekday = self.D2Num[aShow['Weekdays'][0]] + self.DayOffset #int
         self.OWOM = CTobj.OWOMdict[self.fixedWeekday]
         if aShow['Scheduled']:
-            self.happensThisWeek = setHappensThisWeek(self, aShow, CTobj.OWOMdict)
+            self.happensThisWeek = self.setHappensThisWeek(aShow, CTobj.OWOMdict, CTobj)
         else:
             self.happensThisWeek = False
+            
+    def __str__(self):
+        '''
+        returns somewhat pretty formatted representation of
+        an instance of the ShowTempTime object
+        '''
+        tab = '   '
+        part1 = ['TT.DayOffset -> ',str(self.DayOffset),'\n',
+          'TT.fixedWeekday -> ',str(self.fixedWeekday), '\n']
+
+        part2 = ['TT.OWOM -> ',
+          str(self.OWOM), '\n',
+          'TT.happensThisWeek-> ', str(self.happensThisWeek), '\n']
+        parts =[]
+        parts.extend(part1)
+        parts.extend(part2)
+        ret = ''.join(parts)
+        return ret
         
     def setHappensThisWeek(self, aShow, OWOMdict, CTobj):
         '''
@@ -249,10 +280,9 @@ class SchedInfo(object):
     def __str__(self):
         tab = '    '
         retStr = ''
-        print
-        retStr = retStr+ tab + self.alternationMethod+ '\n'
-        retStr = retStr+ tab + self.evenOdd+ '\n'
-        retStr = retStr+ tab + str(self.weekOfTheMonth)+ '\n'
+        retStr = retStr + 'SInfo.alternationMethod -> '+self.alternationMethod+ '\n'
+        retStr = retStr + 'SInfo.evenOdd -> ' + self.evenOdd+ '\n'
+        retStr = retStr+ 'SInfo.WOTM -> ' + str(self.weekOfTheMonth)+ '\n'
         return retStr
         
     def __repr__(self):
@@ -272,11 +302,16 @@ if __name__ == '__main__':
     
     print CurrentTime.initialized
     print CurrentTime.CTnow
-    print CTnow
+    #print CTnow
     #CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
     myCurrentTime = CurrentTime(CurrentTime.CTnow)
-    print CTnow
+    #print CTnow
     
-    print myCurrentTime.isEvenWeek
-    print myCurrentTime
+    print
+    print '============================'
+    print "myCurrentTime.isEvenWeek -> ", myCurrentTime.isEvenWeek
+    print "myCurrentTime -> \n", myCurrentTime
     #print str(myCurrentTime)
+    
+    print
+    print ShowTempTime.Num2Day

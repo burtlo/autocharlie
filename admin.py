@@ -28,7 +28,7 @@ in the same folder
 
 
 01/05/2016
-    #TODO: Fix input: enter name of new DJ
+    Done: Fix input: enter name of new DJ
     #FIXED: Instead of returning nada, Quitting selectShow returns aShow = 'QUIT', dayString = 'QUIT'
     
 
@@ -39,7 +39,10 @@ Day
         ShowID  
             ??Can I find other instances of the same show on diff days, based on ShowID?
         Weekdays 
-            ??Does Monday view block a full list of days that a show plays??
+            (Q)Does Monday view block a full list of days that a show plays??
+            #TODO:
+            (A) It looks like the answer is yes. As of 4/19/2016, Weekdays is 
+                a one element list, containing a 3-letter day code
         OnairTime
         OffairTime
         ShowUrl
@@ -89,7 +92,7 @@ import copy
 import random
 
 import local #this is a local file which points to local paths for file discovery
-from myClasses import SchedInfo, ShowTempTime
+from myClasses import SchedInfo, ShowTempTime, CurrentTime
 
 
 def metafy(Sched, comment, timeStamp = ''):
@@ -1019,19 +1022,22 @@ if __name__ == '__main__':
     aShow, aDay = grabShow(WDRTsched)
     displayShow(aShow)
     
-    print type(aShow)
-    print
-    print 'day -> ',str(aDay)  
-    print type(WDRTsched)
-    print range(len (WDRTsched['Monday']))
-    
+ 
     #####################################################################
     # CREATE A TEST SCHEDULE
     #####################################################################
     
     TestSched = buildTestSched(WDRTsched)
+    #printSchedule(TestSched)
+    
+    ####################################################################
+    # ADD ShowTempTime TO TestSched
+    ###################################################################
+    myCurrentTime = CurrentTime(CurrentTime.CTnow)
+    print '1034 test ============ in the house ======='
+    print CurrentTime.CTnow
+    SPlib.TraverseShows3(TestSched,myCurrentTime)
     printSchedule(TestSched)
-
     
     ######################################################################
     #  CREATING DJ LIST IS NECESSARY STEP FOR SOME SUBSEQUENT STEPS

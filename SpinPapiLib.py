@@ -335,7 +335,7 @@ def addShowAttrFunc(aShow, CTobj):
     '''
     This function adds,  the ShowTempTime object to aShow, by attaching
     it to aShow['TempTime']
-    use this with TraverseShows()
+    use this with TraverseShows3()
     CTobj is instantiated Current Time object
     '''
     aShow['TempTime'] =ShowTempTime(aShow, CTobj)
@@ -370,18 +370,20 @@ def PrettyPrintShow2(show):
     for el in show:
         #print el
         if type(show[el]) not in otherTypes:
-            print tab, tab, el, '-> ', str(uniFix(show[el]))
+            #print tab, tab, el, '-> ', str(uniFix(show[el]))
+            pass
         elif type(show[el]) not in localTypes:
-            print tab, tab, el, '-> ', str(show[el])
+            #print tab, tab, el, '-> ', str(show[el])
+            pass
         elif el != 'ShowUsers':
-            print dubTab, el, '->\n', str(show[el])
+            #print dubTab, el, '->\n', str(show[el])
+            pass
         else:
             print el
             for i in range[0:20]:
                 print 'xxxxxxxxxxx ShowUsers????xxxxxxxxxxxx'
             for crap in show[el]:
                 print dubTab,crap['DJName']
-            exit
         #TODO: Modify PrettyPrintShow2 to accept multiline strings for local
             #classes and indent properly
 
@@ -433,9 +435,9 @@ def TraverseShows (Schedule, showFunc = dudFunc, dayFunc = dudFunc):
 
 def TraverseShows3 (Schedule, CTobj, showFunc = addShowAttrFunc, dayFunc = dudFunc):
     '''
-    showFunc will execute once everytime we get to a show during
-        the traversal
-    dayFunc will execute once everytime we get to a day during the traversal
+    The main point of this version of TraverseShows is to add the ShowTempTime 
+    object to each show in the schedule.  I should really refactor and rename
+    for the sake of cleaner code ...
     showFunc defaults as AddShowAttrFunc, accpeting show and CurrentTime object
         as parameters
     NOTE: If a show occurs on 5 different days, TraverseShows will go

@@ -11,13 +11,14 @@ import calendar
 
 class CurrentTime(object):
     '''
+    The CurrentTime object contains date/time data that all the shows in the 
+        sched can reference as necessary, instead of each show maintaining its
+        own copy
     CurrentTime is an object that needs to be instantiated each time 
     autoCharlie runs, presumably every hour, 15 minutes after the hour
     possible usage:
     charlieTime = CurrentTime()
-    The CurrentTime object contains date/time data that all the shows in the 
-        sched can reference as necessary, instead of each show maintaining its
-        own copy
+
     '''   
     CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
     initialized = False
@@ -39,9 +40,34 @@ class CurrentTime(object):
         self.week = self.setWeek() # dict of datetimes for each day in week
         self.OWOMdict = {} #Ordinal Week of Month key=DayInt, value = OWOM
         for day in self.week:
-            self.OWOMdict[day] = setOrdinalWeekdayOfMonth(self,week[day])
-        self.isEvenWeek = setIsEvenWeek(self)
+            self.OWOMdict[day] = self.setOrdinalWeekdayOfMonth(self.week[day])
+        self.isEvenWeek = self.setIsEvenWeek()
         CurrentTime.initialized = True
+    
+    def __str__(self):
+        '''
+        '''
+        tab = '   '
+        part1 = ['CT.now -> ',str(self.now),'\n',
+          'self.today -> ',str(self.today), '\n',
+          'self.week-. \n']
+        part2 = []
+        for el in self.week:
+            tmp = [tab,str(el),': ',str(self.week[el]), '\n']
+            part2.extend(tmp)
+        part3 = [
+          'OrdinalWeekOfMonthDict ->', '\n',
+          '    ',str(self.OWOMdict), '\n',
+          'isEvenWeek -> ', str(self.isEvenWeek)]
+        part4 = '========================'
+        #print part3
+        parts =[]
+        parts.extend(part1)
+        parts.extend(part2)
+        parts.extend(part3)
+        parts.extend(part4)
+        ret = ''.join(parts)
+        return ret
         
     def setWeek(self):
         '''
@@ -60,7 +86,7 @@ class CurrentTime(object):
         '''
         '''
         jan1 = DT.datetime(year = self.now.year, month =1, day =1)
-        diff = now - jan1
+        diff = self.now - jan1
         weeks = (diff.days)/7
         if weeks % 2 == 0:
             return True
@@ -82,7 +108,7 @@ class ShowTempTime(object):
     CurrentTime object should be initialized before ShowTempTime
     ShowTempTime contains *show attributes* that need to be calculated each time
     the Sched is loaded from the drive, presumably by autoCharlie, then 
-    attached to a show (see TempTime.__init__ docstring)
+    attached to a show (see ShowTempTime.__init__ docstring)
     '''
     Num2Day = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
                4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday',
@@ -95,17 +121,35 @@ class ShowTempTime(object):
     def __init__(self, aShow, CTobj):
         '''
         instantiate  like so:
-        aShow['TempTime'] = TempTime(aShow, aDay, CTobj)
+        aShow['TempTime'] = ShowTempTime(aShow, CTobj)
         CTobj is a CurrentTime object that has already been instantiated
         '''
         #following line is separate for sake of possible future debugging
-        self.DayOffset = setDayOffset(self, aShow) # zero or one
-        self.fixedWeekday = D2Num[aShow['Weekdays']] + self.DayOffset #int
+        self.DayOffset = self.setDayOffset(aShow) # zero or one
+        self.fixedWeekday = self.D2Num[aShow['Weekdays'][0]] + self.DayOffset #int
         self.OWOM = CTobj.OWOMdict[self.fixedWeekday]
         if aShow['Scheduled']:
-            self.happensThisWeek = setHappensThisWeek(self, aShow, CTobj.OWOMdict)
+            self.happensThisWeek = self.setHappensThisWeek(aShow, CTobj.OWOMdict, CTobj)
         else:
             self.happensThisWeek = False
+            
+    def __str__(self):
+        '''
+        returns somewhat pretty formatted representation of
+        an instance of the ShowTempTime object
+        '''
+        tab = '   '
+        part1 = ['TT.DayOffset -> ',str(self.DayOffset),'\n',
+          'TT.fixedWeekday -> ',str(self.fixedWeekday), '\n']
+
+        part2 = ['TT.OWOM -> ',
+          str(self.OWOM), '\n',
+          'TT.happensThisWeek-> ', str(self.happensThisWeek), '\n']
+        parts =[]
+        parts.extend(part1)
+        parts.extend(part2)
+        ret = ''.join(parts)
+        return ret
         
     def setHappensThisWeek(self, aShow, OWOMdict, CTobj):
         '''
@@ -235,10 +279,11 @@ class SchedInfo(object):
         
     def __str__(self):
         tab = '    '
-        print
-        print tab + self.alternationMethod
-        print tab + self.evenOdd
-        print tab + str(self.weekOfTheMonth)
+        retStr = ''
+        retStr = retStr + 'SInfo.alternationMethod -> '+self.alternationMethod+ '\n'
+        retStr = retStr + 'SInfo.evenOdd -> ' + self.evenOdd+ '\n'
+        retStr = retStr+ 'SInfo.WOTM -> ' + str(self.weekOfTheMonth)+ '\n'
+        return retStr
         
     def __repr__(self):
 
@@ -254,3 +299,19 @@ def NegOne():
 ### MAIN ###
 if __name__ == '__main__':
     print 'myClasses.py'
+    
+    print CurrentTime.initialized
+    print CurrentTime.CTnow
+    #print CTnow
+    #CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
+    myCurrentTime = CurrentTime(CurrentTime.CTnow)
+    #print CTnow
+    
+    print
+    print '============================'
+    print "myCurrentTime.isEvenWeek -> ", myCurrentTime.isEvenWeek
+    print "myCurrentTime -> \n", myCurrentTime
+    #print str(myCurrentTime)
+    
+    print
+    print ShowTempTime.Num2Day

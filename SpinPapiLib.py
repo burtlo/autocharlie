@@ -90,6 +90,8 @@ import key
 import admin #cuz I'm crazy
 from myClasses import SchedInfo, NegOne, CurrentTime, ShowTempTime
 
+tab = '  '
+
 
 def uniFix(uniStr):
     '''
@@ -323,25 +325,68 @@ def PrintAShow(Show):
     print type(show)
     
 
-def dudFunc():
+def dudFunc(day):
     '''
     used by TraverseShows as a default action of doing nothing
     '''
     pass
+
+def addShowAttrFunc(aShow, CTobj):
+    '''
+    This function adds,  the ShowTempTime object to aShow, by attaching
+    it to aShow['TempTime']
+    use this with TraverseShows3()
+    CTobj is instantiated Current Time object
+    '''
+    aShow['TempTime'] =ShowTempTime(aShow, CTobj)
 
 def myPrint(anObject):
     '''
     kind of a hack
     '''
     print anObject
+    
 
 def PrettyPrintShow(show):
     '''
     can be used in conjunction with TraverseShows to print formatted schedule
     '''
-    tab = '   '    
-    print (tab + show['ShowName'])
-    print (tab+tab + show['OnairTime'] + tab + show['OffairTime'])    
+    tab = '   '
+    print tab + show['ShowName']
+    print tab + tab + show['OnairTime']+ tab +show['OffairTime'] 
+    
+def PrettyPrintShow2(show):
+    '''
+    a show is a dict, of course
+    can be used in conjunction with TraverseShows to print a more
+    complete formatted schedule
+    '''
+    #don't apply uniFix to the "other" object types
+    otherTypes = [bool, int, SchedInfo, list, dict, ShowTempTime]
+    localTypes = [SchedInfo, ShowTempTime]
+    tab = '   '
+    dubTab = '      '
+    print tab , show['ShowName']
+    for el in show:
+        #print el
+        if type(show[el]) not in otherTypes:
+            #print tab, tab, el, '-> ', str(uniFix(show[el]))
+            pass
+        elif type(show[el]) not in localTypes:
+            #print tab, tab, el, '-> ', str(show[el])
+            pass
+        elif el != 'ShowUsers':
+            #print dubTab, el, '->\n', str(show[el])
+            pass
+        else:
+            print el
+            for i in range[0:20]:
+                print 'xxxxxxxxxxx ShowUsers????xxxxxxxxxxxx'
+            for crap in show[el]:
+                print dubTab,crap['DJName']
+        #TODO: Modify PrettyPrintShow2 to accept multiline strings for local
+            #classes and indent properly
+
     
 def AdminPrintShow(show, x):
     '''
@@ -387,7 +432,24 @@ def TraverseShows (Schedule, showFunc = dudFunc, dayFunc = dudFunc):
         Schedule[day] = sorted (Schedule[day], key=itemgetter('OnairTime'))
         for show in Schedule[day]:
             showFunc(show)    
-    
+
+def TraverseShows3 (Schedule, CTobj, showFunc = addShowAttrFunc, dayFunc = dudFunc):
+    '''
+    The main point of this version of TraverseShows is to add the ShowTempTime 
+    object to each show in the schedule.  I should really refactor and rename
+    for the sake of cleaner code ...
+    showFunc defaults as AddShowAttrFunc, accpeting show and CurrentTime object
+        as parameters
+    NOTE: If a show occurs on 5 different days, TraverseShows will go
+        to each day instance of that show separately
+    '''
+    for day in Schedule:
+        dayFunc (day)
+        #sort shows by start time
+        Schedule[day] = sorted (Schedule[day], key=itemgetter('OnairTime'))
+        for show in Schedule[day]:
+            showFunc(show, CTobj)  
+            
 def TraverseShows2 (Schedule, showFunc = dudFunc, dayFunc = dudFunc):
     '''
     just like TraverseShows, but NOW with added ENUMERATION!!!!

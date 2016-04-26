@@ -27,11 +27,8 @@ in the same folder
     add new elements to all shows - done
 
 
-01/03/2016
-    #TODO: StartRecDelta should be negative, not positive
-
 01/05/2016
-    #TODO: Fix input: enter name of new DJ
+    Done: Fix input: enter name of new DJ
     #FIXED: Instead of returning nada, Quitting selectShow returns aShow = 'QUIT', dayString = 'QUIT'
     
 
@@ -42,7 +39,10 @@ Day
         ShowID  
             ??Can I find other instances of the same show on diff days, based on ShowID?
         Weekdays 
-            ??Does Monday view block a full list of days that a show plays??
+            (Q)Does Monday view block a full list of days that a show plays??
+            #TODO:
+            (A) It looks like the answer is yes. As of 4/19/2016, Weekdays is 
+                a one element list, containing a 3-letter day code
         OnairTime
         OffairTime
         ShowUrl
@@ -87,9 +87,12 @@ import re
 import os
 import glob
 import time
+import copy
+
+import random
 
 import local #this is a local file which points to local paths for file discovery
-from myClasses import SchedInfo, ShowTempTime
+from myClasses import SchedInfo, ShowTempTime, CurrentTime
 
 
 def metafy(Sched, comment, timeStamp = ''):
@@ -434,6 +437,13 @@ def saveSchedule(filename, Sched):
     '''
     SPlib.PickleDump (filename, Sched)
     
+def printSchedule(Sched):
+    '''
+    print *demeatafied* schedule
+    TODO: enable conditional printing of Class: ShowTempTime
+    '''
+    SPlib.TraverseShows(Sched,SPlib.PrettyPrintShow2, SPlib.myPrint)
+    
 def loadNewestSchedule(NewPicklePath = local.pklSourcePath):
     '''
     load newest schedule from default path (from local.py)
@@ -450,7 +460,6 @@ def loadNewestSchedule(NewPicklePath = local.pklSourcePath):
     # First load, then demetafy
     NewestSched = loadSchedule(NewestPickle)
     NewestSched, comment, timeStamp = demetafy(loadSchedule(NewestPickle))
-    #print comment
     return NewestSched, comment, timeStamp
     
 def addShow():
@@ -481,6 +490,9 @@ def displayDay():
     pass
 
 def displayShow(aShow):
+    '''
+    (uncomfortably) similar to SPlib.prettyPrintShow2
+    '''
     typeList = ('bool','unicode','int','list','str')
     for k in aShow:
         #strip str(type(obj)) down to actual type name
@@ -954,7 +966,7 @@ def batchEditShows (Sched, key, valFunc):
 def grabShow(sched):
     '''
     For debugging, it's often handy to have a representative show to work with
-    input: accepts a demetafied schedule
+    input: accepts a *demetafied* schedule
     returns: 
         (1) first show from first day in sched (dict - attributes:values)
         (2) first day in sched (str)
@@ -962,11 +974,60 @@ def grabShow(sched):
     for day in sched:
         for show in sched[day]:
             return show, day
-  
 
+def grabShortSched(sched):
+    '''
+    For debugging, it's often handy to have a representative *day* to work with
+    input: accepts a *demetafied* schedule
+    randomly selects a day from sched, and randomly selects one show from that day
+    returns: 
+        ShortSched, day
+    '''
+    #random.seed(0) #uncomment this to make seed repeatable
+    ShortSched = {}
+    Days = sched.keys()
+    RandomDay = random.choice(Days)
+    RandomShow = [copy.deepcopy(random.choice(sched[RandomDay]))]
+    #tmpDay = [RandomShow]
+    ShortSched[RandomDay] = RandomShow
+    '''
+    print 'TheDay -> ', TheDay
+    for day in TempSched: #there's only one day, and this is a sneaky way to grab its name
+        ShortDay.append(random.choice(TempSched[day]))
+        tmpDay = day
+    ShortSched[tmpDay] = ShortDay
+    '''
+    return ShortSched, RandomDay
+
+def buildTestSched(sched):
+    '''
+    accepts *dematfied" sched
+    returns a sched with two randomly selected shows per day in sched
+    '''
+    TestSched = {}
+    for day in sched:
+        #print day
+        dayLen = len(sched[day])
+        TestSched[day] = []
+        #print 'dayLen -> ', str(dayLen)
+        if dayLen <= 2:
+            TestSched[day] = copy.deepcopy(sched[day])
+        else: #randomly select two shows from day
+            TestSched[day].append(random.choice(sched[day]))
+            #SPlib.PrettyPrintShow2(TestSched[day][0])
+            while True: #randomly pick a non-duplicating 2nd show from day
+                AnotherShow = random.choice(sched[day])
+                if AnotherShow != TestSched[day][0]:
+                    break
+            ############
+            #SPlib.PrettyPrintShow2(AnotherShow)
+            ###########
+            TestSched[day].append(AnotherShow)
+    return TestSched
+        
         
 #MAIN
-tab = '\t'            
+tab = '  '          
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
 
 if __name__ == '__main__':
@@ -980,15 +1041,45 @@ if __name__ == '__main__':
     ######################################################################
     WDRTsched, comment, timeStamp = loadNewestSchedule()
     #print comment
+    
+    
 
     ######################################################################
     # GRAB FIRST SHOW THAT I COME ACROSS
     ######################################################################
     aShow, aDay = grabShow(WDRTsched)
     displayShow(aShow)
-    print
-    print 'day -> ',str(aDay)  
 
+ 
+    #####################################################################
+    # CREATE A TEST SCHEDULE, and a (random) SHORT SCHEDULE
+    #####################################################################
+    
+    TestSched = buildTestSched(WDRTsched)
+    ShortSched, ShortDay = grabShortSched(WDRTsched)
+    #printSchedule(TestSched)
+    
+
+    ####################################################################
+    # ADD ShowTempTime TO TestSched
+    ###################################################################
+    myCurrentTime = CurrentTime(CurrentTime.CTnow)
+    print '1057 test ============ in the house ======='
+    print CurrentTime.CTnow
+    #Add ShowTempTime to each show in schedule
+    SPlib.TraverseShows3(TestSched,myCurrentTime)
+    printSchedule(TestSched)
+
+
+    ####################################################################
+    # ADD ShowTempTime TO ShortSched
+    ###################################################################
+    myCurrentTime = CurrentTime(CurrentTime.CTnow)
+    print '1071 test ============ in the house ======='
+    print CurrentTime.CTnow
+    #Add ShowTempTime to each show in schedule
+    SPlib.TraverseShows3(ShortSched,myCurrentTime) 
+    printSchedule(ShortSched)    
     
     ######################################################################
     #  CREATING DJ LIST IS NECESSARY STEP FOR SOME SUBSEQUENT STEPS

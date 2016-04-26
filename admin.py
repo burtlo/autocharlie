@@ -255,7 +255,11 @@ def editShow(aShow, dayString):
     '''
     prompt admin to modify various fields of show
     '''
-    
+    print
+    print '==============================='
+    print '+ EDIT SHOW'
+    print '+ ', aShow['ShowName']
+    print '==============================='
     a = aShow
     print 'For each show attribute, enter new value, or press <ENTER> to'
     print 'leave the show attribute unchanged.'
@@ -442,7 +446,9 @@ def printSchedule(Sched):
     print *demeatafied* schedule
     TODO: enable conditional printing of Class: ShowTempTime
     '''
+    #print '445'
     SPlib.TraverseShows(Sched,SPlib.PrettyPrintShow2, SPlib.myPrint)
+
     
 def loadNewestSchedule(NewPicklePath = local.pklSourcePath):
     '''
@@ -493,23 +499,31 @@ def displayShow(aShow):
     '''
     (uncomfortably) similar to SPlib.prettyPrintShow2
     '''
-    typeList = ('bool','unicode','int','list','str')
+    unicodeTypeList = ('unicode','str')
+    otherTypeList = ('bool','int','list','str')
     for k in aShow:
         #strip str(type(obj)) down to actual type name
         typeName = str(type(aShow[k]))
         dud = typeName.partition("'")
-        typeName = dud[2] #tail after paren
+        typeName = dud[2] 
         dud = typeName.partition("'")
-        typeName = dud[0] #head before paren
+        typeName = dud[0] 
 
-        if typeName in typeList:
-            print str(k)+' -> ' + str(aShow[k])
+        if typeName == 'unicode':
+            print str(SPlib.uniFix(k)), ' -> ' + str(SPlib.uniFix(aShow[k]))
+        elif typeName in otherTypeList:
+            print str(k), ' -> ' + str(aShow[k])
         else:
             if 'SchedInfo' in typeName:
                 print typeName
                 print tab +'alternationMethod -> ' + aShow['SchedInfo'].alternationMethod
                 print tab + 'evenOdd -> ' + aShow['SchedInfo'].evenOdd
                 print tab + 'WOTM -> ' + str(aShow['SchedInfo'].weekOfTheMonth)
+            else:
+                print
+                print ' ========== displayShow ERROR ===================='
+                print str(type(aShow[k]))
+                print k
 
 
 def setDerivedTime(aShow):
@@ -739,7 +753,7 @@ def readYesNo(requestMsg = 'Please enter <y>es, or <n>o ', errorMsg = 'Please re
     returns boolean: yes = True, no = False
     '''
     while True:
-        val = input(requestMsg, ' ')
+        val = input(requestMsg)
         val2 = val.upper()[0]
         if val2 == 'Y':
             return True
@@ -1029,6 +1043,9 @@ def buildTestSched(sched):
 #MAIN
 tab = '  '          
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
+print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
+print 'sys.version[0] == ', str(sys.version[0])
+print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
 
 if __name__ == '__main__':
 
@@ -1040,26 +1057,22 @@ if __name__ == '__main__':
     # GRAB NEWEST PICKLE from default paths
     ######################################################################
     WDRTsched, comment, timeStamp = loadNewestSchedule()
-    #print comment
     
-    
-
+    '''
     ######################################################################
     # GRAB FIRST SHOW THAT I COME ACROSS
     ######################################################################
     aShow, aDay = grabShow(WDRTsched)
     displayShow(aShow)
+    '''
 
- 
+
+    '''
     #####################################################################
-    # CREATE A TEST SCHEDULE, and a (random) SHORT SCHEDULE
+    # CREATE A TEST SCHEDULE                           
     #####################################################################
-    
     TestSched = buildTestSched(WDRTsched)
-    ShortSched, ShortDay = grabShortSched(WDRTsched)
     #printSchedule(TestSched)
-    
-
     ####################################################################
     # ADD ShowTempTime TO TestSched
     ###################################################################
@@ -1069,17 +1082,40 @@ if __name__ == '__main__':
     #Add ShowTempTime to each show in schedule
     SPlib.TraverseShows3(TestSched,myCurrentTime)
     printSchedule(TestSched)
+    '''
 
-
+    #####################################################################
+    # CREATE A (random) SHORT SCHEDULE (one show on one day)
+    #####################################################################
+    ShortSched, ShortDay = grabShortSched(WDRTsched) 
+    #printSchedule(TestSched)
     ####################################################################
     # ADD ShowTempTime TO ShortSched
     ###################################################################
     myCurrentTime = CurrentTime(CurrentTime.CTnow)
     print '1071 test ============ in the house ======='
     print CurrentTime.CTnow
-    #Add ShowTempTime to each show in schedule
+    #Add ShowTempTime to *the only* show in schedule
     SPlib.TraverseShows3(ShortSched,myCurrentTime) 
     printSchedule(ShortSched)    
+    
+    ######################################################################
+    # EDIT ShortSched to facilitate testing
+    ######################################################################
+    for day in ShortSched:
+        myDay = day
+        myShow = ShortSched[day][0]
+    
+    SPlib.PrettyPrintShow2(myShow)
+    print
+    
+    while True:
+        print
+        editShow(myShow, myDay)
+        print
+        print '======= results ==========='
+        
+
     
     ######################################################################
     #  CREATING DJ LIST IS NECESSARY STEP FOR SOME SUBSEQUENT STEPS

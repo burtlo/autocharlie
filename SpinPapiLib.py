@@ -370,14 +370,14 @@ def PrettyPrintShow2(show):
     for el in show:
         #print el
         if type(show[el]) not in otherTypes:
-            #print tab, tab, el, '-> ', str(uniFix(show[el]))
-            pass
+            print tab, tab, el, '-> ', str(uniFix(show[el]))
+            #pass
         elif type(show[el]) not in localTypes:
-            #print tab, tab, el, '-> ', str(show[el])
-            pass
+            print tab, tab, el, '-> ', str(show[el])
+            #pass
         elif el != 'ShowUsers':
-            #print dubTab, el, '->\n', str(show[el])
-            pass
+            print dubTab, el, '->\n', str(show[el])
+            #pass
         else:
             print el
             for i in range[0:20]:

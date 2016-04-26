@@ -139,12 +139,12 @@ class ShowTempTime(object):
         an instance of the ShowTempTime object
         '''
         tab = '   '
-        part1 = ['TT.DayOffset -> ',str(self.DayOffset),'\n',
-          'TT.fixedWeekday -> ',str(self.fixedWeekday), '\n']
+        part1 = ['TempTime.DayOffset -> ',str(self.DayOffset),'\n',
+          'TempTime.fixedWeekday -> ',str(self.fixedWeekday), '\n']
 
-        part2 = ['TT.OWOM -> ',
+        part2 = ['TempTime.OWOM -> ',
           str(self.OWOM), '\n',
-          'TT.happensThisWeek-> ', str(self.happensThisWeek), '\n']
+          'TempTime.happensThisWeek-> ', str(self.happensThisWeek), '\n']
         parts =[]
         parts.extend(part1)
         parts.extend(part2)
@@ -280,9 +280,9 @@ class SchedInfo(object):
     def __str__(self):
         tab = '    '
         retStr = ''
-        retStr = retStr + 'SInfo.alternationMethod -> '+self.alternationMethod+ '\n'
-        retStr = retStr + 'SInfo.evenOdd -> ' + self.evenOdd+ '\n'
-        retStr = retStr+ 'SInfo.WOTM -> ' + str(self.weekOfTheMonth)+ '\n'
+        retStr = retStr + 'ShowInfo.alternationMethod -> '+self.alternationMethod+ '\n'
+        retStr = retStr + 'ShowInfo.evenOdd -> ' + self.evenOdd+ '\n'
+        retStr = retStr+ 'ShowInfo.WeekOfTheMonth -> ' + str(self.weekOfTheMonth)+ '\n'
         return retStr
         
     def __repr__(self):

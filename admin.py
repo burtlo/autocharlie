@@ -403,7 +403,7 @@ def editSchedInfo(aShow, dayString):
     a['SchedInfo'].WOTMList = editList(a['SchedInfo'].WOTMList, [1,2,3,4,5],WOTMmessage, dayString)
     
     unverifiedMsg1 = "Are you certain that the Alternation Method, Week of The Month List "
-    unverifiedMsg2 = "and associated data is accurate? "
+    unverifiedMsg2 = "and associated data are accurate? "
     print unverifiedMsg1
     print unverifiedMsg2
     a['SchedInfo'].unverified = readYesNo()
@@ -655,7 +655,7 @@ def editList(inList, completeList, requestMsg, day, errorMsg = 'is not an intege
     #TODO modify this function to import day of week string, in order to make
         verbiage more accurate
     '''
-    newList = inList
+
     outList = [x for x in completeList if x not in inList]
     while True:
         print
@@ -754,11 +754,12 @@ def readYesNo(requestMsg = 'Please enter <y>es, or <n>o ', errorMsg = 'Please re
     '''
     while True:
         val = input(requestMsg)
-        val2 = val.upper()[0]
-        if val2 == 'Y':
-            return True
-        if val2 == 'N':
-            return False
+        if val != '':
+            val2 = val.upper()[0]
+            if val2 == 'Y':
+                return True
+            if val2 == 'N':
+                return False
         print errorMsg
         
 def readCharVal(default, acceptable,requestMsg, errorMsg):
@@ -1111,9 +1112,10 @@ if __name__ == '__main__':
     
     while True:
         print
-        editShow(myShow, myDay)
+        myShow = editShow(myShow, myDay)
         print
         print '======= results ==========='
+        SPlib.PrettyPrintShow2(myShow)
         
 
     

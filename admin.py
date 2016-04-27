@@ -97,7 +97,7 @@ from myClasses import SchedInfo, ShowTempTime, CurrentTime
 
 def metafy(Sched, comment, timeStamp = ''):
     '''
-    Accepts a sched
+    Accepts a bare sched
     returns a three element dict, ready to be pickled:
     '''
     mytime = time.strftime("%Y-%m-%d %H:%M") + '\n'
@@ -1044,12 +1044,13 @@ def buildTestSched(sched):
 #MAIN
 tab = '  '          
 if sys.version[0] == '2': input = raw_input #alias py2 to py3
-print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
-print 'sys.version[0] == ', str(sys.version[0])
-print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
+
 
 if __name__ == '__main__':
 
+    print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
+    print 'sys.version[0] == ', str(sys.version[0])
+    print '+++++++++++++++++++++++++++++++++++++++++++++++++++'
 
     path = local.path
     NewPicklePath = local.pklDestPath
@@ -1110,13 +1111,15 @@ if __name__ == '__main__':
     SPlib.PrettyPrintShow2(myShow)
     print
     
+    '''
+    #dont' want to edit just yet, so complicated!
     while True:
         print
         myShow = editShow(myShow, myDay)
         print
         print '======= results ==========='
         SPlib.PrettyPrintShow2(myShow)
-        
+     '''   
 
     
     ######################################################################

@@ -59,13 +59,10 @@ class CurrentTime(object):
           'OrdinalWeekOfMonthDict ->', '\n',
           '    ',str(self.OWOMdict), '\n',
           'isEvenWeek -> ', str(self.isEvenWeek)]
-        part4 = '========================'
-        #print part3
         parts =[]
         parts.extend(part1)
         parts.extend(part2)
         parts.extend(part3)
-        parts.extend(part4)
         ret = ''.join(parts)
         return ret
         

@@ -43,7 +43,7 @@ def getArchivables(sched, LastHour, day):
     '''
     accepts:
         sched = demetafied schedule
-        LastHour in format 23:00:00
+        LastHour int in range from 0 ..23
         day = full string day name
     returns:
         a list of all shows that ended during the last hour,
@@ -53,6 +53,14 @@ def getArchivables(sched, LastHour, day):
     '''
     retList = []
     syndicated = False
+    
+    ## ADJUST for the fact that Spinitron day stqrts @ 6am instead of midnight
+    yesterday = num2day[((day2num[day] - 1) % 7)]
+    #print 'yesterday -> ', str(yesterday)
+    if LastHour < 7:
+        day = yesterday
+    #end of adjustment code
+        
     for show in sched[day]:
         show = showUsersCleanUp(show)
         # TODO: Is this the point to adjust for 6am start of day?
@@ -112,13 +120,20 @@ def convert2weekHour(day, hour):
 client = Papi.SpinPapiClient(key.userid, key.secret)
 
 #num2day has been modified to align with date.weekday() RTFM
-num2day = { 7: 'SaturdayAFTER', -1: 'SundayBEFORE' , 0 : 'Monday' , 
+num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
             1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
             
 num2dayShort = { 7: 'SatAFTER', -1: 'SunBEFORE' , 0 : 'Mon' , 
             1 : 'Tue' , 2 :'Wed',  3 : 'Thu' , 
             4 : 'Fri' , 5 :'Sat', 6 : 'Sun'}
+            
+day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue', 
+                'Wednesday' : 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri',
+                'Saturday': 'Sat', 'Sunday': 'Sun'}
+                
+day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
+           'Friday':4, 'Saturday':5, 'Sunday':6}
                         
                         
 if __name__ == '__main__':
@@ -140,7 +155,7 @@ if __name__ == '__main__':
     ThisHour = DT.datetime.now() + relativedelta( minute=0, second=0, microsecond=0)
     print ThisHour
     LastHour = ThisHour + relativedelta(hours = -1)
-    print LastHour
+    print 'LastHour -> ', str(LastHour)
     print LastHour.weekday()
     today = num2day[LastHour.weekday()]
     print today
@@ -197,6 +212,7 @@ if __name__ == '__main__':
 
     '''
     
+
     ###################################################################
     # Iterate through all hours in week and list shows
     # that are *NOT* syndicated

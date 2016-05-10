@@ -24,6 +24,21 @@ import datetime as DT
 from dateutil.relativedelta import *
 import calendar
 
+def showUsersCleanUp(show):
+    '''
+    strip off info about DJ images 
+    and return cleaned up show
+    '''
+    newShowUsers = []
+    for user in show['ShowUsers']:
+        if 'DJImgS' in user:
+            del user['DJImgS']
+        if 'DJImgL' in user:
+            del user['DJImgL']
+        newShowUsers.append(user)
+    show['ShowUsers'] = newShowUsers
+    return show
+
 def getArchivables(sched, LastHour, day):
     '''
     accepts:
@@ -31,21 +46,25 @@ def getArchivables(sched, LastHour, day):
         LastHour in format 23:00:00
         day = full string day name
     returns:
-        a list of all shows that ended during the last hour
+        a list of all shows that ended during the last hour,
+        show['Syndicated'] is added to each show
+            Syndicated = True if Rivendell is one of the DJs for the show
     
     '''
     retList = []
     syndicated = False
     for show in sched[day]:
+        show = showUsersCleanUp(show)
+        # TODO: Is this the point to adjust for 6am start of day?
         showHour = int(str(show['OffairTime']).split(':')[0])
 
         if showHour == LastHour:
             for DJ in show['ShowUsers']:
                 if DJ['DJName'] == 'Rivendell':
                     syndicated = True
-            show['syndicated'] = syndicated
+            show['Syndicated'] = syndicated
             retList.append(show)
-    return retList, syndicated
+    return retList
             
 def sched2charlieSched (sched):
     '''
@@ -134,34 +153,76 @@ if __name__ == '__main__':
     # List a show that ended in the last hour, 
     # syndicated = Rivendell is the DJ
     ############################################################
-    
-    showList, syndicated = getArchivables(sched, LastHour, today)
-    print syndicated
+    print 'Show(s) that ended in the previous hour:'
+    showList = getArchivables(sched, LastHour, today)
     for show in showList:
-        print tab + show['ShowName']
-        print tab + tab +show['OffairTime']
-        print tab + tab +str(show['syndicated'])
+        if show['Syndicated'] == True:
+            print tab + show['ShowName']
+            print tab + tab +show['OffairTime']
+            print tab + tab +str(show['Syndicated'])
+    print '-----------------------------------------------'
     '''
     TT_LastHour = [ int(i) for i in timeTuple] #cast to ints
     print TT_LastHour
     '''
 
+    '''
     ###################################################################
     # Iterate through all hours in week and list shows
+    # that are syndicated
     ###################################################################
     for weekHour in range(167):
         
         day, hour = convert2dayHour(weekHour)
         dayStr = num2dayShort[day]
         pad = ''
-        print hour
+        #print hour
         if hour <= 10:
             pad = '0'
-        print dayStr + pad + str(hour) + '00'
-        showList, syndicated = getArchivables(sched, hour, num2day[day])
+        KlannFolder = ''.join([ dayStr , pad , str(hour) , '00'])
+        #print KlannFolder
+        showList = getArchivables(sched, hour, num2day[day])
+        syn = False
         for show in showList:
-            print tab + show['ShowName']
-            print tab + tab +show['OffairTime']
-            print tab + tab +str(show['syndicated'])
+            if show['Syndicated'] == True:
+                syn = True
+        if syn == True:
+            print KlannFolder
+        for show in showList:
+            if show['Syndicated'] == True:
+                print tab + show['ShowName']
+                print tab + tab +show['OffairTime']
+                print tab + tab + str(show['ShowUsers'])
+                print tab + tab +str(show['Syndicated'])
 
+    '''
     
+    ###################################################################
+    # Iterate through all hours in week and list shows
+    # that are *NOT* syndicated
+    ###################################################################
+    for weekHour in range(167):
+        
+        day, hour = convert2dayHour(weekHour)
+        dayStr = num2dayShort[day]
+        pad = ''
+        #print hour
+        if hour <= 10:
+            pad = '0'
+        KlannFolder = ''.join([ dayStr , pad , str(hour) , '00'])
+        #print KlannFolder
+        showList = getArchivables(sched, hour, num2day[day])
+        syn = True
+        for show in showList:
+            if show['Syndicated'] == False:
+                syn = False
+        if syn == False:
+            print KlannFolder
+            x = len(KlannFolder)
+            x = int(KlannFolder[x-4:x-2])
+        for show in showList:
+            if show['Syndicated'] == False and x < 7:
+                print tab + show['ShowName']
+                print tab + tab +show['OffairTime']
+                print tab + tab + str(show['ShowUsers'])
+                print tab + tab +str(show['Syndicated'])    

@@ -212,10 +212,10 @@ def OpenPickle(SchedulePickle, srcFolder = local.pklSourcePath ):
         trailing backslash included
     returns serialized schedule, or any other pickled object
     note:
-        serialized and saved to disk is synonymouse with pickled
+        the terms 'serialized' and 'saved to disk' are synonymous with pickled
     '''
-    #print 'SchedulePickle -> '+SchedulePickle
-    #print 'srcFolder -> '+srcFolder
+    print 'SchedulePickle -> '+SchedulePickle
+    print 'srcFolder -> '+srcFolder
     
     F = open(srcFolder + SchedulePickle, 'rb')
     return pickle.load(F)

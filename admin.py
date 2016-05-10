@@ -465,8 +465,12 @@ def loadNewestSchedule(NewPicklePath = local.pklSourcePath):
     
     # First load, then demetafy
     NewestSched = loadSchedule(NewestPickle)
-    NewestSched, comment, timeStamp = demetafy(loadSchedule(NewestPickle))
+    NewestSched, comment, timeStamp = demetafy(NewestSched)
+    #NewestSched, comment, timeStamp = demetafy(loadSchedule(NewestSched))
+    print 'comment -> ', str(comment)
+    print 'timeStamp -> ', str(timeStamp)
     return NewestSched, comment, timeStamp
+    
     
 def addShow():
     '''

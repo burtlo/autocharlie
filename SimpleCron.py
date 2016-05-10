@@ -17,7 +17,8 @@ import admin
 import key
 import local
 
-import myClasses
+#import myClasses
+from myClasses import SchedInfo, ShowTempTime, CurrentTime
 
 import datetime as DT
 from dateutil.relativedelta import *

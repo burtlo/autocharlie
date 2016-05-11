@@ -517,6 +517,7 @@ def FreshPapi(NewSched ='today'):
     This function
     (1) use SpinPapi to grab a fresh copy of the weekly schedule
     (2) strip extra Requests fields
+    #note: NewSched isn't being used for anything
     
     returns a schedule as Sched2, no metafication yet
     '''
@@ -531,12 +532,32 @@ def FreshPapi(NewSched ='today'):
     #take SpinPapi schedule & strip extra Requests fields (keep)
     ScheduleDict1 = SchedScrub(SpinScheduleDict)
     
-    #Sched2 = Sched1 + startDelta, endDelta, targetFolder & subfolder (bool)
-    #Sched2 also adds SchedInfo object
     Sched2 = Sched1toSched2(ScheduleDict1)
     return Sched2
 
-
+def FreshPapi1 ():
+    '''
+    This function
+    (1) use SpinPapi to grab a fresh copy of the weekly schedule
+    (2) strip extra Requests fields
+    
+    returns a schedule as Sched1, no metafication yet
+    as of May 2016, HourlyCron doesn't need (or want) a metafied schedule
+    '''
+    
+    Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
+            4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
+    
+    #get raw schedule from SpinPapi
+    SpinScheduleDict = myGetSchedule(Days)
+    print 'New Schedule obtained from Spinitron'
+    
+    #take SpinPapi schedule & strip extra Requests fields (keep)
+    sched = SchedScrub(SpinScheduleDict)
+    
+    #Sched2 = Sched1toSched2(ScheduleDict1)
+    return sched
+    
 def Sched2toSched3(Sched2):
     '''
     This function does the following:

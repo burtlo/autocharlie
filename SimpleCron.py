@@ -38,7 +38,23 @@ def showUsersCleanUp(show):
         newShowUsers.append(user)
     show['ShowUsers'] = newShowUsers
     return show
-
+    
+def dayAdjust(fullDayStr, hour):
+    '''
+    adjust for the fact that Spinitron day starts at 6am instead of midnight
+    accepts full day name string
+    returns adjusted full day name string
+    '''
+    day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
+           'Friday':4, 'Saturday':5, 'Sunday':6}
+    num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
+            1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
+            4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
+    if hour < 7:
+        yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
+        fullDayStr = yesterday
+    return fullDayStr
+    
 def getArchivables(sched, LastHour, day):
     '''
     accepts:
@@ -54,12 +70,7 @@ def getArchivables(sched, LastHour, day):
     retList = []
     syndicated = False
     
-    ## ADJUST for the fact that Spinitron day stqrts @ 6am instead of midnight
-    yesterday = num2day[((day2num[day] - 1) % 7)]
-    #print 'yesterday -> ', str(yesterday)
-    if LastHour < 7:
-        day = yesterday
-    #end of adjustment code
+    day = dayAdjust(day, LastHour)
         
     for show in sched[day]:
         show = showUsersCleanUp(show)
@@ -141,7 +152,7 @@ if __name__ == '__main__':
     tab = '   '
     
     CTnow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)    
-    charlieTime = myClasses.CurrentTime(CTnow)
+    charlieTime = CurrentTime(CTnow)
     '''
     print "charlieTime"
     print charlieTime

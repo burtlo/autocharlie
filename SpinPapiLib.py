@@ -155,11 +155,15 @@ def myGetDay(day):
         0 = Sunday
         1 = Monday ...
     returns a dict
-    this strips off the rest of the requests.get object, for better or worse
+    SchedScrub is used to keep 'results' and strip 'request' and 'success'
     '''
-    r = requests.get(Papi.client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
+    client = Papi.SpinPapiClient(key.userid, key.secret)
+    r = requests.get(client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
+    #r = requests.get(Papi.client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
     d = json.loads(str(r.text))
-    return d
+    success = d['success']
+    
+    return d, success
     
 def myGetSchedule(days):
     '''
@@ -168,13 +172,22 @@ def myGetSchedule(days):
     	during that day} 
     
     #TODO research to see if there are two copies of Sunday
+    
 	
     '''
+    print "--------------------------"
+    print "myGetSchedule()------------"
+    success = True
     mySchedule = {}
+    errMsg = ''
     for i in days:
         print days[i]
-        mySchedule[days[i]] = myGetDay(i)
-    return mySchedule
+        mySchedule[days[i]], tmpSuccess = myGetDay(i)
+        if tmpSuccess == False:
+            success = False
+            errMsg = ''.join((i, ' -> Failure\n'))
+    print errMsg
+    return mySchedule, success
     
 def SchedScrub(ScheduleDict):
     '''
@@ -494,7 +507,7 @@ def FreshPapiOld():
         #myShedulePickle should still be on file ...
 
     #TODO  make accomodations to make new pickle and not overwrite old
-    SpinScheduleDict = myGetSchedule(Days)
+    SpinScheduleDict,success = myGetSchedule(Days)
     print 'New Schedule obtained from Spinitron'
     
     #save unadulterated data from SpinPapi to Pickle
@@ -526,14 +539,18 @@ def FreshPapi(NewSched ='today'):
             4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
     
     #get raw schedule from SpinPapi
-    SpinScheduleDict = myGetSchedule(Days)
-    print 'New Schedule obtained from Spinitron'
-    
-    #take SpinPapi schedule & strip extra Requests fields (keep)
-    ScheduleDict1 = SchedScrub(SpinScheduleDict)
-    
-    Sched2 = Sched1toSched2(ScheduleDict1)
-    return Sched2
+    SpinScheduleDict,success = myGetSchedule(Days)
+    if success:
+        print 'New Schedule obtained from Spinitron'
+        
+        #take SpinPapi schedule & strip extra Requests fields (keep)
+        ScheduleDict1 = SchedScrub(SpinScheduleDict)
+        
+        Sched2 = Sched1toSched2(ScheduleDict1)
+        return Sched2
+    else:
+        print 'SpinPapiLib.FreshPapi -> error!!!'
+        return
 
 def FreshPapi1 ():
     '''
@@ -542,21 +559,27 @@ def FreshPapi1 ():
     (2) strip extra Requests fields
     
     returns a schedule as Sched1, no metafication yet
-    as of May 2016, HourlyCron doesn't need (or want) a metafied schedule
+    as of May 2016, WeeklyCron.py doesn't need (or want) a metafied schedule
     '''
-    
+
     Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
             4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
+
     
     #get raw schedule from SpinPapi
-    SpinScheduleDict = myGetSchedule(Days)
-    print 'New Schedule obtained from Spinitron'
-    
-    #take SpinPapi schedule & strip extra Requests fields (keep)
-    sched = SchedScrub(SpinScheduleDict)
-    
-    #Sched2 = Sched1toSched2(ScheduleDict1)
-    return sched
+    sched, success = myGetSchedule(Days)
+    if success:
+        print 'New Schedule obtained from Spinitron'
+        
+        #take SpinPapi schedule & strip extra Requests fields (keep)
+        sched2 = SchedScrub(sched)
+        #simple schedule doesn't need local schema bolted on to shows ...
+        #Sched2 = Sched1toSched2(ScheduleDict1)
+        return sched2
+    else:
+        print 'error retrieving schedule from Spinitron!!!!'
+        print 'FreshPapi1'
+        return
     
 def Sched2toSched3(Sched2):
     '''

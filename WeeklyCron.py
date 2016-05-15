@@ -99,12 +99,12 @@ print 'fullSched'
 print 'type(fullSched) -> ', str(type(fullSched))
 print fullSched
 
-'''
+
 schedKeys = fullSched.keys()
 print schedKeys
-'''
 
-'''
+
+
 #convert spinitron Schedule to CharlieSched (very stripped down)
 charlieSched = sched2charlieSched(fullSched)
 
@@ -113,4 +113,4 @@ saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
 
 #save pickle (for future use by HourlyCron.py)
 SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
-'''
+

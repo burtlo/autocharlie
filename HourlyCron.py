@@ -115,9 +115,13 @@ def getShows2Archive (sched, LastHour, day):
     retList = []
         
     for show in sched[day]:
-        showHour = int(str(show['OffairTime']).split(':')[0])
+        #print
+        #print 'GS2A show -> ',str(show)
+        #print 'GS2A sched[day][show] -> ', str(sched[day][show])
+        showHour = int(str(sched[day][show]['OffairTime']).split(':')[0]) 
+        #showHour = int(str(show['OffairTime']).split(':')[0])
         if showHour == LastHour:
-            retList.append(show)
+            retList.append(sched[day][show])
     return retList   
     
 def buildmp3(show):
@@ -144,6 +148,8 @@ import SpinPapiLib as SPlib
 import datetime as DT
 from dateutil.relativedelta import *
 import calendar
+
+import pysox
 
 #num2day has been modified to align with date.weekday() RTFM
 num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
@@ -181,13 +187,16 @@ if __name__ == '__main__':
     print 'LastHour -> ', LastHour
     print 'today -> ', today
     
-    ShowsToArchive = getShows2Archive(charlieSched, LastHour, today)
+    showsToArchive = getShows2Archive(charlieSched, LastHour, today)
+    print 'showsToArchive ->'
+    print '\t', str(showsToArchive)
     
+    '''
     for show in ShowsToArchive:
         # build mp3 using pysox
         buildmp3(show)
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"
-        
+    '''
 
         

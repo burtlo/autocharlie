@@ -561,13 +561,13 @@ def FreshPapi1 ():
     returns a schedule as Sched1, no metafication yet
     as of May 2016, WeeklyCron.py doesn't need (or want) a metafied schedule
     '''
-
+    '''
     Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
             4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
-
+    '''
 
     #single day sched for testing purposes
-    #Days = { 2 : 'Tuesday' }   
+    Days = { 2 : 'Tuesday' }   
     
     #get raw schedule from SpinPapi
     sched, success = myGetSchedule(Days)

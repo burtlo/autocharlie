@@ -25,6 +25,8 @@ WeeklyCron.py
     *website
     *new folders created, old folders deleted
     
+* Special metafication for partial schedule pickles (or send to test folder?)
+    
 # EVEN later
 -----------
 
@@ -32,12 +34,17 @@ WeeklyCron.py
     be able to detect more minor changes in show name, etc. that *may* warrant 
     changes to website
     
+#TODO:
+    fix unicode issues, ex:
+    'ShowList': [u' \u201cDRIFTLESS JAZZ\u201d ']
+    
 """
 #import SpinPapiClient as Papi
 
 import SpinPapiLib as SPLib
 import time
 import local
+from copy import deepcopy
 
 
 
@@ -46,31 +53,85 @@ def sched2charlieSched (sched):
     '''
     accepts a demetafied sched
     strip out Rivendellshows
-    current decision: don't do day adjustment for shows before 6am in this 
-        function
+    current decision: don't do day adjustment for shows ending before 6am 
+        in this function
     returns a charlieSched, containing minimal info needed to run cron job
     '''
     print 'sched2charlieSched()'
     print
     charlieSched = {}
-    x = 0
     for day in sched:
-        print 'day in sched -> ', str(day)
+        #print 'day in sched -> ', str(day)
         charlieSched [day] = {}
         for show in sched[day]:
-            # key is concat of OffairTime & OnairTime
-                # this avoids duplicate records when two shows occupy identical
-                # time slots during the same day
-            x += 1
-            print 'type(show) -> ', str(type(show))
-            print 'show -> ', str(show)
-            print "show['OffairTime'] -> ", str(show['OffairTime']), str(type(show['OffairTime']))
-            key = x
-            #key = ''.join([ show['OffairTime'], show['OnairTime'] ])
+            #print 'type(show) -> ', str(type(show))
+            #print 'show -> ', str(show)
+            #print "show['OffairTime'] -> ", str(show['OffairTime']), str(type(show['OffairTime']))
+            #NOTE: '-' join is necessay, string will be parsed later
+                # by searching for dash
+            #NOTE: The key below prevents duplicates, by sorting out shows that
+                #start and end at the same time
+            key = '-'.join([ show['OffairTime'], show['OnairTime'] ])
+            charlieSched[day][key] = {}   
             charlieSched[day][key]['OffairTime'] = show['OffairTime']
             charlieSched[day][key]['OnairTime']  = show['OnairTime']
+            try:
+                #no ShowList will kick off error
+                ShowList = charlieSched[day][key]['ShowList']
+            except:
+                charlieSched[day][key]['ShowList'] = []
+            #now we know that ShowList exists
+            charlieSched[day][key]['ShowList'].append(show['ShowName'])
+            try:
+                # Archivable not set will cause error
+                Q = charlieSched[day][key]['Archivable']
+                # if archivable is true, give it a chance to turn false
+                    # if it's false, it stays false
+                if charlieSched[day][key]['Archivable']:
+                    charlieSched[day][key] = isArchivable(show)
+            except:
+                charlieSched[day][key]['Archivable'] = isArchivable(show)
+    tempSched = deepcopy(charlieSched)
+    for day in tempSched:
+        print day
+        for timeslot in tempSched[day]:
+            #if timeslot is not archivable, then remove it from charlieSched
+            if not(tempSched[day][timeslot]['Archivable']):
+                print '\ts2cs> deleted: ', str(tempSched[day][timeslot]['ShowList'])
+                del charlieSched[day][timeslot]
     return charlieSched
-
+    
+def dayAdjust(fullDayStr, hour):
+    '''
+    #
+    #might not  be needed in WeeklyCron context
+    #
+    adjust for the fact that Spinitron day starts at 6am instead of midnight
+    accepts full day name string
+    returns adjusted full day name string
+    '''
+    day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
+           'Friday':4, 'Saturday':5, 'Sunday':6}
+    num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
+            1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
+            4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
+    if hour < 7:
+        yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
+        fullDayStr = yesterday
+    return fullDayStr
+    
+def isArchivable(show):
+    '''
+    accepts:
+        show, with full complement of attributes
+    returns True if none of the show DJs are Rivendell
+    '''
+    for DJ in show['ShowUsers']:
+        if DJ['DJName'] == 'Rivendell':
+            return False
+    return True
+    
+    
 #MAIN========================
 
 #client = Papi.SpinPapiClient(key.userid, key.secret)
@@ -95,15 +156,12 @@ day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
 #load fresh copy of weekly schedule via spinitron API                       
 fullSched = SPLib.FreshPapi1()
 
-print 'fullSched'
-print 'type(fullSched) -> ', str(type(fullSched))
-print fullSched
-
+#print 'fullSched'
+#print 'type(fullSched) -> ', str(type(fullSched))
+#print fullSched
 
 schedKeys = fullSched.keys()
-print schedKeys
-
-
+print 'schedKey -> ', str(schedKeys)
 
 #convert spinitron Schedule to CharlieSched (very stripped down)
 charlieSched = sched2charlieSched(fullSched)

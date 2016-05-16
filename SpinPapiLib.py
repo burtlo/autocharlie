@@ -227,8 +227,8 @@ def OpenPickle(SchedulePickle, srcFolder = local.pklSourcePath ):
     note:
         the terms 'serialized' and 'saved to disk' are synonymous with pickled
     '''
-    print 'SchedulePickle -> '+SchedulePickle
-    print 'srcFolder -> '+srcFolder
+    #print 'SchedulePickle -> '+SchedulePickle
+    #print 'srcFolder -> '+srcFolder
     
     F = open(srcFolder + SchedulePickle, 'rb')
     return pickle.load(F)
@@ -565,6 +565,9 @@ def FreshPapi1 ():
     Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
             4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
 
+
+    #single day sched for testing purposes
+    #Days = { 2 : 'Tuesday' }   
     
     #get raw schedule from SpinPapi
     sched, success = myGetSchedule(Days)

@@ -158,6 +158,9 @@ def myGetDay(day):
     SchedScrub is used to keep 'results' and strip 'request' and 'success'
     '''
     client = Papi.SpinPapiClient(key.userid, key.secret)
+    print 'xxxxxxxxxxxxxxxx'
+    print 'MGD.day -> ', str(day)
+    print 'xxxxxxxxxxxxxxx'
     r = requests.get(client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
     #r = requests.get(Papi.client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
     d = json.loads(str(r.text))
@@ -561,13 +564,13 @@ def FreshPapi1 ():
     returns a schedule as Sched1, no metafication yet
     as of May 2016, WeeklyCron.py doesn't need (or want) a metafied schedule
     '''
-    '''
+
     Days = { 0: 'Sunday' , 1 : 'Monday' , 2 : 'Tuesday' , 3 : 'Wednesday' ,
             4 : 'Thursday' , 5 : 'Friday' , 6 : 'Saturday'}
-    '''
+
 
     #single day sched for testing purposes
-    Days = { 2 : 'Tuesday' }   
+    #Days = { 2 : 'Tuesday' }   
     
     #get raw schedule from SpinPapi
     sched, success = myGetSchedule(Days)

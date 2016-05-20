@@ -234,8 +234,9 @@ def buildmp3(show, spinDay):
     print 'type(duration) -> ', str(type(duration))
     print 'showStart -> ', str(showStart)
     print 'showEnd -> ', str(showEnd)
-    showHours = numArchives(showStart, showEnd)
+    showHours, partialEnd = numArchives(showStart, showEnd)
     print showHours #start counting @ zero
+    print range(showHours)
     
 def numArchives(start,end):
     '''
@@ -243,12 +244,16 @@ def numArchives(start,end):
         start, end: type = datetime.datetime
     '''
     print 'numArchives -> ', str(type(start))
+    partialEnd = False
     startHour = start.timetuple().tm_hour
     endHour = end.timetuple().tm_hour
     if start.timetuple().tm_mday != end.timetuple().tm_mday:
         endHour += 24
     numHours = endHour - startHour
-    return numHours
+    if end.timetuple().tm_min > 0:
+        numHours +=1
+        partialEnd = True
+    return numHours, partialEnd
     #each hour has a start and end time within the hour
         # convert start & end times to datetime format, add in time deltas
         

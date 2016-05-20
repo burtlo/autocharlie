@@ -235,7 +235,7 @@ def buildmp3(show, spinDay):
     print 'showStart -> ', str(showStart)
     print 'showEnd -> ', str(showEnd)
     showHours = numArchives(showStart, showEnd)
-    print showHours
+    print showHours #start counting @ zero
     
 def numArchives(start,end):
     '''
@@ -245,7 +245,7 @@ def numArchives(start,end):
     print 'numArchives -> ', str(type(start))
     startHour = start.timetuple().tm_hour
     endHour = end.timetuple().tm_hour
-    if startHour.timetuple().tm_mday != endHour.timetuple().tm_mday:
+    if start.timetuple().tm_mday != end.timetuple().tm_mday:
         endHour += 24
     numHours = endHour - startHour
     return numHours

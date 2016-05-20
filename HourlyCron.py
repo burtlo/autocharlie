@@ -62,9 +62,11 @@ def getCharlieSched():
     os.chdir(current)
     return charlieSched
     
-def getTime():
+def getCurrentTime():
     '''
-    returns LastHour(int (0 .. 23)), and fullDayString
+    returns:
+        LastHour(int (0 .. 23))
+        fullDayString
     uses relative delta, so 1am minus two hours is 11pm, previous day
     '''
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
@@ -87,11 +89,12 @@ def getTime():
     #print LastHour
     return LastHour, today
     
-def dayAdjust(fullDayStr, hour):
+def day2spinDay(fullDayStr, hour):
     '''
     adjust for the fact that Spinitron day starts at 6am instead of midnight
     accepts full day name string
     returns adjusted full day name string
+    #TODO: does this need to be implemented in datetime module???
     '''
     day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
@@ -103,33 +106,154 @@ def dayAdjust(fullDayStr, hour):
         fullDayStr = yesterday
     return fullDayStr
     
-def getShows2Archive (sched, LastHour, day):
+def spinDay2day(spinDay, hour):
+    '''
+    converts spinitron day to real day, which only happens between
+    midnight and 6am
+    accepts:
+        spinDay: full string day, with day ending @ 6am
+        hour: int (0 .. 23) = this is the hour that the show ends
+    returns:
+        day string, adjusted back from spinday to realday
+    '''
+    day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
+           'Friday':4, 'Saturday':5, 'Sunday':6}
+    num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
+            1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
+            4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}  
+    realDayStr = spinDay
+    if hour < 7:
+        realDayStr = num2day[((day2num[spinDay] + 1) % 7)]
+    return realDayStr
+    
+def spinDay22day(spinDay, time):
+    '''
+    better spinDay2day
+    converts spinitron day to real day, which only happens between
+    midnight and 6am
+    accepts:
+        spinDay: full str day, with day ending @ 6am
+        time: in datetime.time format (this is the time the show ends)
+    returns:
+        *date* in datetime.date format (???)
+        perhaps other formats, if it is discovered that these are needed
+    '''
+    day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
+           'Friday':4, 'Saturday':5, 'Sunday':6}
+    num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
+            1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
+            4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}  
+    cutoff = DT.time(6, 0, 0)
+    realDayStr = spinDay
+    if not(time > cutoff):
+        realDayStr = num2day[((day2num[spinDay] + 1) % 7)]
+    return realDayStr        
+    
+def getShows2Archive (sched, LastHour, spinDay):
     '''
     accepts:
         sched = schedule in CharlieSched format
         LastHour int in range from 0 ..23
-        day = full string day name, day adjustment already made
+        spinDay = full string day name, spinDays end @ 6am
     returns:
         a list of all shows that ended during the last hour,
     '''
     retList = []
         
-    for show in sched[day]:
+    for show in sched[spinDay]:
         #print
         #print 'GS2A show -> ',str(show)
         #print 'GS2A sched[day][show] -> ', str(sched[day][show])
-        showHour = int(str(sched[day][show]['OffairTime']).split(':')[0]) 
+        showHour = int(str(sched[spinDay][show]['OffairTime']).split(':')[0]) 
         #showHour = int(str(show['OffairTime']).split(':')[0])
         if showHour == LastHour:
-            retList.append(sched[day][show])
+            retList.append(sched[spinDay][show])
     return retList   
     
-def buildmp3(show):
+def strTime2timeObject(strTime):
     '''
+    accepts:
+        strTime: string in this format: "00:00:00"
+    returns:
+        datetime.time object (hours, minutes, seconds, no date info)
     '''
+    #below code is inefficient.  Oh well
+    myHour = int(str(strTime).split(':')[0])
+    myMin = int(str(strTime).split(':')[1])
+    mySec = int(str(strTime).split(':')[2])
+    DTtime = DT.time(myHour, myMin, mySec)
+    return DTtime   
+    
+def buildmp3(show, spinDay):
+    '''
+    accepts:
+        show in showsToArchive format
+        spinDay: fullStrDay (ex: 'Sunday'), spinDay ends @ 6am
+    returns:
+        an mp3 for archiving
+    '''
+    def mytime2DT(time, day):
+        '''
+        all "time math" needs to happen in datetime or dateutil format
+        accepts: 
+            time: string in "00:00:00" format
+            day: full string (ex: "Sunday")
+        returns:
+            time in datetime format
+        '''
+        myHour = int(str(time).split(':')[0])
+        myMinute = int(str(time).split(':')[1])
+        mySecond = int(str(time).split(':')[2])
+        DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
+                 second=mySecond, microsecond=0)
+        return DTtime
+        
+    #pass
+
     #build a list of hour long archives that need to be concatenated
+    startHour = strTime2timeObject(show['OnairTime'])
+    print 'spinDay22day(spinDay, startHour) ->',
+    print spinDay22day(spinDay, startHour)
+    showStart = mytime2DT(show['OnairTime'],spinDay22day(spinDay, 
+                          startHour)) + relativedelta(minutes=startDelta)
+    endHour = strTime2timeObject(show['OffairTime'])
+    showEnd = mytime2DT(show['OffairTime'],spinDay22day(spinDay, 
+                          endHour)) + relativedelta(minutes=endDelta)
+    # if start time > end time, then show must stradle midnight hour
+    print 'showStart -> ', str(showStart)
+    print 'showEnd -> ', str(showEnd)
+    print type(showEnd)
+
+    if showStart > showEnd:
+        # I think this will fix matters if a show straddles midnight
+        # otherwise, maybe get a 24 hour + audio archive ?!?!
+        showStart = showStart + relativedelta(days=-1)
+    duration = showEnd - showStart
+
+    print 'show duration: -> ', str(duration)
+    print 'type(duration) -> ', str(type(duration))
+    print 'showStart -> ', str(showStart)
+    print 'showEnd -> ', str(showEnd)
+    showHours = numArchives(showStart, showEnd)
+    print showHours
+    
+def numArchives(start,end):
+    '''
+    accepts:
+        start, end: type = datetime.datetime
+    '''
+    print 'numArchives -> ', str(type(start))
+    startHour = start.timetuple().tm_hour
+    endHour = end.timetuple().tm_hour
+    if startHour.timetuple().tm_mday != endHour.timetuple().tm_mday:
+        endHour += 24
+    numHours = endHour - startHour
+    return numHours
+    #each hour has a start and end time within the hour
+        # convert start & end times to datetime format, add in time deltas
+        
     #if len(archiveList) == 0:
-        #error
+        #errorNow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
     #elif len(archiveList) == 1:
         #pick start & end points to create mp3Out
         #for this hour long archive, create start and end attributes
@@ -138,6 +262,8 @@ def buildmp3(show):
             #modify start attribute
         #for last archive in list:
             #modify end attribute
+
+
     
     
 import os
@@ -149,7 +275,8 @@ import datetime as DT
 from dateutil.relativedelta import *
 import calendar
 
-import pysox
+from subprocess import call
+#import pysox
 
 #num2day has been modified to align with date.weekday() RTFM
 num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
@@ -170,8 +297,12 @@ day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
 
 if __name__ == '__main__':
     
+    tab = '    '
+    
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
+    print 'Now -> ', str(Now)
     ThisHour = DT.datetime.now() + relativedelta( minute=0, second=0, microsecond=0)
+    print 'ThisHour -> ', str(ThisHour)
     
     startDelta = local.startDelta
     endDelta = local.endDelta
@@ -181,22 +312,30 @@ if __name__ == '__main__':
     #print charlieSched
     
     #LastHour is two hours ago if EndDelta is greater than zero
-    LastHour, today = getTime()
+    LastHour, today = getCurrentTime()
     #adjust time to Spinitron time
-    today = dayAdjust(today, LastHour)
+    spinDay = day2spinDay(today, LastHour)
     print 'LastHour -> ', LastHour
     print 'today -> ', today
+    print 'spinDay -> ', spinDay
     
-    showsToArchive = getShows2Archive(charlieSched, LastHour, today)
+    #======================================
+    # make list of shows to archive
+    #======================================
+    #showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
+    #for testing purposes ...
+    showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
     print 'showsToArchive ->'
-    print '\t', str(showsToArchive)
+    print 'tab', str(showsToArchive)
     
-    '''
-    for show in ShowsToArchive:
+    #================================================================
+    # build mo3 for each show in list
+    #================================================================
+    for show in showsToArchive:
         # build mp3 using pysox
-        buildmp3(show)
+        buildmp3(show, spinDay)
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"
-    '''
+
 
         

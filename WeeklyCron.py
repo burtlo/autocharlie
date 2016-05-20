@@ -51,11 +51,13 @@ from copy import deepcopy
 
 def sched2charlieSched (sched):
     '''
-    accepts a demetafied sched
-    strip out Rivendellshows
-    current decision: don't do day adjustment for shows ending before 6am 
-        in this function
-    returns a charlieSched, containing minimal info needed to run cron job
+    accepts:
+        demetafied sched
+    strips out Rivendellshows
+    current decision: don't do day adjustment for spinitron time
+    returns:
+        charlieSched, containing minimal info needed to run cron job
+        *note*: days are spinitron days, that end at 6am, not midnight
     '''
     print 'sched2charlieSched()'
     print

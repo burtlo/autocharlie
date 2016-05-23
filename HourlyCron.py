@@ -405,7 +405,7 @@ if __name__ == '__main__':
     # build mp3 for each show in list
     #================================================================
     for show in showsToArchive:
-        # build mp3 using pysox
+        # build list of audio archive chunks to concat
         archiveList = buildArchiveList(show, spinDay)
         pp.pprint(archiveList)
         # send "new.mp3" to correct folder on webserver, using scp

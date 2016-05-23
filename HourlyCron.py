@@ -184,50 +184,54 @@ def strTime2timeObject(strTime):
     DTtime = DT.time(myHour, myMin, mySec)
     return DTtime   
 
+def mytime2DT(time, day):
+    '''
+    all "time math" needs to happen in datetime or dateutil format
+    accepts: 
+        time: string in "00:00:00" format
+        day: full string (ex: "Sunday")
+    returns:
+        time in datetime format
+    '''
+    myHour = int(str(time).split(':')[0])
+    myMinute = int(str(time).split(':')[1])
+    mySecond = int(str(time).split(':')[2])
+    DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
+             second=mySecond, microsecond=0)
+    return DTtime
+
 def numArchives(start,end):
     '''
     accepts:
         start, end: type = datetime.datetime
     '''
-    print 'numArchives -> ', str(type(start))
     partialEnd = False
     startHour = start.timetuple().tm_hour
     endHour = end.timetuple().tm_hour
     if start.timetuple().tm_mday != end.timetuple().tm_mday:
         endHour += 24
     numHours = endHour - startHour
-    if end.timetuple().tm_min > 0:
+    #partialEnd is True if the last archived hour to grab needs to have its 
+        # end truncated
+        # if show ends in the 59th minute, we consider show to end on the hour
+    if end.timetuple().tm_min > 0 and end.timetuple().tm_min < 59:
         numHours +=1
         partialEnd = True
     return numHours, partialEnd
     
-def buildmp3(show, spinDay):
+def buildArchiveList(show, spinDay):
     '''
     accepts:
         show in showsToArchive format
         spinDay: fullStrDay (ex: 'Sunday'), spinDay ends @ 6am
     returns:
-        an mp3 for archiving
+        ArchiveList (a list of hour long archives that will be used to build
+            mp3 archive for a particular show)
+        Each element of the ArchiveList is a dict containing the following:
+            'StartTime' : type = datetime.datetime.timetuple()
+            'Delta': type = datetime.timedelta
     '''
-    def mytime2DT(time, day):
-        '''
-        all "time math" needs to happen in datetime or dateutil format
-        accepts: 
-            time: string in "00:00:00" format
-            day: full string (ex: "Sunday")
-        returns:
-            time in datetime format
-        '''
-        myHour = int(str(time).split(':')[0])
-        myMinute = int(str(time).split(':')[1])
-        mySecond = int(str(time).split(':')[2])
-        DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
-                 second=mySecond, microsecond=0)
-        return DTtime
-        
-    #pass
-
-    #build a list of hour long archives that need to be concatenated
+    #determine start and end of show, with deltas added in
     startHour = strTime2timeObject(show['OnairTime'])
     print 'spinDay22day(spinDay, startHour) ->',
     print spinDay22day(spinDay, startHour)
@@ -236,25 +240,82 @@ def buildmp3(show, spinDay):
     endHour = strTime2timeObject(show['OffairTime'])
     showEnd = mytime2DT(show['OffairTime'],spinDay22day(spinDay, 
                           endHour)) + relativedelta(minutes=endDelta)
-    # if start time > end time, then show must stradle midnight hour
+
     print 'showStart -> ', str(showStart)
     print 'showEnd -> ', str(showEnd)
     print type(showEnd)
-
+    print
+    
+    # if start time > end time, then show must stradle midnight hour
     if showStart > showEnd:
         # I think this will fix matters if a show straddles midnight
         # otherwise, maybe get a 24 hour + audio archive ?!?!
         showStart = showStart + relativedelta(days=-1)
+        
     duration = showEnd - showStart
+    duraSeconds = duration.seconds
+    print 'duraSeconds -> ', duraSeconds
 
     print 'show duration: -> ', str(duration)
     print 'type(duration) -> ', str(type(duration))
     print 'showStart -> ', str(showStart)
     print 'showEnd -> ', str(showEnd)
+    
     showHours, partialEnd = numArchives(showStart, showEnd)
     print showHours #start counting @ zero
     print range(showHours)
+    partialOffset = 0
+    if partialEnd:
+        partialOffset = 1
     
+    
+    archiveList = []
+    archiveElement = {}
+    count = 0
+    #if the show is an hour or less, does not stradle an hour, and doesn't end
+        # at the end of an hour, this is an edge case ...
+    if showHours == 1 and partialEnd == True:
+        archiveElement['StartTime'] = showStart
+        archiveElement['TimeDelta'] = showEnd - showStart
+    
+    else: #not an edge case
+        # offset = time from beginning of show to end of first hour
+            # ex: show starts at 2:15, offset is 45 minutes
+        offset = (showStart + relativedelta(hours=+1, 
+                            minute =0, second=0)) -showStart
+          
+        if count < showHours:
+            archiveElement['StartTime'] = showStart
+            archiveElement['TimeDelta'] = offset
+            archiveList.append(archiveElement)
+            count += 1
+        
+        while count + partialOffset < showHours: # working with a complete hour
+            archiveElement = {}   
+            archiveElement['StartTime'] = archiveList[-1]['StartTime'] + \
+                            archiveList[-1]['TimeDelta']
+            archiveElement['TimeDelta'] = DT.timedelta(seconds=3600)
+            archiveList.append(archiveElement)
+            count += 1
+        
+        if partialEnd:
+            archiveElement = {}
+            archiveElement['StartTime'] = archiveList[-1]['StartTime'] + \
+                            archiveList[-1]['TimeDelta']
+            archiveElement['TimeDelta'] = showEnd - archiveElement['StartTime']
+            archiveList.append(archiveElement)
+                                        
+    return archiveList
+    
+        
+def buildmp3(show, spinDay):
+    '''
+    accepts:
+        show in showsToArchive format
+        spinDay: fullStrDay (ex: 'Sunday'), spinDay ends @ 6am
+    returns:
+        an mp3 for archiving
+    '''
 
     #each hour has a start and end time within the hour
         # convert start & end times to datetime format, add in time deltas
@@ -269,6 +330,7 @@ def buildmp3(show, spinDay):
             #modify start attribute
         #for last archive in list:
             #modify end attribute
+    pass
 
 
     
@@ -282,8 +344,11 @@ import datetime as DT
 from dateutil.relativedelta import *
 import calendar
 
+import pprint
+
 from subprocess import call
-#import pysox
+# example of sox and call usage:
+    # http://ymkimit.blogspot.com/2014/07/recording-sound-detecting-silence.html
 
 #num2day has been modified to align with date.weekday() RTFM
 num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
@@ -305,6 +370,7 @@ day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
 if __name__ == '__main__':
     
     tab = '    '
+    pp = pprint.PrettyPrinter(indent=4)
     
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
     print 'Now -> ', str(Now)
@@ -333,14 +399,15 @@ if __name__ == '__main__':
     #for testing purposes ...
     showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
     print 'showsToArchive ->'
-    print 'tab', str(showsToArchive)
+    print tab, str(showsToArchive)
     
     #================================================================
-    # build mo3 for each show in list
+    # build mp3 for each show in list
     #================================================================
     for show in showsToArchive:
         # build mp3 using pysox
-        buildmp3(show, spinDay)
+        archiveList = buildArchiveList(show, spinDay)
+        pp.pprint(archiveList)
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"
 

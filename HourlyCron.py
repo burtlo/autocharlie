@@ -183,6 +183,23 @@ def strTime2timeObject(strTime):
     mySec = int(str(strTime).split(':')[2])
     DTtime = DT.time(myHour, myMin, mySec)
     return DTtime   
+
+def numArchives(start,end):
+    '''
+    accepts:
+        start, end: type = datetime.datetime
+    '''
+    print 'numArchives -> ', str(type(start))
+    partialEnd = False
+    startHour = start.timetuple().tm_hour
+    endHour = end.timetuple().tm_hour
+    if start.timetuple().tm_mday != end.timetuple().tm_mday:
+        endHour += 24
+    numHours = endHour - startHour
+    if end.timetuple().tm_min > 0:
+        numHours +=1
+        partialEnd = True
+    return numHours, partialEnd
     
 def buildmp3(show, spinDay):
     '''
@@ -238,22 +255,7 @@ def buildmp3(show, spinDay):
     print showHours #start counting @ zero
     print range(showHours)
     
-def numArchives(start,end):
-    '''
-    accepts:
-        start, end: type = datetime.datetime
-    '''
-    print 'numArchives -> ', str(type(start))
-    partialEnd = False
-    startHour = start.timetuple().tm_hour
-    endHour = end.timetuple().tm_hour
-    if start.timetuple().tm_mday != end.timetuple().tm_mday:
-        endHour += 24
-    numHours = endHour - startHour
-    if end.timetuple().tm_min > 0:
-        numHours +=1
-        partialEnd = True
-    return numHours, partialEnd
+
     #each hour has a start and end time within the hour
         # convert start & end times to datetime format, add in time deltas
         

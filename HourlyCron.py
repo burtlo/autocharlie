@@ -349,6 +349,7 @@ import pprint
 from subprocess import call
 # example of sox and call usage:
     # http://ymkimit.blogspot.com/2014/07/recording-sound-detecting-silence.html
+# option other than subprocess.call -> os.system
 
 #num2day has been modified to align with date.weekday() RTFM
 num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
@@ -395,9 +396,9 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    #showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
+    showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     #for testing purposes ...
-    showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
+    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
     print 'showsToArchive ->'
     print tab, str(showsToArchive)
     

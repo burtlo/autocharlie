@@ -306,6 +306,22 @@ def buildArchiveList(show, spinDay):
             archiveList.append(archiveElement)
                                         
     return archiveList
+
+def pad(shortStr, padChar = '0', fullLen = 2):
+    '''
+    accepts:
+        a string 
+        padChar (a single character string)
+        len (int) desired length of output string
+    returns:
+        a string with padding prepended
+    '''
+    padding = ''
+    for i in range(len(shortStr) - fullLen):
+        padding = ''.join((padding, padChar ))
+    retStr = ''.join((padding, shortStr))
+    return retStr
+        
     
         
 def buildmp3(show, spinDay):
@@ -396,9 +412,9 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
+    #showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     #for testing purposes ...
-    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
+    showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
     print 'showsToArchive ->'
     print tab, str(showsToArchive)
     
@@ -409,6 +425,27 @@ if __name__ == '__main__':
         # build list of audio archive chunks to concat
         archiveList = buildArchiveList(show, spinDay)
         pp.pprint(archiveList)
+        
+        for x, chunk in enumerate(archiveList):
+            year = str(chunk['StartTime'].timetuple().tm_year)
+            month = pad(str(chunk['StartTime'].timetuple().tm_mon))
+            day = pad(str(chunk['StartTime'].timetuple().tm_mday))
+            hour = pad(str(chunk['StartTime'].timetuple().tm_hour))
+            minute = pad(str(chunk['StartTime'].timetuple().tm_min))
+            SourceOgg = ''.join((local.archiveSource, year, '/', month, '/',
+                                   day, '/', hour, '-00-00.ogg'))
+            #fullHour is a boolean
+            DeltaSeconds = chunk['TimeDelta'].total_seconds()
+            fullHour = (3540 < DeltaSeconds < 3660 )        
+            targetMp3 = '/'.join((local.tmpMp3,str(x), '.mp3'))
+            if fullHour: # no trim necesary, just convert to mp3
+                cmd = ['sox', SourceOgg, targetMp3,]
+                call(cmd)
+            else:
+                startTrim = str(60 * int(minute))
+                cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
+                call(cmd)
+            print cmd
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"
 

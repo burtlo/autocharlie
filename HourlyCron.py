@@ -426,7 +426,9 @@ if __name__ == '__main__':
         archiveList = buildArchiveList(show, spinDay)
         pp.pprint(archiveList)
         
+        
         for x, chunk in enumerate(archiveList):
+            print 'x -> ' + str(x)
             year = str(chunk['StartTime'].timetuple().tm_year)
             month = pad(str(chunk['StartTime'].timetuple().tm_mon))
             day = pad(str(chunk['StartTime'].timetuple().tm_mday))
@@ -439,7 +441,8 @@ if __name__ == '__main__':
             fullHour = (3540 < DeltaSeconds < 3660 )        
             targetMp3 = '/'.join((local.tmpMp3,str(x), '.mp3'))
             if fullHour: # no trim necesary, just convert to mp3
-                cmd = ['sox', SourceOgg, targetMp3,]
+                print 'fullHour '
+                cmd = ['sox', SourceOgg, targetMp3]
                 call(cmd)
             else:
                 startTrim = str(60 * int(minute))

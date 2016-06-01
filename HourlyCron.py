@@ -412,9 +412,9 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    #showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
+    showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     #for testing purposes ...
-    showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
+    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
     print 'showsToArchive ->'
     print tab, str(showsToArchive)
     

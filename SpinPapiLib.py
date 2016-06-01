@@ -535,6 +535,7 @@ def FreshPapi(NewSched ='today'):
     (2) strip extra Requests fields
     #note: NewSched isn't being used for anything
     
+    Sched2 = Sched1 + local schema bolted on 
     returns a schedule as Sched2, no metafication yet
     '''
     
@@ -562,6 +563,7 @@ def FreshPapi1 ():
     (2) strip extra Requests fields
     
     returns a schedule as Sched1, no metafication yet
+    Sched1 doesn't have any local schema bolted on
     as of May 2016, WeeklyCron.py doesn't need (or want) a metafied schedule
     '''
 
@@ -578,10 +580,10 @@ def FreshPapi1 ():
         print 'New Schedule obtained from Spinitron'
         
         #take SpinPapi schedule & strip extra Requests fields (keep)
-        sched2 = SchedScrub(sched)
+        sched1 = SchedScrub(sched)
         #simple schedule doesn't need local schema bolted on to shows ...
         #Sched2 = Sched1toSched2(ScheduleDict1)
-        return sched2
+        return sched1
     else:
         print 'error retrieving schedule from Spinitron!!!!'
         print 'FreshPapi1'
@@ -713,6 +715,10 @@ if __name__ == '__main__':
     print; print 'Sched2: '+ str(Sched2)
     PickleDump('Sched2.pkl', Sched2)
     '''
+    
+    #################################################################
+    # grab newest pickle
+    #################################################################
     dud = local.pklSourcePath
     print dud
     

@@ -441,9 +441,7 @@ if __name__ == '__main__':
             fullHour = (3540 < DeltaSeconds < 3660 )        
             targetMp3 = '/'.join((local.tmpMp3,str(x), '.mp3'))
             if fullHour: # no trim necesary, just convert to mp3
-
-            print 'fullHour '
-
+                print 'fullHour '
                 cmd = ['sox', SourceOgg, targetMp3]
                 call(cmd)
             else:

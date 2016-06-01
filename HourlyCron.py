@@ -412,9 +412,9 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    #showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
+    showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     #for testing purposes ...
-    showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
+    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
     print 'showsToArchive ->'
     print tab, str(showsToArchive)
     
@@ -439,13 +439,26 @@ if __name__ == '__main__':
             #fullHour is a boolean
             DeltaSeconds = chunk['TimeDelta'].total_seconds()
             fullHour = (3540 < DeltaSeconds < 3660 )        
-            targetMp3 = '/'.join((local.tmpMp3,str(x), '.mp3'))
+            targetMp3 = ''.join((local.tmpMp3, '/', str(x), '.mp3'))
             if fullHour: # no trim necesary, just convert to mp3
-                print 'fullHour '
+                print 'fullHour [',str(x),']'
+                print '    ','SourceOgg -> ', str(SourceOgg)
+                print type(SourceOgg)
+                print '    ', 'targetMp3 -> ', str(targetMp3)
+                print type(targetMp3)
                 cmd = ['sox', SourceOgg, targetMp3]
                 call(cmd)
             else:
                 startTrim = str(60 * int(minute))
+                print 'Not fullHour [',str(x),']'
+                print '    SourceOgg -> ', str(SourceOgg)
+                print type(SourceOgg)
+                print '    targetMp3 -> ', str(targetMp3)
+                print type(targetMp3)
+                print '    startTrim -> ', str(startTrim)
+                print type(startTrim)
+                print '    DeltaSeconds -> ', str(DeltaSeconds)
+                print type(DeltaSeconds)
                 cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
                 call(cmd)
             print cmd

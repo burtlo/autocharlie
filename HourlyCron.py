@@ -439,7 +439,7 @@ if __name__ == '__main__':
             fullHour = (3540 < DeltaSeconds < 3660 )        
             targetMp3 = '/'.join((local.tmpMp3,str(x), '.mp3'))
             if fullHour: # no trim necesary, just convert to mp3
-                cmd = ['sox', SourceOgg, targetMp3,]
+                cmd = ['sox', SourceOgg, targetMp3]
                 call(cmd)
             else:
                 startTrim = str(60 * int(minute))

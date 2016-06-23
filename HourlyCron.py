@@ -50,8 +50,7 @@ example:
 #TODO: Fix that Chris & Larry show is in ShowList, but not Sonic Landscapes
 """
 
-
-@contextmanager
+#@contextmanager
 def stdout_redirector(stream):
     '''
     see:
@@ -69,6 +68,7 @@ def stdout_redirector(stream):
         yield
     finally:
         sys.stdout = old_stdout
+
 
 def getCharlieSched():
     '''

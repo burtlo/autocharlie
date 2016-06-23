@@ -417,9 +417,9 @@ if __name__ == '__main__':
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
 
     ThisHour = DT.datetime.now() + relativedelta( minute=0, second=0, microsecond=0)
-    print '==========================================================================='
+    print '===================================================================='
     print 'HOURLYCRON.py ', str(ThisHour)
-    print '==========================================================================='    
+    print '===================================================================='    
     #print 'ThisHour -> ', str(ThisHour)
     
     startDelta = local.startDelta
@@ -443,10 +443,10 @@ if __name__ == '__main__':
     showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     #for testing purposes ...
     #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 
-    print tab, '==========================================='
+    print '==========================================='
     print 'showsToArchive ->'
-    print tab, tab, str(showsToArchive)
-    print tab, '=========================================='
+    print tab, str(showsToArchive)
+    print '=========================================='
     
     #================================================================
     # build mp3 for each show in list
@@ -497,7 +497,7 @@ if __name__ == '__main__':
         # Using scp, mv "new.mp3" to "current.mp3"
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
-    print 'END of HourlyCron -> ', str(ThisHour)
+    print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print
 

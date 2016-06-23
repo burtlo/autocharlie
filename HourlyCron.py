@@ -253,6 +253,7 @@ def buildChunkList(show, spinDay):
     '''
     #determine start and end of show, with deltas added in
     startHour = strTime2timeObject(show['OnairTime'])
+    print
     print 'spinDay22day(spinDay, startHour) ->',
     print spinDay22day(spinDay, startHour)
     showStart = mytime2DT(show['OnairTime'],spinDay22day(spinDay, 
@@ -458,9 +459,11 @@ if __name__ == '__main__':
         pp.pprint(chunkList)
         print "====== END: PrettyPrint chunkList ===="
         
-        
+        # create correct mp3 for each chunk of show to archive
         for x, chunk in enumerate(chunkList):
-            print 'x -> ' + str(x)
+            print '================'
+            print 'chunk #' + str(x)
+            print '================'
             year = str(chunk['StartTime'].timetuple().tm_year)
             month = pad(str(chunk['StartTime'].timetuple().tm_mon))
             day = pad(str(chunk['StartTime'].timetuple().tm_mday))
@@ -473,21 +476,23 @@ if __name__ == '__main__':
             fullHour = (3540 < DeltaSeconds < 3660 )        
             targetMp3 = ''.join((local.tmpMp3, '/', str(x), '.mp3'))
             if fullHour: # no trim necesary, just convert to mp3
-                print 'fullHour [',str(x),']'
-                print '    ','SourceOgg -> ', str(SourceOgg)
-                print '    ', 'targetMp3 -> ', str(targetMp3)
+                print tab,'fullHour [',str(x),']'
+                print tab,'    ','SourceOgg -> ', str(SourceOgg)
+                print tab,'    ', 'targetMp3 -> ', str(targetMp3)
                 cmd = ['sox', SourceOgg, targetMp3]
+                print cmd
                 call(cmd)
             else: #trim the hour long archive down to size
                 startTrim = str(60 * int(minute))
-                print 'Not fullHour [',str(x),']'
-                print '    SourceOgg -> ', str(SourceOgg)
-                print '    targetMp3 -> ', str(targetMp3)
-                print '    startTrim -> ', str(startTrim)
-                print '    DeltaSeconds -> ', str(DeltaSeconds)
+                print tab,'Not fullHour [',str(x),']'
+                print tab,'    SourceOgg -> ', str(SourceOgg)
+                print tab,'    targetMp3 -> ', str(targetMp3)
+                print tab,'    startTrim -> ', str(startTrim)
+                print tab,'    DeltaSeconds -> ', str(DeltaSeconds)
                 cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
+                print cmd
                 call(cmd)
-            print cmd
+        # sox-concat the audio fles just put into tmpMp3 folder
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"
     print        

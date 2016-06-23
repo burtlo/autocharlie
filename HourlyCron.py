@@ -475,27 +475,26 @@ if __name__ == '__main__':
             if fullHour: # no trim necesary, just convert to mp3
                 print 'fullHour [',str(x),']'
                 print '    ','SourceOgg -> ', str(SourceOgg)
-                print type(SourceOgg)
                 print '    ', 'targetMp3 -> ', str(targetMp3)
-                print type(targetMp3)
                 cmd = ['sox', SourceOgg, targetMp3]
                 call(cmd)
             else: #trim the hour long archive down to size
                 startTrim = str(60 * int(minute))
                 print 'Not fullHour [',str(x),']'
                 print '    SourceOgg -> ', str(SourceOgg)
-                print type(SourceOgg)
                 print '    targetMp3 -> ', str(targetMp3)
-                print type(targetMp3)
                 print '    startTrim -> ', str(startTrim)
-                print type(startTrim)
                 print '    DeltaSeconds -> ', str(DeltaSeconds)
-                print type(DeltaSeconds)
                 cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
                 call(cmd)
             print cmd
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"
+    print        
+    print '++++++++++++++++++++++++++++++++++++++++++++++'
+    print 'END of HourlyCron -> ', str(ThisHour)
+    print '++++++++++++++++++++++++++++++++++++++++++++++'
+    print
 
 
         

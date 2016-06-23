@@ -50,15 +50,35 @@ example:
 #TODO: Fix that Chris & Larry show is in ShowList, but not Sonic Landscapes
 """
 
+
+@contextmanager
+def stdout_redirector(stream):
+    '''
+    see:
+        http://eli.thegreenplace.net/2015/redirecting-all-kinds-of-stdout-in-python/
+    example code using stdout_redirector:
+        f = io.StringIO()
+        with stdout_redirector(f):
+            print('foobar')
+            print(12)
+        print('Got stdout: "{0}"'.format(f.getvalue()))
+    '''
+    old_stdout = sys.stdout
+    sys.stdout = stream
+    try:
+        yield
+    finally:
+        sys.stdout = old_stdout
+
 def getCharlieSched():
     '''
-    returns newest charlieSched from key.charlieSched
+    returns newest charlieSched from folder specified in key.charlieSched
     '''
     #save current working dir
     current = os.getcwd()
     charlieSched = SPlib.OpenPickle(SPlib.newestPickle(local.charlieSchedPath), 
                                     local.charlieSchedPath)
-    #return to current working dir
+    #return to current working dir 
     os.chdir(current)
     return charlieSched
     
@@ -219,15 +239,15 @@ def numArchives(start,end):
         partialEnd = True
     return numHours, partialEnd
     
-def buildArchiveList(show, spinDay):
+def buildChunkList(show, spinDay):
     '''
     accepts:
         show in showsToArchive format
         spinDay: fullStrDay (ex: 'Sunday'), spinDay ends @ 6am
     returns:
-        ArchiveList (a list of hour long archives that will be used to build
+        ChunkList (a list of hour long archives that will be used to build
             mp3 archive for a particular show)
-        Each element of the ArchiveList is a dict containing the following:
+        Each element of the ChunkList is a dict containing the following:
             'StartTime' : type = datetime.datetime.timetuple()
             'Delta': type = datetime.timedelta
     '''
@@ -269,14 +289,14 @@ def buildArchiveList(show, spinDay):
         partialOffset = 1
     
     
-    archiveList = []
-    archiveElement = {}
+    chunkList = []
+    chunk= {}
     count = 0
     #if the show is an hour or less, does not stradle an hour, and doesn't end
         # at the end of an hour, this is an edge case ...
     if showHours == 1 and partialEnd == True:
-        archiveElement['StartTime'] = showStart
-        archiveElement['TimeDelta'] = showEnd - showStart
+        chunk['StartTime'] = showStart
+        chunk['TimeDelta'] = showEnd - showStart
     
     else: #not an edge case
         # offset = time from beginning of show to end of first hour
@@ -285,27 +305,27 @@ def buildArchiveList(show, spinDay):
                             minute =0, second=0)) -showStart
           
         if count < showHours:
-            archiveElement['StartTime'] = showStart
-            archiveElement['TimeDelta'] = offset
-            archiveList.append(archiveElement)
+            chunk['StartTime'] = showStart
+            chunk['TimeDelta'] = offset
+            chunkList.append(chunk)
             count += 1
         
         while count + partialOffset < showHours: # working with a complete hour
-            archiveElement = {}   
-            archiveElement['StartTime'] = archiveList[-1]['StartTime'] + \
-                            archiveList[-1]['TimeDelta']
-            archiveElement['TimeDelta'] = DT.timedelta(seconds=3600)
-            archiveList.append(archiveElement)
+            chunk = {}   
+            chunk['StartTime'] = chunkList[-1]['StartTime'] + \
+                            chunkList[-1]['TimeDelta']
+            chunk['TimeDelta'] = DT.timedelta(seconds=3600)
+            chunkList.append(chunk)
             count += 1
         
         if partialEnd:
-            archiveElement = {}
-            archiveElement['StartTime'] = archiveList[-1]['StartTime'] + \
-                            archiveList[-1]['TimeDelta']
-            archiveElement['TimeDelta'] = showEnd - archiveElement['StartTime']
-            archiveList.append(archiveElement)
+            chunk = {}
+            chunk['StartTime'] = chunkList[-1]['StartTime'] + \
+                            chunkList[-1]['TimeDelta']
+            chunk['TimeDelta'] = showEnd - chunk['StartTime']
+            chunkList.append(chunk)
                                         
-    return archiveList
+    return chunkList
 
 def pad(shortStr, padChar = '0', fullLen = 2):
     '''
@@ -317,7 +337,7 @@ def pad(shortStr, padChar = '0', fullLen = 2):
         a string with padding prepended
     '''
     padding = ''
-    for i in range(len(shortStr) - fullLen):
+    for i in range(fullLen - len(shortStr)):
         padding = ''.join((padding, padChar ))
     retStr = ''.join((padding, shortStr))
     return retStr
@@ -336,11 +356,11 @@ def buildmp3(show, spinDay):
     #each hour has a start and end time within the hour
         # convert start & end times to datetime format, add in time deltas
         
-    #if len(archiveList) == 0:
+    #if len(chunkList) == 0:
         #errorNow = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
-    #elif len(archiveList) == 1:
+    #elif len(chunkList) == 1:
         #pick start & end points to create mp3Out
-        #for this hour long archive, create start and end attributes
+        #for this hour long archive (aka "chunk"), create start and end attributes
     #else (two or more archives to grab):
         #for first archive:
             #modify start attribute
@@ -363,6 +383,10 @@ import calendar
 import pprint
 
 from subprocess import call
+
+from contextlib import contextmanager
+import sys
+
 # example of sox and call usage:
     # http://ymkimit.blogspot.com/2014/07/recording-sound-detecting-silence.html
 # option other than subprocess.call -> os.system
@@ -390,9 +414,12 @@ if __name__ == '__main__':
     pp = pprint.PrettyPrinter(indent=4)
     
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
-    print 'Now -> ', str(Now)
+
     ThisHour = DT.datetime.now() + relativedelta( minute=0, second=0, microsecond=0)
-    print 'ThisHour -> ', str(ThisHour)
+    print '==========================================================================='
+    print 'HOURLYCRON.py ', str(ThisHour)
+    print '==========================================================================='    
+    #print 'ThisHour -> ', str(ThisHour)
     
     startDelta = local.startDelta
     endDelta = local.endDelta
@@ -405,29 +432,34 @@ if __name__ == '__main__':
     LastHour, today = getCurrentTime()
     #adjust time to Spinitron time
     spinDay = day2spinDay(today, LastHour)
-    print 'LastHour -> ', LastHour
-    print 'today -> ', today
-    print 'spinDay -> ', spinDay
+    print tab, 'LastHour -> ', LastHour
+    print tab, 'today -> ', today
+    print tab, 'spinDay -> ', spinDay
     
     #======================================
     # make list of shows to archive
     #======================================
     showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     #for testing purposes ...
-    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday')    
+    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 
+    print tab, '==========================================='
     print 'showsToArchive ->'
-    print tab, str(showsToArchive)
+    print tab, tab, str(showsToArchive)
+    print tab, '=========================================='
     
     #================================================================
     # build mp3 for each show in list
     #================================================================
     for show in showsToArchive:
         # build list of audio archive chunks to concat
-        archiveList = buildArchiveList(show, spinDay)
-        pp.pprint(archiveList)
+        chunkList = buildChunkList(show, spinDay)
+        print "====================="
+        print "PrettyPrint chunkList:"
+        pp.pprint(chunkList)
+        print "====== END: PrettyPrint chunkList ===="
         
         
-        for x, chunk in enumerate(archiveList):
+        for x, chunk in enumerate(chunkList):
             print 'x -> ' + str(x)
             year = str(chunk['StartTime'].timetuple().tm_year)
             month = pad(str(chunk['StartTime'].timetuple().tm_mon))
@@ -448,7 +480,7 @@ if __name__ == '__main__':
                 print type(targetMp3)
                 cmd = ['sox', SourceOgg, targetMp3]
                 call(cmd)
-            else:
+            else: #trim the hour long archive down to size
                 startTrim = str(60 * int(minute))
                 print 'Not fullHour [',str(x),']'
                 print '    SourceOgg -> ', str(SourceOgg)

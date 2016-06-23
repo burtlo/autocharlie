@@ -207,6 +207,9 @@ def strTime2timeObject(strTime):
 def mytime2DT(time, day):
     '''
     all "time math" needs to happen in datetime or dateutil format
+    #TODO:
+    note: this code doesn't use day string, instead internally implements its 
+        own day to spinDay conversion
     accepts: 
         time: string in "00:00:00" format
         day: full string (ex: "Sunday")
@@ -217,7 +220,10 @@ def mytime2DT(time, day):
     myMinute = int(str(time).split(':')[1])
     mySecond = int(str(time).split(':')[2])
     DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
-             second=mySecond, microsecond=0)
+         second=mySecond, microsecond=0) 
+    if (0 <= myHour <= 5) or (myHour == 6 and myHour+myMinute+mySecond == 6):
+        DTtime = DTtime - DT.timedelta(days=1)
+
     return DTtime
 
 def numArchives(start,end):

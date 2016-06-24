@@ -374,8 +374,67 @@ def buildmp3(show, spinDay):
         #for last archive in list:
             #modify end attribute
     pass
-
-
+def cleanOutFolder(folder, extension=''):
+    '''
+    remove all files in designated folder (absolute path, please), optionally 
+        filtered to files with the specified extension (extension must include 
+        leading dot)
+    previous working directory is restored 
+    return value = list containing filenames of deleted files
+    '''
+    current = os.getcwd()
+    os.chdir(folder)
+    rex = ''.join(('*',extension))
+    hatchetList = list(glob.iglob(rex))
+    for el in hatchetList:
+        os.remove(''.join((folder,'/',el)))
+    os.chdir(current)
+    return hatchetList
+    
+def createAudioChunks(chunkList, tmpFolder=local.tmpMp3):
+    '''
+    using chunkList, populate tmpFolder with mp3 chunks for subsequent
+    concatenation.
+    mp3s named 0.mp3, 1.mp3, ...
+    no return value ...
+    '''
+    hatchetList = cleanOutFolder(tmpFolder,'.mp3')
+    if len(hatchetList):
+        print 'removed -> ', str(hatchetList), ' from ', tmpFolder
+    else:
+        print tmpFolder, ' started empty.'
+    for x, chunk in enumerate(chunkList):
+        print '================'
+        print 'chunk #' + str(x)
+        print '================'
+        year = str(chunk['StartTime'].timetuple().tm_year)
+        month = pad(str(chunk['StartTime'].timetuple().tm_mon))
+        day = pad(str(chunk['StartTime'].timetuple().tm_mday))
+        hour = pad(str(chunk['StartTime'].timetuple().tm_hour))
+        minute = pad(str(chunk['StartTime'].timetuple().tm_min))
+        SourceOgg = ''.join((local.archiveSource, year, '/', month, '/',
+                               day, '/', hour, '-00-00.ogg'))
+        #fullHour is a boolean
+        DeltaSeconds = chunk['TimeDelta'].total_seconds()
+        fullHour = (3540 < DeltaSeconds < 3660 )        
+        targetMp3 = ''.join((tmpFolder, '/', str(x), '.mp3'))
+        if fullHour: # no trim necesary, just convert to mp3
+            print tab,'fullHour [',str(x),']'
+            print tab,'    ','SourceOgg -> ', str(SourceOgg)
+            print tab,'    ', 'targetMp3 -> ', str(targetMp3)
+            cmd = ['sox', SourceOgg, targetMp3]
+            print cmd
+            call(cmd)
+        else: #trim the hour long archive down to size
+            startTrim = str(60 * int(minute))
+            print tab,'Not fullHour [',str(x),']'
+            print tab,'    SourceOgg -> ', str(SourceOgg)
+            print tab,'    targetMp3 -> ', str(targetMp3)
+            print tab,'    startTrim -> ', str(startTrim)
+            print tab,'    DeltaSeconds -> ', str(DeltaSeconds)
+            cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
+            print cmd
+            call(cmd)    
     
     
 import os
@@ -420,11 +479,12 @@ if __name__ == '__main__':
     tab = '    '
     pp = pprint.PrettyPrinter(indent=4)
     
+    #Now,as defined below, is actually the start of today
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
 
     ThisHour = DT.datetime.now() + relativedelta( minute=0, second=0, microsecond=0)
     print '===================================================================='
-    print 'HOURLYCRON.py ', str(ThisHour)
+    print 'HOURLYCRON.py ', str(DT.datetime.now())
     print '===================================================================='    
     #print 'ThisHour -> ', str(ThisHour)
     
@@ -466,38 +526,9 @@ if __name__ == '__main__':
         print "====== END: PrettyPrint chunkList ===="
         
         # create correct mp3 for each chunk of show to archive
-        for x, chunk in enumerate(chunkList):
-            print '================'
-            print 'chunk #' + str(x)
-            print '================'
-            year = str(chunk['StartTime'].timetuple().tm_year)
-            month = pad(str(chunk['StartTime'].timetuple().tm_mon))
-            day = pad(str(chunk['StartTime'].timetuple().tm_mday))
-            hour = pad(str(chunk['StartTime'].timetuple().tm_hour))
-            minute = pad(str(chunk['StartTime'].timetuple().tm_min))
-            SourceOgg = ''.join((local.archiveSource, year, '/', month, '/',
-                                   day, '/', hour, '-00-00.ogg'))
-            #fullHour is a boolean
-            DeltaSeconds = chunk['TimeDelta'].total_seconds()
-            fullHour = (3540 < DeltaSeconds < 3660 )        
-            targetMp3 = ''.join((local.tmpMp3, '/', str(x), '.mp3'))
-            if fullHour: # no trim necesary, just convert to mp3
-                print tab,'fullHour [',str(x),']'
-                print tab,'    ','SourceOgg -> ', str(SourceOgg)
-                print tab,'    ', 'targetMp3 -> ', str(targetMp3)
-                cmd = ['sox', SourceOgg, targetMp3]
-                print cmd
-                call(cmd)
-            else: #trim the hour long archive down to size
-                startTrim = str(60 * int(minute))
-                print tab,'Not fullHour [',str(x),']'
-                print tab,'    SourceOgg -> ', str(SourceOgg)
-                print tab,'    targetMp3 -> ', str(targetMp3)
-                print tab,'    startTrim -> ', str(startTrim)
-                print tab,'    DeltaSeconds -> ', str(DeltaSeconds)
-                cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
-                print cmd
-                call(cmd)
+        createAudioChunks(chunkList)
+        print 'AudioChunks created for: ', str(show)
+
         # sox-concat the audio fles just put into tmpMp3 folder
         # send "new.mp3" to correct folder on webserver, using scp
         # Using scp, mv "new.mp3" to "current.mp3"

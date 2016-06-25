@@ -391,7 +391,7 @@ def cleanOutFolder(folder, extension=''):
     os.chdir(current)
     return hatchetList
     
-def createAudioChunks(chunkList, tmpFolder=local.tmpMp3):
+def createAudioChunks(chunkList, tmpFolder):
     '''
     using chunkList, populate tmpFolder with mp3 chunks for subsequent
     concatenation.
@@ -526,7 +526,7 @@ if __name__ == '__main__':
         print "====== END: PrettyPrint chunkList ===="
         
         # create correct mp3 for each chunk of show to archive
-        createAudioChunks(chunkList)
+        createAudioChunks(chunkList, local.tmpMp3)
         print 'AudioChunks created for: ', str(show)
 
         # sox-concat the audio fles just put into tmpMp3 folder

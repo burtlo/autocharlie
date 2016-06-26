@@ -221,7 +221,7 @@ def mytime2DT(time, day):
     mySecond = int(str(time).split(':')[2])
     DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
          second=mySecond, microsecond=0) 
-    if (0 <= myHour <= 5) or (myHour == 6 and myHour+myMinute+mySecond == 6):
+    if (0 <= myHour <= 5):
         DTtime = DTtime - DT.timedelta(days=1)
 
     return DTtime

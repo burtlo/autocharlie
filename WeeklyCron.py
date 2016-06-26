@@ -135,7 +135,10 @@ def isArchivable(show):
     
     
 #MAIN========================
-
+print '=============================================='
+print 'WeeklyCron.py'    
+print time.asctime()
+print '=============================================='
 #client = Papi.SpinPapiClient(key.userid, key.secret)
 
 #num2day has been modified to align with date.weekday() RTFM
@@ -174,3 +177,7 @@ saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
 #save pickle (for future use by HourlyCron.py)
 SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
 
+print '++++++++++++++++++++++++++++++++++++++++++++++'
+print 'EDN: WeeklyCron.py'    
+print time.asctime()
+print '++++++++++++++++++++++++++++++++++++++++++++++'

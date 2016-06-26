@@ -158,9 +158,7 @@ def myGetDay(day):
     SchedScrub is used to keep 'results' and strip 'request' and 'success'
     '''
     client = Papi.SpinPapiClient(key.userid, key.secret)
-    print 'xxxxxxxxxxxxxxxx'
-    print 'MGD.day -> ', str(day)
-    print 'xxxxxxxxxxxxxxx'
+    print 'MGD.day -> ', str(day),' -> ', Days[day]
     r = requests.get(client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
     #r = requests.get(Papi.client.query({'method': 'getRegularShowsInfo', 'station': 'wdrt', 'When': str(day)}))
     d = json.loads(str(r.text))

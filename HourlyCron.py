@@ -374,6 +374,7 @@ def buildmp3(show, spinDay):
         #for last archive in list:
             #modify end attribute
     pass
+
 def cleanOutFolder(folder, extension=''):
     '''
     remove all files in designated folder (absolute path, please), optionally 
@@ -390,7 +391,33 @@ def cleanOutFolder(folder, extension=''):
         os.remove(''.join((folder,'/',el)))
     os.chdir(current)
     return hatchetList
-    
+
+def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
+    '''
+    concatenate all audio files with the specified postfix
+        (audio source files sorted alphabetically)
+    copy concatenated audio file into destFolder, name = "New.<postfix>"
+    returns 1 on success
+    '''
+    try:
+        current = os.getcwd()
+        os.chdir(sourceFolder)
+        targetFile = ''.join((destFolder,'/','New',postfix))
+        #grab list of files in sourceFolder
+        rex = ''.join(('*',postfix))
+        concatList = sorted(list(glob.iglob(rex)))
+        #build sox command
+        cmd = concatList
+        cmd.insert(0,'sox')
+        cmd.append(targetFile)
+        print cmd
+        #execute sox command to concat audio files
+        call(cmd)
+        #return to current working dir 
+        os.chdir(current)
+        return 1
+    except:
+        return 0
 def createAudioChunks(chunkList, tmpFolder):
     '''
     using chunkList, populate tmpFolder with mp3 chunks for subsequent
@@ -404,9 +431,7 @@ def createAudioChunks(chunkList, tmpFolder):
     else:
         print tmpFolder, ' started empty.'
     for x, chunk in enumerate(chunkList):
-        print '================'
         print 'chunk #' + str(x)
-        print '================'
         year = str(chunk['StartTime'].timetuple().tm_year)
         month = pad(str(chunk['StartTime'].timetuple().tm_mon))
         day = pad(str(chunk['StartTime'].timetuple().tm_mday))
@@ -532,8 +557,10 @@ if __name__ == '__main__':
         print 'AudioChunks created for: ', str(show)
 
         # sox-concat the audio fles just put into tmpMp3 folder
-        # send "new.mp3" to correct folder on webserver, using scp
-        # Using scp, mv "new.mp3" to "current.mp3"
+        success = audioConcat(local.tmpMp3, local.Mp3Staging)
+        if success:
+            # send "New.mp3" to correct folder on webserver, using scp
+            # Using scp, mv "new.mp3" to "current.mp3"
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))

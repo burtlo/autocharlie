@@ -44,12 +44,24 @@ WeeklyCron.py
 import SpinPapiLib as SPLib
 import time
 import local
+import key
 from copy import deepcopy
 
+import pprint
+from ftplib import FTP
 
 
+def dudFunc(day):
+    '''
+    used by shced2charlieSched as a default action of doing nothing
+    '''
+    pass
 
-def sched2charlieSched (sched):
+def startFTP():
+    '''
+    '''
+    ftp = FTP(key.host, key.username, key.passwd)
+def sched2charlieSched (sched, myFunc = dudFunc):
     '''
     accepts:
         demetafied sched
@@ -73,7 +85,7 @@ def sched2charlieSched (sched):
                 # by searching for dash
             #NOTE: The key below prevents duplicates, by sorting out shows that
                 #start and end at the same time
-            key = '-'.join([ show['OffairTime'], show['OnairTime'] ])
+            key = '-'.join([ day2shortDay[day], show['OnairTime'], show['OffairTime'] ])
             charlieSched[day][key] = {}   
             charlieSched[day][key]['OffairTime'] = show['OffairTime']
             charlieSched[day][key]['OnairTime']  = show['OnairTime']
@@ -99,9 +111,23 @@ def sched2charlieSched (sched):
         for timeslot in tempSched[day]:
             #if timeslot is not archivable, then remove it from charlieSched
             if not(tempSched[day][timeslot]['Archivable']):
-                print '\ts2cs> deleted: ', str(tempSched[day][timeslot]['ShowList'])
+                #print '\ts2cs> deleted: ', str(tempSched[day][timeslot]['ShowList'])
                 del charlieSched[day][timeslot]
+            #for my sneaky purposes, run MyFunc if timeslot is archivable
+            else:
+                myFunc(timeslot)
     return charlieSched
+
+def createRemoteFolder(timeslot):
+    '''
+    local.remote
+    '''
+    #pp = pprint.PrettyPrinter(indent=4)
+    #pp.pprint(timeslot)  
+    tempList = timeslot.split('-') #split timeslot @ dashes ex: 'Sat-20:00:00-22:00:00'
+    timeList = tempList[1].split(':') #split start time ex: 15:00:00
+    destFolder = ''.join((tempList[0],timeList[0], timeList[1]))
+    print targetStr
     
 def dayAdjust(fullDayStr, hour):
     '''
@@ -169,7 +195,7 @@ schedKeys = fullSched.keys()
 print 'schedKey -> ', str(schedKeys)
 
 #convert spinitron Schedule to CharlieSched (very stripped down)
-charlieSched = sched2charlieSched(fullSched)
+charlieSched = sched2charlieSched(fullSched, testFunc)
 
 #create datestamp filename
 saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
@@ -178,6 +204,6 @@ saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
 SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
 
 print '++++++++++++++++++++++++++++++++++++++++++++++'
-print 'EDN: WeeklyCron.py'    
+print 'END: WeeklyCron.py'    
 print time.asctime()
 print '++++++++++++++++++++++++++++++++++++++++++++++'

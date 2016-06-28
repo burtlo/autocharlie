@@ -44,3 +44,5 @@ def startFTP():
 # MAIN
     
 startFTP()
+    
+print  "!Rd0Fr0mTh3Gr0undUp!" == key.passwd

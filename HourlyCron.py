@@ -401,7 +401,7 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     '''
     current = os.getcwd()
     os.chdir(sourceFolder)
-    targetFile = ''.join((destFolder,'/','New',postfix))
+    targetFile = ''.join((destFolder,'New',postfix))
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))
@@ -446,7 +446,7 @@ def createAudioChunks(chunkList, tmpFolder):
         day = pad(str(chunk['StartTime'].timetuple().tm_mday))
         hour = pad(str(chunk['StartTime'].timetuple().tm_hour))
         minute = pad(str(chunk['StartTime'].timetuple().tm_min))
-        SourceOgg = ''.join((local.archiveSource,'/', year, '/', month, '/',
+        SourceOgg = ''.join((local.archiveSource, year, '/', month, '/',
                                day, '/', hour, '-00-00.ogg'))
         #fullHour is a boolean
         DeltaSeconds = chunk['TimeDelta'].total_seconds()
@@ -581,12 +581,23 @@ if __name__ == '__main__':
 
         # sox-concat the audio fles just put into tmpMp3 folder
         audioConcat(local.tmpMp3, local.Mp3Staging)
-        #if success:
+        #if audioConcat was successful:
         if True: # because success is the only option!
-            print 'place holder'
             # send "New.mp3" to correct folder on webserver, using ftp
-            
-            # Using scp, mv "new.mp3" to "current.mp3"
+            timeList = show['OnairTime'].split(':')
+            showStart = ''.join((timeList[0],timeList[1]))
+            subfolder = ''.join((day2shortDay[spinDay], showStart)) # ex: Sun1300
+            remoteTargetFolder = ''.join((local.remote, subfolder))
+            ftp.cwd(remoteTargetFolder)
+            os.chdir(Mp3Staging)
+            localMp3 = 'new.mp3'
+            myfile = open(localMp3, 'rb')
+            ftp.storbinary('STOR' + localMp3 , myfile)
+            myfile.close()
+            # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
+            ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
+    
+    ftp.close()        
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))

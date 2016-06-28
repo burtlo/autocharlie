@@ -589,7 +589,7 @@ if __name__ == '__main__':
             subfolder = ''.join((day2shortDay[spinDay], showStart)) # ex: Sun1300
             remoteTargetFolder = ''.join((local.remote, subfolder))
             ftp.cwd(remoteTargetFolder)
-            os.chdir(Mp3Staging)
+            os.chdir(local.Mp3Staging)
             localMp3 = 'new.mp3'
             myfile = open(localMp3, 'rb')
             ftp.storbinary('STOR' + localMp3 , myfile)

@@ -488,6 +488,7 @@ from contextlib import contextmanager
 import sys
 
 import glob
+import ftplib
 
 # example of sox and call usage:
     # http://ymkimit.blogspot.com/2014/07/recording-sound-detecting-silence.html
@@ -559,7 +560,7 @@ if __name__ == '__main__':
     
     # if there's going to be something to archive, then open ftp client
     if len(showsToArchive) > 0:
-        ftp = FTP(key.host, key.username, key.passwd)
+        ftp = ftplib.FTP(key.host, key.username, key.passwd)
         ftp.cwd(local.remote)
         
     #================================================================

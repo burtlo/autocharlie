@@ -598,8 +598,9 @@ if __name__ == '__main__':
             myfile.close()
             # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
             ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
-    
-    ftp.close()        
+            
+    if len(showsToArchive) > 0:
+        ftp.close()        
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))

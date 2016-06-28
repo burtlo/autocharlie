@@ -101,7 +101,9 @@ def sched2charlieSched2remoteFolders (sched):
 def createRemoteFolder(timeslot):
     '''
     accepts a timeslot string, example format:
-        Sun1700 (sunday @ 5pm)
+       "Sat-20:00:00-22:00:00" = show starts Saturday @ 8pm 
+   makes folder as follows:
+       "Sat2000"
     '''
     tempList = timeslot.split('-') #split timeslot @ dashes ex: 'Sat-20:00:00-22:00:00'
     timeList = tempList[1].split(':') #split start time ex: 15:00:00

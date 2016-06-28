@@ -548,7 +548,8 @@ if __name__ == '__main__':
         showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
     else: # DEBUGGING
         #this should kick off work on archiving the Euphonic Smorgasbord
-        #but will it try to reach into the future????
+        #the following line grabs archives from current day instead of Friday
+        #TODO: but I don't feel compelled to fix it just yet
         showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 
         
     print '==========================================='
@@ -556,10 +557,16 @@ if __name__ == '__main__':
     print tab, str(showsToArchive)
     print '=========================================='
     
+    # if there's going to be something to archive, then open ftp client
+    if len(showsToArchive) > 0:
+        ftp = FTP(key.host, key.username, key.passwd)
+        ftp.cwd(local.remote)
+        
     #================================================================
     # build mp3 for each show in list
     #================================================================
     for show in showsToArchive:
+        print show
         # build list of audio archive chunks to concat
         chunkList = buildChunkList(show, spinDay)
         print "====================="
@@ -574,9 +581,10 @@ if __name__ == '__main__':
         # sox-concat the audio fles just put into tmpMp3 folder
         audioConcat(local.tmpMp3, local.Mp3Staging)
         #if success:
-        if True:
+        if True: # because success is the only option!
             print 'place holder'
-            # send "New.mp3" to correct folder on webserver, using scp
+            # send "New.mp3" to correct folder on webserver, using ftp
+            
             # Using scp, mv "new.mp3" to "current.mp3"
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'

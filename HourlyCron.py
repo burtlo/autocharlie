@@ -405,13 +405,24 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))
-    #build sox command
-    cmd = concatList
-    cmd.insert(0,'sox')
-    cmd.append(targetFile)
-    print cmd
-    #execute sox command to concat audio files
-    call(cmd)
+    #if there are multiple audio files in the folder where we expect them ..
+    if len(concatList) > 1:
+        #then build sox command
+        cmd = concatList
+        cmd.insert(0,'sox')
+        cmd.append(targetFile)
+        print '+++++++++++++++++++++++++++++++++++++'
+        print 'audioConcat line 412'
+        print cmd
+        print '+++++++++++++++++++++++++++++++++++++'
+        #execute sox command to concat audio files
+        call(cmd)
+    #else, if there is only one audio file, rename it and move it
+    elif len(concatList) == 1:
+        sourceFile = ''.join((sourceFolder,concatList[0]))
+        os.rename(sourceAudio, targetFile)
+    else: # no audio files in folder
+        print 'ERROR: no audio files in ',sourceFolder, ' to concat'
     #return to current working dir 
     os.chdir(current)
     print 'END: audioConcat'
@@ -435,7 +446,7 @@ def createAudioChunks(chunkList, tmpFolder):
         day = pad(str(chunk['StartTime'].timetuple().tm_mday))
         hour = pad(str(chunk['StartTime'].timetuple().tm_hour))
         minute = pad(str(chunk['StartTime'].timetuple().tm_min))
-        SourceOgg = ''.join((local.archiveSource, year, '/', month, '/',
+        SourceOgg = ''.join((local.archiveSource,'/', year, '/', month, '/',
                                day, '/', hour, '-00-00.ogg'))
         #fullHour is a boolean
         DeltaSeconds = chunk['TimeDelta'].total_seconds()
@@ -497,6 +508,8 @@ day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue',
                 
 day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
+           
+TESTING = false
    
 
 if __name__ == '__main__':
@@ -531,9 +544,13 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
-    #for testing purposes ...
-    #showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 
+    if not TESTING:
+        showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
+    else: # TESTING
+        #this should kick off work on archiving the Euphonic Smorgasbord
+        #but will it try to reach into the future????
+        showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 
+        
     print '==========================================='
     print 'showsToArchive ->'
     print tab, str(showsToArchive)
@@ -557,6 +574,8 @@ if __name__ == '__main__':
         # sox-concat the audio fles just put into tmpMp3 folder
         audioConcat(local.tmpMp3, local.Mp3Staging)
         #if success:
+        if True:
+            print 'place holder'
             # send "New.mp3" to correct folder on webserver, using scp
             # Using scp, mv "new.mp3" to "current.mp3"
     print        

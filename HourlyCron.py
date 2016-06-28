@@ -545,13 +545,13 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    if not DEBUGGING:
-        showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
-    else: # DEBUGGING
-        #this should kick off work on archiving the Euphonic Smorgasbord
-        #the following line grabs archives from current day instead of Friday
-        #TODO: but I don't feel compelled to fix it just yet
-        showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 
+
+    if DEBUGGING:
+        #changing LastHour & spinDay hijacks current time
+        #showToArchive will be the Euphonic Smorgasbord (as of June 2016)
+        LasthHour = 12
+        spinDay = 'Friday'
+    showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay) 
         
     print '==========================================='
     print 'showsToArchive ->'
@@ -567,7 +567,6 @@ if __name__ == '__main__':
     # build mp3 for each show in list
     #================================================================
     for show in showsToArchive:
-        print show
         # build list of audio archive chunks to concat
         chunkList = buildChunkList(show, spinDay)
         print "====================="

@@ -526,7 +526,7 @@ if __name__ == '__main__':
 
     ThisHour = DT.datetime.now() + relativedelta( minute=0, second=0, microsecond=0)
     print '===================================================================='
-    print 'HOURLYCRON.py ', str(DT.datetime.now())
+    print 'HOURLYCRON.py ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '===================================================================='    
     #print 'ThisHour -> ', str(ThisHour)
     
@@ -585,7 +585,7 @@ if __name__ == '__main__':
         audioConcat(local.tmpMp3, local.Mp3Staging)
         #if audioConcat was successful:
         if True: # because success is the only option!
-            # send "New.mp3" to correct folder on webserver, using ftp
+            # send "new.mp3" to correct folder on webserver, using ftp
             timeList = show['OnairTime'].split(':')
             showStart = ''.join((timeList[0],timeList[1]))
             subfolder = ''.join((day2shortDay[spinDay], showStart)) # ex: Sun1300

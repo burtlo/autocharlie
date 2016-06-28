@@ -557,8 +557,8 @@ if __name__ == '__main__':
         print 'AudioChunks created for: ', str(show)
 
         # sox-concat the audio fles just put into tmpMp3 folder
-        success = audioConcat(local.tmpMp3, local.Mp3Staging)
-        if success:
+        audioConcat(local.tmpMp3, local.Mp3Staging)
+        #if success:
             # send "New.mp3" to correct folder on webserver, using scp
             # Using scp, mv "new.mp3" to "current.mp3"
     print        

@@ -594,7 +594,7 @@ if __name__ == '__main__':
             os.chdir(local.Mp3Staging)
             localMp3 = 'new.mp3'
             myfile = open(localMp3, 'rb')
-            ftp.storbinary('STOR' + localMp3 , myfile)
+            ftp.storbinary('STOR ' + localMp3 , myfile)
             myfile.close()
             # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
             ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...

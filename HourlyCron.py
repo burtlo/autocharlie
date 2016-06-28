@@ -399,25 +399,23 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     copy concatenated audio file into destFolder, name = "New.<postfix>"
     returns 1 on success
     '''
-    try:
-        current = os.getcwd()
-        os.chdir(sourceFolder)
-        targetFile = ''.join((destFolder,'/','New',postfix))
-        #grab list of files in sourceFolder
-        rex = ''.join(('*',postfix))
-        concatList = sorted(list(glob.iglob(rex)))
-        #build sox command
-        cmd = concatList
-        cmd.insert(0,'sox')
-        cmd.append(targetFile)
-        print cmd
-        #execute sox command to concat audio files
-        call(cmd)
-        #return to current working dir 
-        os.chdir(current)
-        return 1
-    except:
-        return 0
+    current = os.getcwd()
+    os.chdir(sourceFolder)
+    targetFile = ''.join((destFolder,'/','New',postfix))
+    #grab list of files in sourceFolder
+    rex = ''.join(('*',postfix))
+    concatList = sorted(list(glob.iglob(rex)))
+    #build sox command
+    cmd = concatList
+    cmd.insert(0,'sox')
+    cmd.append(targetFile)
+    print cmd
+    #execute sox command to concat audio files
+    call(cmd)
+    #return to current working dir 
+    os.chdir(current)
+    print 'END: audioConcat'
+
 def createAudioChunks(chunkList, tmpFolder):
     '''
     using chunkList, populate tmpFolder with mp3 chunks for subsequent

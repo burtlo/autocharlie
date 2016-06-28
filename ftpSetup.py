@@ -4,39 +4,8 @@ Created on Wed May 11 15:03:20 2016
 
 @author: lmadeo
 
-WeeklyCron.py
+ftpSetup is largely a copy of WeeklyCron.py
 
-# FIRST, MOST BASIC INTERATION
-------------------------------
-
-* Hit Spinitron API & get weekly schedule
-* Strip schedule down to a dict: 
-    * stripped down schedule = charlieSched
-    * fullDayString : DictOfTimeSlots
-    * TimeSlot = { CustomKey : {'OnairTime': 'hh:mm:ss', 'OffairTime : 'hh:mm:ss'} }
-* Save stripped schedule to CharlieSched folder, as specified in local.py
-
-# OTHER steps to be taken later:
---------------------------------
-
-* use checksum, or similar technique to detect changes in charlieSched, because
-    changes to the "skeleton" of the weekly schedule will require multiple
-    modifications to the
-    *website
-    *new folders created, old folders deleted
-    
-* Special metafication for partial schedule pickles (or send to test folder?)
-    
-# EVEN later
------------
-
-*use checksum to compare weekly schedule in original format, as received, to
-    be able to detect more minor changes in show name, etc. that *may* warrant 
-    changes to website
-    
-#TODO:
-    fix unicode issues, ex:
-    'ShowList': [u' \u201cDRIFTLESS JAZZ\u201d ']
     
 """
 #import SpinPapiClient as Papi
@@ -61,13 +30,15 @@ def startFTP():
     '''
     '''
     ftp = FTP(key.host, key.username, key.passwd)
+    return ftp
     
-def sched2charlieSched (sched, myFunc = dudFunc):
+def sched2charlieSched2remoteFolders (sched):
     '''
     accepts:
         demetafied sched
     strips out Rivendellshows
-    current decision: don't do day adjustment for spinitron time
+    for each non-Rivendell show, create a folder in /wdrtradio.org/Audio3
+        in remote website server, via FTP
     returns:
         charlieSched, containing minimal info needed to run cron job
         *note*: days are spinitron days, that end at 6am, not midnight
@@ -75,13 +46,10 @@ def sched2charlieSched (sched, myFunc = dudFunc):
     print 'sched2charlieSched()'
     print
     charlieSched = {}
+    # build charlieSched day by day
     for day in sched:
-        #print 'day in sched -> ', str(day)
         charlieSched [day] = {}
         for show in sched[day]:
-            #print 'type(show) -> ', str(type(show))
-            #print 'show -> ', str(show)
-            #print "show['OffairTime'] -> ", str(show['OffairTime']), str(type(show['OffairTime']))
             #NOTE: '-' join is necessay, string will be parsed later
                 # by searching for dash
             #NOTE: The key below prevents duplicates, by sorting out shows that
@@ -106,6 +74,16 @@ def sched2charlieSched (sched, myFunc = dudFunc):
                     charlieSched[day][key] = isArchivable(show)
             except:
                 charlieSched[day][key]['Archivable'] = isArchivable(show)
+    
+    ftp = startFTP()
+    # create Audio3 folder, this try/except is unecessary, but it's fun
+    try:
+        ftp.cwd('/wdrtradio.org/Audio3')
+    except ftplib.error_perm:
+        print 'no pre-existing Audio3 folder'
+        ftp.mkd('/wdrtradio.org/Audio3')
+        print 'Audio3 has been created'
+        
     tempSched = deepcopy(charlieSched)
     for day in tempSched:
         print day
@@ -116,38 +94,22 @@ def sched2charlieSched (sched, myFunc = dudFunc):
                 del charlieSched[day][timeslot]
             #for my sneaky purposes, run MyFunc if timeslot is archivable
             else:
-                myFunc(timeslot)
+                folderName = createRemoteFolder(timeslot)
+                print folderName
     return charlieSched
 
 def createRemoteFolder(timeslot):
     '''
-    local.remote
+    accepts a timeslot string, example format:
+        Sun1700 (sunday @ 5pm)
     '''
-    #pp = pprint.PrettyPrinter(indent=4)
-    #pp.pprint(timeslot)  
     tempList = timeslot.split('-') #split timeslot @ dashes ex: 'Sat-20:00:00-22:00:00'
     timeList = tempList[1].split(':') #split start time ex: 15:00:00
+    #we assume we're already in Audio3 folder
     destFolder = ''.join((tempList[0],timeList[0], timeList[1]))
-    print targetStr
+    ftp.mkd(destFolder)
+    return destFolder
     
-def dayAdjust(fullDayStr, hour):
-    '''
-    #
-    #might not  be needed in WeeklyCron context
-    #
-    adjust for the fact that Spinitron day starts at 6am instead of midnight
-    accepts full day name string
-    returns adjusted full day name string
-    '''
-    day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
-           'Friday':4, 'Saturday':5, 'Sunday':6}
-    num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
-            1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
-            4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
-    if hour < 7:
-        yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
-        fullDayStr = yesterday
-    return fullDayStr
     
 def isArchivable(show):
     '''
@@ -188,23 +150,20 @@ day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
 #load fresh copy of weekly schedule via spinitron API                       
 fullSched = SPLib.FreshPapi1()
 
-#print 'fullSched'
-#print 'type(fullSched) -> ', str(type(fullSched))
-#print fullSched
 
 schedKeys = fullSched.keys()
 print 'schedKey -> ', str(schedKeys)
 
 #convert spinitron Schedule to CharlieSched (very stripped down)
-charlieSched = sched2charlieSched(fullSched, testFunc)
+charlieSched = sched2charlieSched2remoteFolders(fullSched)
 
 #create datestamp filename
-saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
+#saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
 
 #save pickle (for future use by HourlyCron.py)
-SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
+#SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
 
 print '++++++++++++++++++++++++++++++++++++++++++++++'
-print 'END: WeeklyCron.py'    
+print 'END: ftpSetup.py'    
 print time.asctime()
 print '++++++++++++++++++++++++++++++++++++++++++++++'

@@ -12,7 +12,7 @@ import key
 from copy import deepcopy
 
 import pprint
-from ftplib import FTP
+import ftplib
 
 
 def dudFunc(day):
@@ -36,13 +36,19 @@ def createRemoteFolder(timeslot):
 def startFTP():
     '''
     '''
-    print key.host
-    print key.username
-    print key.passwd
-    ftp = FTP(key.host, key.username, key.passwd)
+    ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    return ftp
     
 # MAIN
     
-startFTP()
+ftp = startFTP()
+current = ftp.pwd()
+print ftp.nlst()
+try:
+    ftp.cwd('/wdrtradio.org/Audio3')
+except ftplib.error_perm:
+    print 'no pre-existing Audio3 folder'
+    ftp.mkd('/wdrtradio.org/Audio3')
+    print 'Audio3 has been created'
     
-print  "!Rd0Fr0mTh3Gr0undUp!" == key.passwd
+#ftp.mkd('Audio3')

@@ -406,7 +406,7 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     '''
     current = os.getcwd()
     os.chdir(sourceFolder)
-    targetFile = ''.join((destFolder,'New',postfix))
+    targetFile = ''.join((destFolder,'new',postfix))
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))

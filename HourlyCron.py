@@ -221,7 +221,7 @@ def mytime2DT(time, day):
     mySecond = int(str(time).split(':')[2])
     DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
          second=mySecond, microsecond=0) 
-    nowDay = num2day(DTtime.timetuple[5])
+    nowDay = num2day[DTtime.weekday()]
     print 'nowDay -> ', str(nowDay)
     print 'day -> ', str(day)
     if (nowDay != day):

@@ -509,7 +509,7 @@ day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue',
 day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
            
-TESTING = false
+DEBUGGING = false
    
 
 if __name__ == '__main__':
@@ -544,9 +544,9 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-    if not TESTING:
+    if not DEBUGGING:
         showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay)
-    else: # TESTING
+    else: # DEBUGGING
         #this should kick off work on archiving the Euphonic Smorgasbord
         #but will it try to reach into the future????
         showsToArchive = getShows2Archive(charlieSched, 12, 'Friday') 

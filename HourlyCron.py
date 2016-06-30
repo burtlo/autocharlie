@@ -227,7 +227,7 @@ def mytime2DT(time, day):
     print 'nowDay -> ', str(nowDay)
     print 'day -> ', str(day)
     if (nowDay != day):
-        DTtime = DTtime - DT.timedelta(days=1)
+        DTtime = DTtime - DT.timedelta(days= -1)
 
     return DTtime
 

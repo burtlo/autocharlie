@@ -224,8 +224,8 @@ def mytime2DT(time, day):
 
     nowDay = num2day[DTtime.weekday()]
 
-    print 'nowDay -> ', str(nowDay)
-    print 'day -> ', str(day)
+    print 'mt2dt.nowDay -> ', str(nowDay)
+    print 'mt2dt.day -> ', str(day)
     if (nowDay != day):
         DTtime = DTtime - DT.timedelta(days= -1)
 

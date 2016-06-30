@@ -6,6 +6,17 @@ Created on Wed May 11 15:58:25 2016
 
 hourlyCron.py
 
+###############################
+warning:
+This will break if a show spans the end of the spinitron day (6am)
+In other words, this program assumes that the start and end of a radio show 
+    happen during the same day
+A good start on fixing this would be to disambiguate the following:
+    spinday of HourlyCron execution time
+    spinday of show start
+    spinday of show end
+##############################
+
 #TODO: define CharlieSched format:
     dict of days, keys = fullDayString
         value is a dict
@@ -84,6 +95,8 @@ def getCharlieSched():
     
 def getCurrentTime():
     '''
+    accepts:
+        no inputs, grabs current time from datetime module
     returns:
         LastHour(int (0 .. 23))
         fullDayString
@@ -96,9 +109,9 @@ def getCurrentTime():
     # building archive, otherwise you will be grabbing 60 mon audio archives 
     # that don't exist yet
     if endDelta > 0:
-        LastHourRaw = ThisHour + relativedelta(hours = -2)
+        LastHourRaw = ThisHour + relativedelta(hours = -1)
     else:
-        LastHourRaw = ThisHour + relativedelta(hours = -1)        
+        LastHourRaw = ThisHour + relativedelta(hours = -0)        
     print 'GT.LastHourRaw -> ', str(LastHourRaw)
     print 'GT.LastHour.weekday() -> ', str(LastHourRaw.weekday())
     today = num2day[LastHourRaw.weekday()]
@@ -155,7 +168,8 @@ def spinDay22day(spinDay, time):
         spinDay: full str day, with day ending @ 6am
         time: in datetime.time format (this is the time the show ends)
     returns:
-        *date* in datetime.date format (???)
+        realDayStr = a full day string (ex: 'Sunday')
+        **NOT* *date* in datetime.date format
         perhaps other formats, if it is discovered that these are needed
     '''
     day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
@@ -165,7 +179,7 @@ def spinDay22day(spinDay, time):
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}  
     cutoff = DT.time(6, 0, 0)
     realDayStr = spinDay
-    if not(time > cutoff):
+    if not(time >= cutoff):
         realDayStr = num2day[((day2num[spinDay] + 1) % 7)]
     return realDayStr        
     
@@ -204,7 +218,7 @@ def strTime2timeObject(strTime):
     DTtime = DT.time(myHour, myMin, mySec)
     return DTtime   
 
-def mytime2DT(time, day):
+def mytime2DT(time, spinDay):
     '''
     all "time math" needs to happen in datetime or dateutil format
     #TODO:
@@ -212,10 +226,14 @@ def mytime2DT(time, day):
         own day to spinDay conversion
     accepts: 
         time: string in "00:00:00" format
-        day: full string (ex: "Sunday")
+        spinDay: full string (ex: "Sunday")
     returns:
+        ### This code doesn't really do anything, because I commented out some 
+            lines!!
+        !###
         time in datetime format
-    '''
+    '''spinDay22day(spinDay, 
+                          startHour)
     myHour = int(str(time).split(':')[0])
     myMinute = int(str(time).split(':')[1])
     mySecond = int(str(time).split(':')[2])
@@ -225,10 +243,11 @@ def mytime2DT(time, day):
     nowDay = num2day[DTtime.weekday()]
 
     print 'mt2dt.nowDay -> ', str(nowDay)
-    print 'mt2dt.day -> ', str(day)
-    if (nowDay != day):
-        DTtime = DTtime - DT.timedelta(days= -1)
-
+    print 'mt2dt.spinDay(confirm please) -> ', str(spinDay)
+    '''
+    if (nowDay != spinDay):
+        DTtime = DTtime - DT.timedelta(days= +1)
+    '''
     return DTtime
 
 def numArchives(start,end):
@@ -267,7 +286,9 @@ def buildChunkList(show, spinDay):
     print
     print 'spinDay22day(spinDay, startHour) ->',
     print spinDay22day(spinDay, startHour)
-    showStart = mytime2DT(show['OnairTime'],spinDay22day(spinDay, 
+    print 'showStart(showOnairTime) -> ', str(show['OnairTime'])
+    print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour))
+    showStart = mytime2DT(show['OnairTime'], spinDay22day(spinDay, 
                           startHour)) + relativedelta(minutes=startDelta)
     endHour = strTime2timeObject(show['OffairTime'])
     showEnd = mytime2DT(show['OffairTime'],spinDay22day(spinDay, 
@@ -542,7 +563,7 @@ if __name__ == '__main__':
     #LastHour is two hours ago if EndDelta is greater than zero
     LastHour, today = getCurrentTime()
     #adjust time to Spinitron time
-    spinDay = day2spinDay(today, LastHour)
+    spinDay = day2spinDay(today, LastHour) #spinDay of *last archivable chunk*
     print tab, 'LastHour -> ', LastHour
     print tab, 'today -> ', today
     print tab, 'spinDay -> ', spinDay

@@ -196,7 +196,7 @@ schedKeys = fullSched.keys()
 print 'schedKey -> ', str(schedKeys)
 
 #convert spinitron Schedule to CharlieSched (very stripped down)
-charlieSched = sched2charlieSched(fullSched, testFunc)
+charlieSched = sched2charlieSched(fullSched, dudFunc)
 
 #create datestamp filename
 saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'

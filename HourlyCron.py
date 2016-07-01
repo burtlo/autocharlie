@@ -232,8 +232,8 @@ def mytime2DT(time, spinDay):
             lines!!
         !###
         time in datetime format
-    '''spinDay22day(spinDay, 
-                          startHour)
+    '''
+    
     myHour = int(str(time).split(':')[0])
     myMinute = int(str(time).split(':')[1])
     mySecond = int(str(time).split(':')[2])

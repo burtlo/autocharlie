@@ -206,6 +206,9 @@ def getShows2Archive (sched, LastHour, spinDay):
     
 def strTime2timeObject(strTime):
     '''
+    #I don't think this is getting used now, I'm not really using DT.time class
+        anywhere else in the code base, see mytime2DT, below, which is very
+        similar to this function, but uses the DT.datetime class
     accepts:
         strTime: string in this format: "00:00:00"
     returns:
@@ -218,19 +221,12 @@ def strTime2timeObject(strTime):
     DTtime = DT.time(myHour, myMin, mySec)
     return DTtime   
 
-def mytime2DT(time, spinDay):
+def mytime2DT(time):
     '''
-    all "time math" needs to happen in datetime or dateutil format
-    #TODO:
-    note: this code doesn't use day string, instead internally implements its 
-        own day to spinDay conversion
     accepts: 
         time: string in "00:00:00" format
         spinDay: full string (ex: "Sunday")
     returns:
-        ### This code doesn't really do anything, because I commented out some 
-            lines!!
-        !###
         time in datetime format
     '''
     
@@ -240,14 +236,12 @@ def mytime2DT(time, spinDay):
     DTtime = DT.datetime.now() + relativedelta(hour=myHour, minute=myMinute,
          second=mySecond, microsecond=0) 
 
-    nowDay = num2day[DTtime.weekday()]
-
-    print 'mt2dt.nowDay -> ', str(nowDay)
-    print 'mt2dt.spinDay(confirm please) -> ', str(spinDay)
-    '''
-    if (nowDay != spinDay):
-        DTtime = DTtime - DT.timedelta(days= +1)
-    '''
+    #nowDay = num2day[DTtime.weekday()]
+    now = DT.datetime.now()
+    # assuming that shows are archived less than 24 hours after they are
+    # broadcast, now < DTtime only if "time" occured yesterday
+    if now < DTtime: 
+        DTtime = DTtime - DT.timedelta(days=1)
     return DTtime
 
 def numArchives(start,end):
@@ -281,18 +275,22 @@ def buildChunkList(show, spinDay):
             'StartTime' : type = datetime.datetime.timetuple()
             'Delta': type = datetime.timedelta
     '''
+    print '============================================'
+    print 'buildChunkList'
+    print '============================================'
+    
     #determine start and end of show, with deltas added in
     startHour = strTime2timeObject(show['OnairTime'])
-    print
+
+    print 'startHour -> ', str(startHour)
     print 'spinDay22day(spinDay, startHour) ->',
     print spinDay22day(spinDay, startHour)
     print 'showStart(showOnairTime) -> ', str(show['OnairTime'])
     print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour))
-    showStart = mytime2DT(show['OnairTime'], spinDay22day(spinDay, 
-                          startHour)) + relativedelta(minutes=startDelta)
-    endHour = strTime2timeObject(show['OffairTime'])
-    showEnd = mytime2DT(show['OffairTime'],spinDay22day(spinDay, 
-                          endHour)) + relativedelta(minutes=endDelta)
+    
+    showStart = mytime2DT(show['OnairTime']) + relativedelta(minutes=startDelta)
+    #endHour = strTime2timeObject(show['OffairTime'])
+    showEnd = mytime2DT(show['OffairTime']) + relativedelta(minutes=endDelta)
 
     print 'showStart -> ', str(showStart)
     print 'showEnd -> ', str(showEnd)

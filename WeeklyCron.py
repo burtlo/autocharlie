@@ -112,16 +112,18 @@ def sched2charlieSched (sched, myFunc = dudFunc):
         for timeslot in tempSched[day]:
             #if timeslot is not archivable, then remove it from charlieSched
             if not(tempSched[day][timeslot]['Archivable']):
-                #print '\ts2cs> deleted: ', str(tempSched[day][timeslot]['ShowList'])
+                print 'ts2cs> deleted: ', str(tempSched[day][timeslot]['ShowList'])
                 del charlieSched[day][timeslot]
             #for my sneaky purposes, run MyFunc if timeslot is archivable
             else:
+                print 'ts2cs> archivable: ', str(tempSched[day][timeslot]['ShowList'])
                 myFunc(timeslot)
     return charlieSched
 
 def createRemoteFolder(timeslot):
     '''
-    local.remote
+    supposed to be output:
+        ex: Sun0800 <- start of Mr. Koppa's sunday morning neighborhood
     '''
     #pp = pprint.PrettyPrinter(indent=4)
     #pp.pprint(timeslot)  

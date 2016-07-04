@@ -102,7 +102,7 @@ def createRemoteFolder(timeslot):
     '''
     accepts a timeslot string, example format:
        "Sat-20:00:00-22:00:00" = show starts Saturday @ 8pm 
-   makes folder as follows:
+    makes folder as follows:
        "Sat2000"
     '''
     tempList = timeslot.split('-') #split timeslot @ dashes ex: 'Sat-20:00:00-22:00:00'
@@ -125,14 +125,7 @@ def isArchivable(show):
     return True
     
     
-#MAIN========================
-print '=============================================='
-print 'WeeklyCron.py'    
-print time.asctime()
-print '=============================================='
-#client = Papi.SpinPapiClient(key.userid, key.secret)
-
-#num2day has been modified to align with date.weekday() RTFM
+#=================================MAIN===============================
 num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
             1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
@@ -147,25 +140,35 @@ day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue',
                 
 day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
-                        
- 
-#load fresh copy of weekly schedule via spinitron API                       
-fullSched = SPLib.FreshPapi1()
+                                
+if __name__ == '__main__':
+    
+    print '=============================================='
+    print 'WeeklyCron.py'    
+    print time.asctime()
+    print '=============================================='
+    #client = Papi.SpinPapiClient(key.userid, key.secret)
+    
+    #num2day has been modified to align with date.weekday() RTFM
 
-
-schedKeys = fullSched.keys()
-print 'schedKey -> ', str(schedKeys)
-
-#convert spinitron Schedule to CharlieSched (very stripped down)
-charlieSched = sched2charlieSched2remoteFolders(fullSched)
-
-#create datestamp filename
-#saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
-
-#save pickle (for future use by HourlyCron.py)
-#SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
-
-print '++++++++++++++++++++++++++++++++++++++++++++++'
-print 'END: ftpSetup.py'    
-print time.asctime()
-print '++++++++++++++++++++++++++++++++++++++++++++++'
+     
+    #load fresh copy of weekly schedule via spinitron API                       
+    fullSched = SPLib.FreshPapi1()
+    
+    
+    schedKeys = fullSched.keys()
+    print 'schedKey -> ', str(schedKeys)
+    
+    #convert spinitron Schedule to CharlieSched (very stripped down)
+    charlieSched = sched2charlieSched2remoteFolders(fullSched)
+    
+    #create datestamp filename
+    #saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
+    
+    #save pickle (for future use by HourlyCron.py)
+    #SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
+    
+    print '++++++++++++++++++++++++++++++++++++++++++++++'
+    print 'END: ftpSetup.py'    
+    print time.asctime()
+    print '++++++++++++++++++++++++++++++++++++++++++++++'

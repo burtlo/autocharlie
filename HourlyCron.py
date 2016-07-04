@@ -497,6 +497,41 @@ def createAudioChunks(chunkList, tmpFolder):
             print cmd
             call(cmd)    
     
+def addNewRemoteFolders(charlieSched):
+    '''
+    accepts:
+        schedule in charlieSched format
+    action:
+        if a necessary folder on the website doesn't exist, create it
+    returns:
+        nothing
+    '''
+    def createRemoteFolder(timeslot):
+        '''
+        accepts a timeslot string, example format:
+           "Sat-20:00:00-22:00:00" = show starts Saturday @ 8pm 
+        makes folder as follows:
+           "Sat2000" (but only if it doesn't already exist)
+        returns:
+            name of folder (whether or not it already exists)
+        '''
+        tempList = timeslot.split('-') #split timeslot @ dashes ex: 'Sat-20:00:00-22:00:00'
+        timeList = tempList[1].split(':') #split start time ex: 15:00:00
+        subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
+        destFolder =  ''.join((local.archiveDest, subFolder))
+        try: #make remote audio archive folder if it hasn't been created yet
+            ftp.mkd(destFolder)
+            print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
+        except ftplib.error_perm:
+            # folder has already been created, nothing to do
+            pass
+        return destFolder
+    
+    ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    for day in charlieSched:
+        for timeslot in charlieSched[day]:
+             createRemoteFolder(timeslot)
+                
     
 import os
 import local
@@ -559,8 +594,12 @@ if __name__ == '__main__':
     
     #grab most recentCharlieSched pickle out of designated folder
     charlieSched = getCharlieSched()
-    #print charlieSched
+    pp.pprint( charlieSched )
     
+    #add any necessary remote folders
+    addNewRemoteFolders(charlieSched)
+    
+
     #LastHour is one hour ago if EndDelta is greater than zero
     LastHour, today = getCurrentTime()
     #adjust time to Spinitron time
@@ -630,6 +669,7 @@ if __name__ == '__main__':
     print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print
+
 
 
         

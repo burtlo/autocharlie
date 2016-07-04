@@ -75,7 +75,8 @@ def sched2charlieSched (sched, myFunc = dudFunc):
     print 'sched2charlieSched()'
     print
     charlieSched = {}
-    for day in sched:
+    #for day in sched:
+    for day in ['Monday']: #comment out this line when testing is done
         #print 'day in sched -> ', str(day)
         charlieSched [day] = {}
         for show in sched[day]:
@@ -91,15 +92,17 @@ def sched2charlieSched (sched, myFunc = dudFunc):
             charlieSched[day][key]['OffairTime'] = show['OffairTime']
             charlieSched[day][key]['OnairTime']  = show['OnairTime']
             try:
-                #no ShowList will kick off error
-                ShowList = charlieSched[day][key]['ShowList']
+                #no ShowList will kick off execpt code
+                ErrorCheck = charlieSched[day][key]['ShowList']
             except:
                 charlieSched[day][key]['ShowList'] = []
             #now we know that ShowList exists
             charlieSched[day][key]['ShowList'].append(show['ShowName'])
+            print str(len(charlieSched[day][key]['ShowList'])), str(charlieSched[day][key]['ShowList'])
+            print '\t',str(charlieSched[day][key])
             try:
-                # Archivable not set will cause error
-                Q = charlieSched[day][key]['Archivable']
+                # no Archivable will trigger execute except code
+                ErrorCheck2 = charlieSched[day][key]['Archivable']
                 # if archivable is true, give it a chance to turn false
                     # if it's false, it stays false
                 if charlieSched[day][key]['Archivable']:
@@ -122,6 +125,7 @@ def sched2charlieSched (sched, myFunc = dudFunc):
 
 def createRemoteFolder(timeslot):
     '''
+    #THIS FUNCTION IS CURRENTLY NOT USED#
     supposed to be output:
         ex: Sun0800 <- start of Mr. Koppa's sunday morning neighborhood
     '''
@@ -161,52 +165,55 @@ def isArchivable(show):
         if DJ['DJName'] == 'Rivendell':
             return False
     return True
-    
-    
-#MAIN========================
-print '=============================================='
-print 'WeeklyCron.py'    
-print time.asctime()
-print '=============================================='
-#client = Papi.SpinPapiClient(key.userid, key.secret)
 
-#num2day has been modified to align with date.weekday() RTFM
-num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
-            1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
-            4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
-            
-num2dayShort = { 7: 'SatAFTER', -1: 'SunBEFORE' , 0 : 'Mon' , 
-            1 : 'Tue' , 2 :'Wed',  3 : 'Thu' , 
-            4 : 'Fri' , 5 :'Sat', 6 : 'Sun'}
-            
-day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue', 
-                'Wednesday' : 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri',
-                'Saturday': 'Sat', 'Sunday': 'Sun'}
+#==================================MAIN========================    
+
+if __name__ == '__main__':
+    
+    print '=============================================='
+    print 'WeeklyCron.py'    
+    print time.asctime()
+    print '=============================================='
+    #client = Papi.SpinPapiClient(key.userid, key.secret)
+    
+    #num2day has been modified to align with date.weekday() RTFM
+    num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
+                1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
+                4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
                 
-day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
-           'Friday':4, 'Saturday':5, 'Sunday':6}
-                        
- 
-#load fresh copy of weekly schedule via spinitron API                       
-fullSched = SPLib.FreshPapi1()
-
-#print 'fullSched'
-#print 'type(fullSched) -> ', str(type(fullSched))
-#print fullSched
-
-schedKeys = fullSched.keys()
-print 'schedKey -> ', str(schedKeys)
-
-#convert spinitron Schedule to CharlieSched (very stripped down)
-charlieSched = sched2charlieSched(fullSched, dudFunc)
-
-#create datestamp filename
-saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
-
-#save pickle (for future use by HourlyCron.py)
-SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
-
-print '++++++++++++++++++++++++++++++++++++++++++++++'
-print 'END: WeeklyCron.py'    
-print time.asctime()
-print '++++++++++++++++++++++++++++++++++++++++++++++'
+    num2dayShort = { 7: 'SatAFTER', -1: 'SunBEFORE' , 0 : 'Mon' , 
+                1 : 'Tue' , 2 :'Wed',  3 : 'Thu' , 
+                4 : 'Fri' , 5 :'Sat', 6 : 'Sun'}
+                
+    day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue', 
+                    'Wednesday' : 'Wed', 'Thursday': 'Thu', 'Friday': 'Fri',
+                    'Saturday': 'Sat', 'Sunday': 'Sun'}
+                    
+    day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
+               'Friday':4, 'Saturday':5, 'Sunday':6}
+                            
+    print 'fullSched' 
+    #load fresh copy of weekly schedule via spinitron API                       
+    fullSched = SPLib.FreshPapi1()
+    
+    #print 'fullSched'
+    #print 'type(fullSched) -> ', str(type(fullSched))
+    #print fullSched
+    
+    schedKeys = fullSched.keys()
+    print 'schedKey -> ', str(schedKeys)
+    
+    #convert spinitron Schedule to CharlieSched (very stripped down)
+    charlieSched = sched2charlieSched(fullSched, dudFunc)
+    
+    #create datestamp filename
+    saveName = 'CharlieSched-' + time.strftime("%Y-%m-%d:%H:%M") + '.pkl'
+    
+    #save pickle (for future use by HourlyCron.py)
+    #TODO: Following line is commented out for testing purposes
+    #SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
+    
+    print '++++++++++++++++++++++++++++++++++++++++++++++'
+    print 'END: WeeklyCron.py'    
+    print time.asctime()
+    print '++++++++++++++++++++++++++++++++++++++++++++++'

@@ -108,10 +108,13 @@ def getCurrentTime():
     # if end of archive will spill over into next hour, wait an hour before 
     # building archive, otherwise you will be grabbing 60 mon audio archives 
     # that don't exist yet
-    if endDelta > 0:
-        LastHourRaw = ThisHour + relativedelta(hours = -1)
-    else:
-        LastHourRaw = ThisHour + relativedelta(hours = -0)        
+    if endDelta > 0: 
+        if endDelta < local.startHourlyCron: # tail end of show ends in time to build archive
+            LastHourRaw = ThisHour + relativedelta(hours = -1)
+        else: # tail end of show ends AFTER archiver is ready for it
+            LastHourRaw = ThisHour + relativedelta(hours = -0)
+    else: # no tail added to show archive, so no spill over to next hour 
+        LastHourRaw = ThisHour + relativedelta(hours = -1)        
     print 'GT.LastHourRaw -> ', str(LastHourRaw)
     print 'GT.LastHour.weekday() -> ', str(LastHourRaw.weekday())
     today = num2day[LastHourRaw.weekday()]
@@ -558,7 +561,7 @@ if __name__ == '__main__':
     charlieSched = getCharlieSched()
     #print charlieSched
     
-    #LastHour is two hours ago if EndDelta is greater than zero
+    #LastHour is one hour ago if EndDelta is greater than zero
     LastHour, today = getCurrentTime()
     #adjust time to Spinitron time
     spinDay = day2spinDay(today, LastHour) #spinDay of *last archivable chunk*

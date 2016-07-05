@@ -35,20 +35,26 @@ def createRemoteFolder(timeslot):
     
 def startFTP():
     '''
+    FYI: instantiating ftplib twice doesn't cause an error
     '''
     ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    #ftp = ftplib.FTP(key.host, key.username, key.passwd)
     return ftp
     
 # MAIN
     
 ftp = startFTP()
 current = ftp.pwd()
+print current
 print ftp.nlst()
+
+'''
 try:
     ftp.cwd('/wdrtradio.org/Audio3')
 except ftplib.error_perm:
     print 'no pre-existing Audio3 folder'
     ftp.mkd('/wdrtradio.org/Audio3')
     print 'Audio3 has been created'
+'''
     
 #ftp.mkd('Audio3')

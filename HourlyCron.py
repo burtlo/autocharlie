@@ -611,7 +611,6 @@ if __name__ == '__main__':
     #======================================
     # make list of shows to archive
     #======================================
-
     if DEBUGGING:
         #changing LastHour & spinDay hijacks current time
         #showToArchive will be the Euphonic Smorgasbord (as of June 2016)

@@ -110,11 +110,14 @@ def getCurrentTime():
     # that don't exist yet
     if endDelta > 0: 
         if endDelta < local.startHourlyCron: # tail end of show ends in time to build archive
-            LastHourRaw = ThisHour + relativedelta(hours = -1)
+            LastHourRaw = ThisHour + relativedelta(hours = -0)
+            print 'line 113'
         else: # tail end of show ends AFTER archiver is ready for it
             LastHourRaw = ThisHour + relativedelta(hours = -0)
+            print 'line 116'
     else: # no tail added to show archive, so no spill over to next hour 
-        LastHourRaw = ThisHour + relativedelta(hours = -1)        
+        LastHourRaw = ThisHour + relativedelta(hours = -1)   
+        print 'line 119'
     print 'GT.LastHourRaw -> ', str(LastHourRaw)
     print 'GT.LastHour.weekday() -> ', str(LastHourRaw.weekday())
     today = num2day[LastHourRaw.weekday()]
@@ -594,7 +597,7 @@ if __name__ == '__main__':
     
     #grab most recentCharlieSched pickle out of designated folder
     charlieSched = getCharlieSched()
-    pp.pprint( charlieSched )
+    #pp.pprint( charlieSched )
     
     #add any necessary remote folders
     addNewRemoteFolders(charlieSched)

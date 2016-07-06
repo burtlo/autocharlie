@@ -39,7 +39,6 @@ WeeklyCron.py
     'ShowList': [u' \u201cDRIFTLESS JAZZ\u201d ']
     
 """
-#import SpinPapiClient as Papi
 
 import SpinPapiLib as SPLib
 import time
@@ -75,8 +74,8 @@ def sched2charlieSched (sched, myFunc = dudFunc):
     print 'sched2charlieSched()'
     print
     charlieSched = {}
-    #for day in sched:
-    for day in ['Monday']: #comment out this line when testing is done
+    for day in sched:
+    #for day in ['Monday']: #comment out this line when testing is done
         #print 'day in sched -> ', str(day)
         charlieSched [day] = {}
         for show in sched[day]:
@@ -174,7 +173,6 @@ if __name__ == '__main__':
     print 'WeeklyCron.py'    
     print time.asctime()
     print '=============================================='
-    #client = Papi.SpinPapiClient(key.userid, key.secret)
     
     #num2day has been modified to align with date.weekday() RTFM
     num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
@@ -211,7 +209,7 @@ if __name__ == '__main__':
     
     #save pickle (for future use by HourlyCron.py)
     #TODO: Following line is commented out for testing purposes
-    #SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
+    SPLib.PickleDump(saveName, charlieSched, local.charlieSchedPath)
     
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END: WeeklyCron.py'    

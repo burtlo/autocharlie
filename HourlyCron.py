@@ -648,6 +648,7 @@ if __name__ == '__main__':
 
         # sox-concat the audio fles just put into tmpMp3 folder
         audioConcat(local.tmpMp3, local.Mp3Staging)
+        
         #if audioConcat was successful:
         if True: # because success is the only option!
             # send "new.mp3" to correct folder on webserver, using ftp

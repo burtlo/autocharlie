@@ -135,7 +135,7 @@ def createRemoteFolder(timeslot):
     destFolder = ''.join((tempList[0],timeList[0], timeList[1]))
     print targetStr
     
-def dayAdjust(fullDayStr, hour):
+def dayAdjust(fullDayStr, hour, startSpinDay):
     '''
     #
     #might not  be needed in WeeklyCron context
@@ -149,7 +149,7 @@ def dayAdjust(fullDayStr, hour):
     num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
             1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
-    if hour < 7:
+    if hour <= startSpinDay:
         yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
         fullDayStr = yesterday
     return fullDayStr
@@ -189,6 +189,8 @@ if __name__ == '__main__':
                     
     day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
                'Friday':4, 'Saturday':5, 'Sunday':6}
+               
+    startSpinDay = local.startSpinDay
                             
     print 'fullSched' 
     #load fresh copy of weekly schedule via spinitron API                       

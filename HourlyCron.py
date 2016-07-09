@@ -99,7 +99,7 @@ def getCurrentTime():
         no inputs, grabs current time from datetime module
     returns:
         LastHour(int (0 .. 23))
-        fullDayString
+        fullDayString (ex: 'Sunday')
     uses relative delta, so 1am minus two hours is 11pm, previous day
     '''
     Now = DT.datetime.now() + relativedelta(hour=0, minute=0, second=0, microsecond=0)
@@ -128,10 +128,14 @@ def getCurrentTime():
     #print LastHour
     return LastHour, today
     
-def day2spinDay(fullDayStr, hour):
+def day2spinDay(fullDayStr, hour, startSpinDay):
     '''
     adjust for the fact that Spinitron day starts at 6am instead of midnight
-    accepts full day name string
+    accepts:
+        full day name string (ex: 'Sunday')
+        hour: integer in range [0 .. 23]
+        startSpinDay: integer in range [0 .. 23]
+    
     returns adjusted full day name string
     #TODO: does this need to be implemented in datetime module???
     '''
@@ -140,18 +144,22 @@ def day2spinDay(fullDayStr, hour):
     num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
             1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}
-    if hour < 7:
-        yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
-        fullDayStr = yesterday
+    if startSpinDay != 0:
+        if hour <= startSpinDay:
+            yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
+            fullDayStr = yesterday
     return fullDayStr
     
-def spinDay2day(spinDay, hour):
+def spinDay2day(spinDay, hour, startSpinDay):
     '''
     converts spinitron day to real day, which only happens between
-    midnight and 6am
+    midnight and start of broadcast day (often 6am or midnight)
     accepts:
-        spinDay: full string day, with day ending @ 6am
-        hour: int (0 .. 23) = this is the hour that the show ends
+        spinDay: full string day, ex: "Sunday"
+        hour: int [0 .. 23] = this is the hour that the show ends
+            #commnt to self: could be beginning or end hour of show, anyway ...
+        startSpinDay: int range [0..23] represents the hour that radio broadcast
+            day starts, typically either 6am or midnight
     returns:
         day string, adjusted back from spinday to realday
     '''
@@ -161,18 +169,20 @@ def spinDay2day(spinDay, hour):
             1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}  
     realDayStr = spinDay
-    if hour < 7:
-        realDayStr = num2day[((day2num[spinDay] + 1) % 7)]
+    if startSpinDay != 0:
+        if hour <= startSpinDay:
+            realDayStr = num2day[((day2num[spinDay] + 1) % 7)]
     return realDayStr
     
-def spinDay22day(spinDay, time):
+def spinDay22day(spinDay, time, startSpinDay):
     '''
     better spinDay2day
     converts spinitron day to real day, which only happens between
-    midnight and 6am
+    midnight and start of broadcast day (typically midnight or 6am)
     accepts:
         spinDay: full str day, with day ending @ 6am
         time: in datetime.time format (this is the time the show ends)
+        startSpinDay = int in range [0..23] ex 6 = 6:00am
     returns:
         realDayStr = a full day string (ex: 'Sunday')
         **NOT* *date* in datetime.date format
@@ -183,7 +193,7 @@ def spinDay22day(spinDay, time):
     num2day = { 7: 'SaturdayAFTER', -1: 'Sunday' , 0 : 'Monday' , 
             1 : 'Tuesday' , 2 :'Wednesday',  3 : 'Thursday' , 
             4 : 'Friday' , 5 :'Saturday', 6 : 'Sunday'}  
-    cutoff = DT.time(6, 0, 0)
+    cutoff = DT.time(startSpinDay, 0, 0)
     realDayStr = spinDay
     if not(time >= cutoff):
         realDayStr = num2day[((day2num[spinDay] + 1) % 7)]
@@ -290,9 +300,9 @@ def buildChunkList(show, spinDay):
 
     print 'startHour -> ', str(startHour)
     print 'spinDay22day(spinDay, startHour) ->',
-    print spinDay22day(spinDay, startHour)
+    print spinDay22day(spinDay, startHour, startSpinDay)
     print 'showStart(showOnairTime) -> ', str(show['OnairTime'])
-    print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour))
+    print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour, startSpinDay))
     
     showStart = mytime2DT(show['OnairTime']) + relativedelta(minutes=startDelta)
     #endHour = strTime2timeObject(show['OffairTime'])
@@ -442,8 +452,7 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
         cmd.insert(0,'sox')
         cmd.append(targetFile)
         print '+++++++++++++++++++++++++++++++++++++'
-        print 'audioConcat line 412'
-        print cmd
+        print 'audioConcat: ', cmd
         print '+++++++++++++++++++++++++++++++++++++'
         #execute sox command to concat audio files
         call(cmd)
@@ -594,6 +603,7 @@ if __name__ == '__main__':
     
     startDelta = local.startDelta
     endDelta = local.endDelta
+    startSpinDay = local.startSpinDay
     
     #grab most recentCharlieSched pickle out of designated folder
     charlieSched = getCharlieSched()
@@ -606,7 +616,7 @@ if __name__ == '__main__':
     #LastHour is one hour ago if EndDelta is greater than zero
     LastHour, today = getCurrentTime()
     #adjust time to Spinitron time
-    spinDay = day2spinDay(today, LastHour) #spinDay of *last archivable chunk*
+    spinDay = day2spinDay(today, LastHour, startSpinDay) #spinDay of *last archivable chunk*
     print tab, 'LastHour -> ', LastHour
     print tab, 'today -> ', today
     print tab, 'spinDay -> ', spinDay

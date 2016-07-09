@@ -46,6 +46,8 @@ import local
 import key
 from copy import deepcopy
 
+import HourlyCron as HC
+
 import pprint
 from ftplib import FTP
 
@@ -135,14 +137,19 @@ def createRemoteFolder(timeslot):
     destFolder = ''.join((tempList[0],timeList[0], timeList[1]))
     print targetStr
     
-def dayAdjust(fullDayStr, hour, startSpinDay):
+def day2spinDay(fullDayStr, hour, startSpinDay):
     '''
     #
     #might not  be needed in WeeklyCron context
     #
-    adjust for the fact that Spinitron day starts at 6am instead of midnight
-    accepts full day name string
+    adjust for the fact that Spinitron day can start at any hour, as 
+        specified @ Spinitron site by someone with admin rights
+    accepts:
+        full day name string (ex: Sunday)
+        hour: int in range [0..23] 0 represents midnight, 6 = 6:00am
+        startSpinDay: int in range [0..23]
     returns adjusted full day name string
+    '''
     '''
     day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
@@ -152,6 +159,8 @@ def dayAdjust(fullDayStr, hour, startSpinDay):
     if hour <= startSpinDay:
         yesterday = num2day[((day2num[fullDayStr] - 1) % 7)]
         fullDayStr = yesterday
+    '''
+    fullDayStr = HC.day2spinDay(fullDayStr, hour, startSpinDay)
     return fullDayStr
     
 def isArchivable(show):

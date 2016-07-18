@@ -549,13 +549,19 @@ def addNewRemoteFolders(charlieSched):
 
 def buildChunkList (DTstart, DTend):
     '''
+    accepts:
+        DTstart, DTend:
+            start and end time of a broadcast that we wish to archive
     returns:
         chunkList (a list of hour long archives that will be used to build
             mp3 archive for a particular show)
         Each element of the ChunkList is a dict containing the following:
             'StartTime' : type = datetime.datetime.timetuple()
+                (could start anytime during a clock hour)
             'Delta': type = datetime.timedelta
-        success: boolean
+                (time duration of chunk, start time + delta can't spill over
+                 into next clock hour)
+         success: boolean
     '''
     chunkList = []
     
@@ -644,10 +650,13 @@ def createAudioChunks (chunkList):
     '''
     accepts:
         ChunkList, as returned by buildChunkList
-    Creates targetFolder which is a unique subfolder of tempAudioFolder
-    Populates targetFolder with alphanumerically sorted mp3 files
+    Creates: 
+        targetFolder which is a unique subfolder of tempAudioFolder
+    Populates: 
+        targetFolder with alphanumerically sorted mp3 files
         (ex: 0.mp3, 1.mp3, 2.mp3)
-    returns targetFolder path as string
+    returns:
+        targetFolder path as string, atrgetFolder contains audioChunk mp3s
     '''
    
     #make tempAudioFolder if it doesn't already exist
@@ -696,29 +705,69 @@ def createAudioChunks (chunkList):
     return targetFolder
 
            
-def audioConcat (folder, audioFile = 'new.mp3' ):
+def audioConcat (folder, audioFile = 'new', postfix = '.mp3' ):
+    r'''
+    Concatenates alphanumerically sorted audio files into a single audio fle.
+    Uses sox command via subprocess.call
+    
+    Parameters
+    ----------
+    folder : string
+        Name of folder where audio chunks already exist
+    audioFile : string
+        Name of target file that is the result of audio concatenation
+        
+    Returns
+    -------
+    audioFile : string 
+        Name of newly concatenated audio file (full path name)
     '''
-    accepts:
-        folder: name of folder where audio chunks already exist
-        audioFile: name of target file that is the result of audio 
-            concatenation
-    puts concatted audio in audioFile
-    returns:
-        audioFile (string name of newly concatenated audio file)
-    '''
-   
+    current = os.getcwd()
+    os.chdir(folder)
+    targetFile = ''.join((audioFile, postfix))
+    fullTargetPath = ''.join((folder, targetFile))
+    #grab list of files in sourceFolder
+    rex = ''.join(('*',postfix))
+    concatList = sorted(list(glob.iglob(rex)))
+    #if there are multiple audio files in the folder where we expect them ..
+    if len(concatList) > 1:
+        #then build sox command
+        cmd = concatList
+        cmd.insert(0,'sox')
+        cmd.append(fullTargetPath)
+        print '+++++++++++++++++++++++++++++++++++++'
+        print 'audioConcat: ', cmd
+        print '+++++++++++++++++++++++++++++++++++++'
+        #execute sox command to concat audio files
+        call(cmd)
+    #else, if there is only one audio file, rename it and move it
+    elif len(concatList) == 1:
+        sourceFile = ''.join((sourceFolder,concatList[0]))
+        os.rename(sourceAudio, targetFile)
+    else: # no audio files in folder
+        print 'ERROR: no audio files in ',sourceFolder, ' to concat'
+    #return to current working dir 
+    os.chdir(current)
+    print 'END: audioConcat'  
+    return targetFile
           
 def buildArchive (DTstart, DTend):
-    '''
+    r'''
+    Builds audio file from the hour long archives.  Uses `DTstart` and `DTend`
+    to know start and end of file.
     accepts:
         DTstart - startTime as datetime object
         DTend - startTime as datetime object
     returns:
-        tempFolder: string representing folder where mp3 exists
-        tempAudioFile: string name of mp3
-        success: boolean indicating that audio file was successfully created
-            #NOTE: success will be set to False if an attemp is made to make
-                an audio file longer than 4 hours
+        tempFolder: string 
+            represents folder where concatted mp3 exists
+        tempAudioFile: string 
+            name of concatted mp3
+        success: boolean 
+            indicates that audio file was successfully created
+    NOTE: 
+        success will be set to False if an attemp is made to make
+        an audio file longer than 4 hours
     '''
     # buildChunkList(DTstart, DTend)
     chunkList,success = buildChunkList(DTstart, DTend) 
@@ -726,7 +775,7 @@ def buildArchive (DTstart, DTend):
         # createAudioChunks( chunkList, targetFolder)
         tempFolder = createAudioChunks(chunkList)
         # audioConcat(tempFolder)
-        bigMp3 = audioConcat(temp3Folder, "bigMp3")
+        bigMp3 = audioConcat(temp3Folder)
         return tempFolder, bigMp3, success
     else: #buildChunkList failed 
             # (a) too large archive requested <or>
@@ -735,23 +784,141 @@ def buildArchive (DTstart, DTend):
     
       
         
-def sendArchive (fullSourcePath, DestFolder, DestFileName):
+def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
+    r'''
+    Parameters
+    ----------
+        sourcePath : string 
+            represents file path of audio file
+        sourceFile: string
+            represents file name of audio file
+        remoteFileName : string 
+            represents remote target file name            
+        remotePath : string 
+            represents remote target folder
     '''
-    accepts:
-        fullSourcePath: string representing file path + file name of audio file
-        DestFolder: string representing remote target folder
-        DestFileName: string representing remote target file name
-    '''
-    # TODO: Learn about pyscp
-    pass
+    
+    ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    ftp.cwd(remotePath)    
 
-def deleteTempFolder ( tmpFolder ):
+    #ftp magic upload
+    os.chdir(sourecePath) # has been local.Mp3Staging
+    myfile = open(sourceFile, 'rb')
+    print 'START: ftp of audioArchive'    
+    ftp.storbinary('STOR ' + sourceFile , myfile)
+    myfile.close()
+    
     '''
-    accepts:
-        tmpFolder: string representing complete folder path
-    deletes contents of folder, then deletes the folder
+    # renaming remote file should happen somewhere else
+    # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
+    ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
     '''
-    pass
+    print 'ftp of sendArchive COMPLETE!!!'
+    
+    #ftp.close()      
+
+def deleteFolder (folder):
+    r'''
+    This function deletes contents of specified (local) folder, then deletes 
+    the folder itself. `folder` should not contain any subfolders.  If there
+    are subfolders, this function will print an error message to stdout and 
+    will return `success = False`.  Although this function is general purpose,
+    It was originally intended to delete the tempFolder created by XXXX after
+    the audiofile it contains has been sent to its intended destination by
+    the sendArchive function
+    
+    Accepts
+    -------
+    folder: string 
+        represents complete (local) folder path
+    Returns
+    -------
+    success: boolean
+        success = false if `folder` contains subdirectories (safe > sorry)
+        success = true if `folder` is emptied out and deleted
+    '''
+    # Go to local folder
+    os.chdir(folder)
+    # Make list of all subdirectories
+    d = '.'
+    folderList = filter(lambda x: os.path.isdir(os.path.join(d, x)), os.listdir(d))
+    # If list is non-empty:
+    if len(folderList) > 0:
+        # return success = False
+        print "deleteFolder: Does not delete a folder that contains subfolders."
+        print "deleteFolder: Better safe than sorry!!!"
+        print "folder -> ', folder"
+        success = False
+        return success
+    # Else: no subdirectories in folder
+    else:
+        # Make list of all files in folder
+        xFiles = os.listdir(d)
+        # Delete each file in list
+        for aFile in xFiles:
+            os.remove(aFile)
+        # Go up in file directory
+        os.chdir('..')
+        # Delete folder
+        os.rmdir(folder)
+        # return success = True
+        success = True
+        return success
+
+def renameRemoteFile (oldRemoteFile, oldRemotePath, newRemoteFile, 
+                      newRemotePath = '@@SAME@@'):
+    r'''
+    rename a remote file.  FTP connection should already be established.
+    Default = `newRemotePath` is set to match `oldRemotePath`
+    '''
+    if newRemotePath == '@@SAME@@':
+        mewRemotePath == oldRemotePath
+    oldPath = ''.join((oldRemotePath, oldRemoteFile))
+    newPath = ''.join((newRemotePath, newRemoteFile))
+    # QUESTION: Do I need to be in the folder that contains the file in order
+        # to rename the file???
+    # ANSWER: Not the way I read the docs ...
+    ftp.rename(oldPath, newPath)
+
+def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
+    r"""
+    Creates archives with arbitrary start and end times, and uploads them to an
+    arbitrary remote folder.
+    Accepts:
+    --------
+        startTuple: datetime.tuple
+            ex: startTuple = (2008, 11, 12, 13, 51, 18)
+            dt_obj = DT.datetime(*startTuple[0:6])
+            = 2008-Nov-12 13:51:18
+        endTuple: datetime.tuple
+            endTuple - startTuple should be 4 hours or less!!!
+        targetFolder: string
+            string that defines pathname, should end in "/"
+        targetFile: string
+            string that defines what archive will be named on remote target
+            example: "MyCoolArchive.mp3"
+            postfix of .mp3 or .ogg for example should be sufficient to set
+            desired audio encoding of target file
+    Returns:
+    --------
+        success: boolean
+            ftp.close() can happen after uploadArchive has been called the last 
+            time
+        
+    """
+    DTstart = DT.datetime(*startTuple[0:6]) #down to the second, no microseconds!
+    DTend = DT.datetime(*endTuple[0:6])
+    
+    sourceFolder, sourceAudio, success = buildArchive(DTstart, DTend)
+    
+    if not success:
+        return success
+    else:
+        sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
+        deleteFolder(sourceFolder) # It was only a temp folder anyway
+        
+    
+
 
 import os
 import local
@@ -792,78 +959,32 @@ day2shortDay = { 'Monday' : 'Mon', 'Tuesday' : 'Tue',
 day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
            
+remotePath = local.remote
+           
 DEBUGGING = False
    
 
 if __name__ == '__main__':
     
     tab = '    '
-    pp = pprint.PrettyPrinter(indent=4)
+    #pp = pprint.PrettyPrinter(indent=4)
     
-    Now = DT.datetime.now() + relativedelta(microsecond=0)
+    #Now = DT.datetime.now() + relativedelta(microsecond=0)
 
     print '===================================================================='
     print 'UPLOAD_ARCHIVE_CRON.py ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '===================================================================='    
     
-    startDelta = local.startDelta
-    endDelta = local.endDelta
-    #startSpinDay = local.startSpinDay
+    #startDelta = local.startDelta
+    #endDelta = local.endDelta
     
-    #======================================
-    # make list of shows to archive
-    #======================================
-    #showsToArchive = getShows2Archive(charlieSched, LastHour, spinDay) 
-        
-    '''
-    # if there's going to be something to archive, then open ftp client
-    if len(showsToArchive) > 0:
-        ftp = ftplib.FTP(key.host, key.username, key.passwd)
-        ftp.cwd(local.remote)
-    '''
-    
-    '''    
-    #================================================================
-    # build mp3 to send
-    #================================================================
-
-    # build list of audio archive chunks to concat
-    chunkList = buildChunkList(show, spinDay)
-
-    # create correct mp3 for each chunk of show to archive
-    createAudioChunks(chunkList, local.tmpMp3)
-    print 'AudioChunks created for: ', str(show)
-
-    # sox-concat the audio fles just put into tmpMp3 folder
-    audioConcat(local.tmpMp3, local.Mp3Staging)
-    
-    #if audioConcat was successful:
-    if True: # because success is the only option!
-        # send "new.mp3" to correct folder on webserver, using ftp
-    
-        #build target folder name ex: remote file path + "Sun1300"
-        timeList = show['OnairTime'].split(':')
-        showStart = ''.join((timeList[0],timeList[1]))
-        subfolder = ''.join((day2shortDay[spinDay], showStart)) # ex: Sun1300
-        remoteTargetFolder = ''.join((local.remote, subfolder))
-        
-        ftp.cwd(remoteTargetFolder)
-        os.chdir(local.Mp3Staging)
-        
-        #ftp magic upload
-        localMp3 = 'new.mp3'
-        myfile = open(localMp3, 'rb')
-        print 'START: ftp of audioArchive'    
-        ftp.storbinary('STOR ' + localMp3 , myfile)
-        myfile.close()
-        
-        # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
-        ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
-        print 'ftp of audioArchive COMPLETE!!!'
-            
-
+    startTuple = (2016, 7,15,11,54,30)
+    endTuple = (2016,7,15,12,2,00)
+    targetFolder = 'audio4/'
+    targetFile = 'NNN-Fri-TEST.mp3'
+    uploadArchive(startTuple, endTuple, targetFolder, targetFile)
     ftp.close()  
-    '''
+
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of UploadArchiveCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))

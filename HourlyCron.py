@@ -531,16 +531,20 @@ def addNewRemoteFolders(charlieSched):
         timeList = tempList[1].split(':') #split start time ex: 15:00:00
         subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
         destFolder =  ''.join((local.archiveDest, subFolder))
+        '''
         try: #make remote audio archive folder if it hasn't been created yet
             ftp.mkd(destFolder)
             print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
         except ftplib.error_perm:
             # folder has already been created, nothing to do
             pass
+        '''
+        sftp.mkdir(destFolder)
         return destFolder
     
-    ftp = ftplib.FTP(key.host, key.username, key.passwd)
-    ftp.connect(host = key.host, port=key.port)
+    #ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    sftp = pysftp.Connection(key.host, key.username, key.passwd)
+    #ftp.connect(host = key.host, port=key.port)
     for day in charlieSched:
         for timeslot in charlieSched[day]:
              createRemoteFolder(timeslot)
@@ -564,6 +568,7 @@ import sys
 
 import glob
 import ftplib
+import pysftp
 
 # example of sox and call usage:
     # http://ymkimit.blogspot.com/2014/07/recording-sound-detecting-silence.html
@@ -639,10 +644,12 @@ if __name__ == '__main__':
     
     # if there's going to be something to archive, then open ftp client
     if len(showsToArchive) > 0:
-        ftp = ftplib.FTP(key.host, key.username, key.passwd)
-        ftp.connect(host = key.host, port=key.port)
-        ftp.cwd(local.remote)
-        
+        #ftp = ftplib.FTP(key.host, key.username, key.passwd)
+        sftp = pysftp.Connection(host="your_FTP_server", username="your_username",
+password="your_password")
+        #ftp.connect(host = key.host, port=key.port)
+        #ftp.cwd(local.remote)
+        sftp.chdir(local.remote)
     #================================================================
     # build mp3 for each show in list
     #================================================================
@@ -668,18 +675,22 @@ if __name__ == '__main__':
             showStart = ''.join((timeList[0],timeList[1]))
             subfolder = ''.join((day2shortDay[spinDay], showStart)) # ex: Sun1300
             remoteTargetFolder = ''.join((local.remote, subfolder))
-            ftp.cwd(remoteTargetFolder)
+            #ftp.cwd(remoteTargetFolder)
+            sftp.cwd(remoteTargetFolder)
             os.chdir(local.Mp3Staging)
             localMp3 = 'new.mp3'
-            myfile = open(localMp3, 'rb')
-            print 'START: ftp of audioArchive'    
-            ftp.storbinary('STOR ' + localMp3 , myfile)
-            myfile.close()
+            #myfile = open(localMp3, 'rb')
+            print 'START: *SFTP* of audioArchive'    
+            #ftp.storbinary('STOR ' + localMp3 , myfile)
+            sftp.put(localMp3)
+            #myfile.close()
             # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
-            ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
-            print 'ftp of audioArchive COMPLETE!!!'
+            #ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
+            sftp.rename(localMp3, 'current.mp3') # not really 'local' mp3 anymore ...
+            print '*SFTP* of audioArchive COMPLETE!!!'
     if len(showsToArchive) > 0:
-        ftp.close()        
+        #ftp.close()  
+        sftp.close()
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))

@@ -540,6 +540,7 @@ def addNewRemoteFolders(charlieSched):
         return destFolder
     
     ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    ftp.connect(host = key.host, port=key.port)
     for day in charlieSched:
         for timeslot in charlieSched[day]:
              createRemoteFolder(timeslot)
@@ -639,6 +640,7 @@ if __name__ == '__main__':
     # if there's going to be something to archive, then open ftp client
     if len(showsToArchive) > 0:
         ftp = ftplib.FTP(key.host, key.username, key.passwd)
+        ftp.connect(host = key.host, port=key.port)
         ftp.cwd(local.remote)
         
     #================================================================

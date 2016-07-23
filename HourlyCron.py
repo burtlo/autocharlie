@@ -543,7 +543,10 @@ def addNewRemoteFolders(charlieSched):
         return destFolder
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)
-    sftp = pysftp.Connection(key.host, key.username, key.passwd)
+    print key.host
+    print key.username
+    print key.passwd
+    sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
     #ftp.connect(host = key.host, port=key.port)
     for day in charlieSched:
         for timeslot in charlieSched[day]:

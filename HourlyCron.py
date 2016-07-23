@@ -539,6 +539,7 @@ def addNewRemoteFolders(charlieSched):
             # folder has already been created, nothing to do
             pass
         '''
+        print "destFolder -> ", destFolder
         sftp.mkdir(destFolder)
         return destFolder
     

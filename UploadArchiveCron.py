@@ -568,7 +568,7 @@ def buildChunkList (DTstart, DTend):
     
     duration = DTend - DTstart
     
-    fourHours = datetime.timedelta(seconds=60*60*4)
+    fourHours = DT.timedelta(seconds=60*60*4)
     if DTstart >= DTend or duration > fourHours: #start should be *before* the end!
         success = False
         return chunkList, success
@@ -987,7 +987,7 @@ if __name__ == '__main__':
     
     startTuple = (2016, 7,15,11,54,30)
     endTuple = (2016,7,15,12,2,00)
-    targetFolder = 'audio4/'
+    targetFolder = 'Audio4/'
     targetFile = 'NNN-Fri-TEST.mp3'
     uploadArchive(startTuple, endTuple, targetFolder, targetFile)
     #ftp.close()  

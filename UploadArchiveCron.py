@@ -460,6 +460,21 @@ def uniqueSubfolder (folder):
                         # but it's not at the end ...
         finally:
             count += 1    
+
+def pad(shortStr, padChar = '0', fullLen = 2):
+    '''
+    accepts:
+        a string 
+        padChar (a single character string)
+        len (int) desired length of output string
+    returns:
+        a string with padding prepended
+    '''
+    padding = ''
+    for i in range(fullLen - len(shortStr)):
+        padding = ''.join((padding, padChar ))
+    retStr = ''.join((padding, shortStr))
+    return retStr
             
 def createAudioChunks (chunkList):
     '''

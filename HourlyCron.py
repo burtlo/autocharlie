@@ -539,8 +539,13 @@ def addNewRemoteFolders(charlieSched):
             # folder has already been created, nothing to do
             pass
         '''
-        print "destFolder -> ", destFolder
-        sftp.mkdir(destFolder)
+        try:
+            sftp.mkdir(destFolder)
+            print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
+        except IOError:
+            # I hope this indicates that folder has already been created
+            # IOError is pretty wide open ...
+            pass
         return destFolder
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)

@@ -282,117 +282,7 @@ def numArchives(start,end):
         partialEnd = True
     return numHours, partialEnd
     
-def buildChunkList_OLD (show, spinDay):
-    '''
-    accepts:
-        show in showsToArchive format
-        spinDay: fullStrDay (ex: 'Sunday'), spinDay ends @ 6am
-    returns:
-        ChunkList (a list of hour long archives that will be used to build
-            mp3 archive for a particular show)
-        Each element of the ChunkList is a dict containing the following:
-            'StartTime' : type = datetime.datetime.timetuple()
-            'Delta': type = datetime.timedelta
-    '''
-    print '============================================'
-    print 'buildChunkList'
-    print '============================================'
-    
-    #determine start and end of show, with deltas added in
-    startHour = strTime2timeObject(show['OnairTime'])
 
-    print 'startHour -> ', str(startHour)
-    print 'spinDay22day(spinDay, startHour) ->',
-    print spinDay22day(spinDay, startHour, startSpinDay)
-    print 'showStart(showOnairTime) -> ', str(show['OnairTime'])
-    print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour, startSpinDay))
-    
-    showStart = mytime2DT(show['OnairTime']) + relativedelta(minutes=startDelta)
-    #endHour = strTime2timeObject(show['OffairTime'])
-    showEnd = mytime2DT(show['OffairTime']) + relativedelta(minutes=endDelta)
-
-    print 'showStart -> ', str(showStart)
-    print 'showEnd -> ', str(showEnd)
-    print type(showEnd)
-    print
-    
-    # if start time > end time, then show must stradle midnight hour
-    if showStart > showEnd:
-        # I think this will fix matters if a show straddles midnight
-        # otherwise, maybe get a 24 hour + audio archive ?!?!
-        showStart = showStart + relativedelta(days=-1)
-        
-    duration = showEnd - showStart
-    duraSeconds = duration.seconds
-    print 'duraSeconds -> ', duraSeconds
-
-    print 'show duration: -> ', str(duration)
-    print 'type(duration) -> ', str(type(duration))
-    print 'showStart -> ', str(showStart)
-    print 'showEnd -> ', str(showEnd)
-    
-    showHours, partialEnd = numArchives(showStart, showEnd)
-    print showHours #start counting @ zero
-    print range(showHours)
-    partialOffset = 0
-    if partialEnd:
-        partialOffset = 1
-    
-    
-    chunkList = []
-    chunk= {}
-    count = 0
-    #if the show is an hour or less, does not stradle an hour, and doesn't end
-        # at the end of an hour, this is an edge case ...
-    if showHours == 1 and partialEnd == True:
-        chunk['StartTime'] = showStart
-        chunk['TimeDelta'] = showEnd - showStart
-    
-    else: #not an edge case
-        # offset = time from beginning of show to end of first hour
-            # ex: show starts at 2:15, offset is 45 minutes
-        offset = (showStart + relativedelta(hours=+1, 
-                            minute =0, second=0)) -showStart
-          
-        if count < showHours:
-            chunk['StartTime'] = showStart
-            chunk['TimeDelta'] = offset
-            chunkList.append(chunk)
-            count += 1
-        
-        while count + partialOffset < showHours: # working with a complete hour
-            chunk = {}   
-            chunk['StartTime'] = chunkList[-1]['StartTime'] + \
-                            chunkList[-1]['TimeDelta']
-            chunk['TimeDelta'] = DT.timedelta(seconds=3600)
-            chunkList.append(chunk)
-            count += 1
-        
-        if partialEnd:
-            chunk = {}
-            chunk['StartTime'] = chunkList[-1]['StartTime'] + \
-                            chunkList[-1]['TimeDelta']
-            chunk['TimeDelta'] = showEnd - chunk['StartTime']
-            chunkList.append(chunk)
-                                        
-    return chunkList
-
-def pad(shortStr, padChar = '0', fullLen = 2):
-    '''
-    accepts:
-        a string 
-        padChar (a single character string)
-        len (int) desired length of output string
-    returns:
-        a string with padding prepended
-    '''
-    padding = ''
-    for i in range(fullLen - len(shortStr)):
-        padding = ''.join((padding, padChar ))
-    retStr = ''.join((padding, shortStr))
-    return retStr
-        
-    
         
 def buildmp3(show, spinDay):
     '''
@@ -435,83 +325,7 @@ def cleanOutFolder(folder, extension=''):
     os.chdir(current)
     return hatchetList
 
-def audioConcat_OLD (sourceFolder, destFolder, postfix = '.mp3'):
-    '''
-    concatenate all audio files with the specified postfix
-        (audio source files sorted alphabetically)
-    copy concatenated audio file into destFolder, name = "New.<postfix>"
-    returns 1 on success
-    '''
-    current = os.getcwd()
-    os.chdir(sourceFolder)
-    targetFile = ''.join((destFolder,'new',postfix))
-    #grab list of files in sourceFolder
-    rex = ''.join(('*',postfix))
-    concatList = sorted(list(glob.iglob(rex)))
-    #if there are multiple audio files in the folder where we expect them ..
-    if len(concatList) > 1:
-        #then build sox command
-        cmd = concatList
-        cmd.insert(0,'sox')
-        cmd.append(targetFile)
-        print '+++++++++++++++++++++++++++++++++++++'
-        print 'audioConcat: ', cmd
-        print '+++++++++++++++++++++++++++++++++++++'
-        #execute sox command to concat audio files
-        call(cmd)
-    #else, if there is only one audio file, rename it and move it
-    elif len(concatList) == 1:
-        sourceFile = ''.join((sourceFolder,concatList[0]))
-        os.rename(sourceAudio, targetFile)
-    else: # no audio files in folder
-        print 'ERROR: no audio files in ',sourceFolder, ' to concat'
-    #return to current working dir 
-    os.chdir(current)
-    print 'END: audioConcat'
-
-def createAudioChunks_OLD (chunkList, tmpFolder):
-    '''
-    using chunkList, populate tmpFolder with mp3 chunks for subsequent
-    concatenation.
-    mp3s named 0.mp3, 1.mp3, ...
-    no return value ...
-    '''
-    hatchetList = cleanOutFolder(tmpFolder,'.mp3')
-    if len(hatchetList):
-        print 'removed -> ', str(hatchetList), ' from ', tmpFolder
-    else:
-        print tmpFolder, ' started empty.'
-    for x, chunk in enumerate(chunkList):
-        print 'chunk #' + str(x)
-        year = str(chunk['StartTime'].timetuple().tm_year)
-        month = pad(str(chunk['StartTime'].timetuple().tm_mon))
-        day = pad(str(chunk['StartTime'].timetuple().tm_mday))
-        hour = pad(str(chunk['StartTime'].timetuple().tm_hour))
-        minute = pad(str(chunk['StartTime'].timetuple().tm_min))
-        SourceOgg = ''.join((local.archiveSource, year, '/', month, '/',
-                               day, '/', hour, '-00-00.ogg'))
-        #fullHour is a boolean
-        DeltaSeconds = chunk['TimeDelta'].total_seconds()
-        fullHour = (3540 < DeltaSeconds < 3660 )        
-        targetMp3 = ''.join((tmpFolder, '/', str(x), '.mp3'))
-        if fullHour: # no trim necesary, just convert to mp3
-            print tab,'fullHour [',str(x),']'
-            print tab,'    ','SourceOgg -> ', str(SourceOgg)
-            print tab,'    ', 'targetMp3 -> ', str(targetMp3)
-            cmd = ['sox', SourceOgg, targetMp3]
-            print cmd
-            call(cmd)
-        else: #trim the hour long archive down to size
-            startTrim = str(60 * int(minute))
-            print tab,'Not fullHour [',str(x),']'
-            print tab,'    SourceOgg -> ', str(SourceOgg)
-            print tab,'    targetMp3 -> ', str(targetMp3)
-            print tab,'    startTrim -> ', str(startTrim)
-            print tab,'    DeltaSeconds -> ', str(DeltaSeconds)
-            cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
-            print cmd
-            call(cmd)    
-    
+  
 def addNewRemoteFolders(charlieSched):
     '''
     accepts:
@@ -551,7 +365,7 @@ def addNewRemoteFolders(charlieSched):
 def buildChunkList (DTstart, DTend):
     '''
     accepts:
-        DTstart, DTend:
+        DTstart, DTend: datetime object
             start and end time of a broadcast that we wish to archive
     returns:
         chunkList (a list of hour long archives that will be used to build
@@ -568,7 +382,7 @@ def buildChunkList (DTstart, DTend):
     
     duration = DTend - DTstart
     
-    fourHours = datetime.timedelta(seconds=60*60*4)
+    fourHours = DT.timedelta(seconds=60*60*4)
     if DTstart >= DTend or duration > fourHours: #start should be *before* the end!
         success = False
         return chunkList, success
@@ -585,17 +399,17 @@ def buildChunkList (DTstart, DTend):
         #if the show is an hour or less, does not stradle an hour, and doesn't end
             # at the end of an hour, this is an edge case ...
         if showHours == 1 and partialEnd == True:
-            chunk['StartTime'] = showStart
-            chunk['TimeDelta'] = showEnd - showStart
+            chunk['StartTime'] = DTstart
+            chunk['TimeDelta'] = DTend - DTstart
         
         else: #not an edge case
             # offset = time from beginning of show to end of first hour
                 # ex: show starts at 2:15, offset is 45 minutes
-            offset = (showStart + relativedelta(hours=+1, 
-                                minute =0, second=0)) -showStart
+            offset = (DTstart + relativedelta(hours=+1, 
+                                minute =0, second=0)) -DTstart
               
             if count < showHours:
-                chunk['StartTime'] = showStart
+                chunk['StartTime'] = DTstart
                 chunk['TimeDelta'] = offset
                 chunkList.append(chunk)
                 count += 1
@@ -987,7 +801,7 @@ if __name__ == '__main__':
     
     startTuple = (2016, 7,15,11,54,30)
     endTuple = (2016,7,15,12,2,00)
-    targetFolder = 'audio4/'
+    targetFolder = 'Audio4/'
     targetFile = 'NNN-Fri-TEST.mp3'
     uploadArchive(startTuple, endTuple, targetFolder, targetFile)
     #ftp.close()  

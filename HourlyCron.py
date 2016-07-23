@@ -688,8 +688,14 @@ if __name__ == '__main__':
             #myfile.close()
             # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
             #ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
-            sftp.rename(localMp3, 'current.mp3') # not really 'local' mp3 anymore ...
-            print '*SFTP* of audioArchive COMPLETE!!!'
+            sourceMp3 = localMp3 # to increase readability of sftp.rename ...
+            try: # we will try to remove the target file before we move the sourceMp3 to it ...
+                sftp.remove('current.mp3')
+            except:
+                pass
+            finally:
+                sftp.rename(sourceMp3, 'current.mp3') # not really 'local' mp3 anymore ...
+                print '*SFTP* of audioArchive COMPLETE!!!'
     if len(showsToArchive) > 0:
         #ftp.close()  
         sftp.close()

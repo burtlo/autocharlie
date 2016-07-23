@@ -607,7 +607,7 @@ def buildArchive (DTstart, DTend):
         # createAudioChunks( chunkList, targetFolder)
         tempFolder = createAudioChunks(chunkList)
         # audioConcat(tempFolder)
-        bigMp3 = audioConcat(temp3Folder)
+        bigMp3 = audioConcat(tempFolder)
         return tempFolder, bigMp3, success
     else: #buildChunkList failed 
             # (a) too large archive requested <or>

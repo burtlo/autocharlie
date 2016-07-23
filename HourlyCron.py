@@ -531,14 +531,7 @@ def addNewRemoteFolders(charlieSched):
         timeList = tempList[1].split(':') #split start time ex: 15:00:00
         subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
         destFolder =  ''.join((local.archiveDest, subFolder))
-        '''
-        try: #make remote audio archive folder if it hasn't been created yet
-            ftp.mkd(destFolder)
-            print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
-        except ftplib.error_perm:
-            # folder has already been created, nothing to do
-            pass
-        '''
+
         try:
             sftp.mkdir(destFolder)
             print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder

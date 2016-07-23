@@ -647,8 +647,8 @@ if __name__ == '__main__':
     # if there's going to be something to archive, then open ftp client
     if len(showsToArchive) > 0:
         #ftp = ftplib.FTP(key.host, key.username, key.passwd)
-        sftp = pysftp.Connection(host="your_FTP_server", username="your_username",
-password="your_password")
+        sftp = pysftp.Connection(host=key.host, username=key.username,
+                                 password=key.passwd)
         #ftp.connect(host = key.host, port=key.port)
         #ftp.cwd(local.remote)
         sftp.chdir(local.remote)

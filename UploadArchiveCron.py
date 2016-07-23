@@ -535,14 +535,15 @@ def addNewRemoteFolders(charlieSched):
         subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
         destFolder =  ''.join((local.archiveDest, subFolder))
         try: #make remote audio archive folder if it hasn't been created yet
-            ftp.mkd(destFolder)
+            sftp.mkdir(destFolder)
             print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
-        except ftplib.error_perm:
+        except IOError:
             # folder has already been created, nothing to do
             pass
         return destFolder
     
-    ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    #ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
     for day in charlieSched:
         for timeslot in charlieSched[day]:
              createRemoteFolder(timeslot)
@@ -705,7 +706,7 @@ def createAudioChunks (chunkList):
     return targetFolder
 
            
-def audioConcat (folder, audioFile = 'new', postfix = '.mp3' ):
+def audioConcat (sourceFolder, audioFile = 'new', postfix = '.mp3' ):
     r'''
     Concatenates alphanumerically sorted audio files into a single audio fle.
     Uses sox command via subprocess.call
@@ -716,6 +717,8 @@ def audioConcat (folder, audioFile = 'new', postfix = '.mp3' ):
         Name of folder where audio chunks already exist
     audioFile : string
         Name of target file that is the result of audio concatenation
+    postfix : string
+        ex: ".mp3" or ".ogg"- sox uses this to determine audio encoding for target file
         
     Returns
     -------
@@ -723,9 +726,9 @@ def audioConcat (folder, audioFile = 'new', postfix = '.mp3' ):
         Name of newly concatenated audio file (full path name)
     '''
     current = os.getcwd()
-    os.chdir(folder)
+    os.chdir(sourceFolder)
     targetFile = ''.join((audioFile, postfix))
-    fullTargetPath = ''.join((folder, targetFile))
+    fullTargetPath = ''.join((sourceFolder, targetFile))
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))
@@ -743,7 +746,7 @@ def audioConcat (folder, audioFile = 'new', postfix = '.mp3' ):
     #else, if there is only one audio file, rename it and move it
     elif len(concatList) == 1:
         sourceFile = ''.join((sourceFolder,concatList[0]))
-        os.rename(sourceAudio, targetFile)
+        os.rename(sourceFile, targetFile)
     else: # no audio files in folder
         print 'ERROR: no audio files in ',sourceFolder, ' to concat'
     #return to current working dir 
@@ -798,15 +801,17 @@ def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
             represents remote target folder
     '''
     
-    ftp = ftplib.FTP(key.host, key.username, key.passwd)
-    ftp.cwd(remotePath)    
+    #ftp = ftplib.FTP(key.host, key.username, key.passwd)
+    sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
+    #ftp.cwd(remotePath)    
+    sftp.cwd(remotePath)
 
-    #ftp magic upload
-    os.chdir(sourecePath) # has been local.Mp3Staging
-    myfile = open(sourceFile, 'rb')
-    print 'START: ftp of audioArchive'    
-    ftp.storbinary('STOR ' + sourceFile , myfile)
-    myfile.close()
+    os.chdir(sourcePath) # has been local.Mp3Staging
+    #myfile = open(sourceFile, 'rb')
+    print 'START: *SFTP* of audioArchive'    
+    #ftp.storbinary('STOR ' + sourceFile , myfile)
+    sftp.put(sourceFile, remoteFileName)
+    #myfile.close()
     
     '''
     # renaming remote file should happen somewhere else
@@ -872,14 +877,15 @@ def renameRemoteFile (oldRemoteFile, oldRemotePath, newRemoteFile,
     Default = `newRemotePath` is set to match `oldRemotePath`
     '''
     if newRemotePath == '@@SAME@@':
-        mewRemotePath == oldRemotePath
+        newRemotePath == oldRemotePath
     oldPath = ''.join((oldRemotePath, oldRemoteFile))
     newPath = ''.join((newRemotePath, newRemoteFile))
     # QUESTION: Do I need to be in the folder that contains the file in order
         # to rename the file???
     # ANSWER: Not the way I read the docs ...
-    ftp.rename(oldPath, newPath)
-
+    #ftp.rename(oldPath, newPath)
+    sftp.rename(oldPath, newPath)
+    
 def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
     r"""
     Creates archives with arbitrary start and end times, and uploads them to an
@@ -937,7 +943,8 @@ from contextlib import contextmanager
 import sys
 
 import glob
-import ftplib
+#import ftplib
+import pysftp
 
 # example of sox and call usage:
     # http://ymkimit.blogspot.com/2014/07/recording-sound-detecting-silence.html
@@ -983,7 +990,8 @@ if __name__ == '__main__':
     targetFolder = 'audio4/'
     targetFile = 'NNN-Fri-TEST.mp3'
     uploadArchive(startTuple, endTuple, targetFolder, targetFile)
-    ftp.close()  
+    #ftp.close()  
+    sftp.close()
 
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'

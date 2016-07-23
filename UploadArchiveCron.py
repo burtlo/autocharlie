@@ -426,7 +426,7 @@ def buildChunkList (DTstart, DTend):
                 chunk = {}
                 chunk['StartTime'] = chunkList[-1]['StartTime'] + \
                                 chunkList[-1]['TimeDelta']
-                chunk['TimeDelta'] = showEnd - chunk['StartTime']
+                chunk['TimeDelta'] = DTend - chunk['StartTime']
                 chunkList.append(chunk)
         
         success = True                                    

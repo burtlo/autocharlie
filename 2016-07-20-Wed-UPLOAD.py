@@ -861,32 +861,24 @@ if __name__ == '__main__':
     rootFolder = ''.join((local.remoteStub,'Audio3/'))
     print 'rootFolder -> ', rootFolder
     
-    # This example creates Roundabout archive for 7/20/2016
+    # Roundabout archive for 7/20/2016
     startTuple = (2016, 7,20,15,00,00)
     endTuple = (2016,7,20,17,3,00)
     targetFolder = ''.join((rootFolder, 'Wed1500/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-
-
-    '''    
-    # 7/20/2016 7pm - Roll Out the Rug
+    
+    # Roll Out Rug or DownYonder archive for 7/20/2016
     startTuple = (2016, 7,20,19,00,00)
     endTuple = (2016,7,20,21,3,00)
-    targetFolder = ''.join((rootFolder, 'Wed1500'))
+    targetFolder = ''.join((rootFolder, 'Wed1900/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
     
-    # 7/20/2016 7pm - Roll Out the Rug
-    startTuple = (2016, 7,20,15,00,00)
-    endTuple = (2016,7,20,17,3,00)
-    targetFolder = ''.join((rootFolder, 'Wed1500'))
+    # Bruce Show archive for 7/20/2016
+    startTuple = (2016, 7,20,21,00,00)
+    endTuple = (2016,7,20,23,3,00)
+    targetFolder = ''.join((rootFolder, 'Wed1500/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-    
-    # 7/20/2016 7pm - Roll Out the Rug
-    startTuple = (2016, 7,20,15,00,00)
-    endTuple = (2016,7,20,17,3,00)
-    targetFolder = ''.join((rootFolder, 'Wed1500'))
-    sftp, success = new2current(startTuple, endTuple, targetFolder)
-    '''
+
     
     #ftp.close()  
     sftp.close()

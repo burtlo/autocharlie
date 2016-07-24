@@ -876,7 +876,7 @@ if __name__ == '__main__':
     # Bruce Show archive for 7/20/2016
     startTuple = (2016, 7,20,21,00,00)
     endTuple = (2016,7,20,23,3,00)
-    targetFolder = ''.join((rootFolder, 'Wed1500/'))
+    targetFolder = ''.join((rootFolder, 'Wed2100/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
 
     

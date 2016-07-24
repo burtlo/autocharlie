@@ -451,7 +451,7 @@ def uniqueSubfolder (folder):
     os.chdir(folder)
     while not success:
         try:
-            os.chdir(str(count))
+            os.mkdir(str(count))
             success = True
         except:
             count += 1

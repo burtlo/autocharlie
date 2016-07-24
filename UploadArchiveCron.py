@@ -452,14 +452,16 @@ def uniqueSubfolder (folder):
     while not success:
         try:
             os.chdir(str(count))
+            success = True
         except:
-            folder = "".join((folder, str(count)))
-            os.mkdir(folder)
-            os.chdir(current)
-            return folder # it's funny that this is the only exit for this function
-                        # but it's not at the end ...
-        finally:
-            count += 1    
+            count += 1
+            
+    folder = "".join((folder, str(count), '/'))
+    os.mkdir(folder)
+    os.chdir(current)
+    return folder # it's funny that this is the only exit for this function
+                # but it's not at the end ...
+  
 
 def pad(shortStr, padChar = '0', fullLen = 2):
     '''
@@ -604,7 +606,7 @@ def buildArchive (DTstart, DTend):
     # buildChunkList(DTstart, DTend)
     chunkList,success = buildChunkList(DTstart, DTend) 
     if success:
-        # createAudioChunks( chunkList, targetFolder)
+        # tempFolder is a unique folder containing audio chunks
         tempFolder = createAudioChunks(chunkList)
         # audioConcat(tempFolder)
         bigMp3 = audioConcat(tempFolder)
@@ -613,8 +615,7 @@ def buildArchive (DTstart, DTend):
             # (a) too large archive requested <or>
             # (b) starts after it finishes
         return 'DUD', 'DUD', success
-    
-      
+          
         
 def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
     r'''

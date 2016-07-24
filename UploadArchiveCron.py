@@ -633,7 +633,8 @@ def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)
     sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
-    #ftp.cwd(remotePath)    
+    #ftp.cwd(remotePath)   
+    print 'remote path -> ', remotePath
     sftp.cwd(remotePath)
 
     os.chdir(sourcePath) # has been local.Mp3Staging

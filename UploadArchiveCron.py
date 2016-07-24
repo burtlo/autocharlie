@@ -455,8 +455,9 @@ def uniqueSubfolder (folder):
             success = True
         except:
             count += 1
-            
+    print 'old folder -> ',folder       
     folder = "".join((folder, str(count), '/'))
+    print 'new folder -> ',folder
     os.mkdir(folder)
     os.chdir(current)
     return folder # it's funny that this is the only exit for this function

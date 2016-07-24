@@ -617,7 +617,7 @@ def buildArchive (DTstart, DTend):
         return 'DUD', 'DUD', success
           
         
-def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
+def sendArchive (sourcePath, sourceFile, remotePath, remoteFileName):
     r'''
     Parameters
     ----------
@@ -629,12 +629,19 @@ def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
             represents remote target file name            
         remotePath : string 
             represents remote target folder
+    Returns
+    -------
+        sftp : pysftp.Connection object
+            # instantiating Connection object multiple layers down kinda sucks
+            # gotta pass it all the way back up the stack ...
+        
     '''
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)
     sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
     #ftp.cwd(remotePath)   
     print 'remote path -> ', remotePath
+    print 'remote file name -> ', remoteFileName
     sftp.cwd(remotePath)
 
     os.chdir(sourcePath) # has been local.Mp3Staging
@@ -643,15 +650,15 @@ def sendArchive (sourcePath, sourceFile, remoteFileName, remotePath):
     #ftp.storbinary('STOR ' + sourceFile , myfile)
     sftp.put(sourceFile, remoteFileName)
     #myfile.close()
+    print 'SFTP of sendArchive COMPLETE!!!'
     
     '''
     # renaming remote file should happen somewhere else
     # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
     ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
-    '''
     print 'ftp of sendArchive COMPLETE!!!'
-    
-    #ftp.close()      
+    '''
+    return sftp
 
 def deleteFolder (folder):
     r'''
@@ -738,6 +745,7 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
             desired audio encoding of target file
     Returns:
     --------
+        sftp : 
         success: boolean
             ftp.close() can happen after uploadArchive has been called the last 
             time
@@ -749,10 +757,16 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
     sourceFolder, sourceAudio, success = buildArchive(DTstart, DTend)
     
     if not success:
-        return success
+        return 'DUDsftp', success
     else:
-        sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
+        print 'uploadArchive line 755'
+        print 'sourceFolder -> ',sourceFolder
+        print 'sourceAudio -> ', sourceAudio
+        print 'targetFolder -> ' , targetFolder
+        print 'targetFile -> ', targetFile
+        sftp = sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
         deleteFolder(sourceFolder) # It was only a temp folder anyway
+        return sftp, success
         
     
 
@@ -816,11 +830,14 @@ if __name__ == '__main__':
     #startDelta = local.startDelta
     #endDelta = local.endDelta
     
+    rootFolder = ''.join((local.remoteStub,'Audio4/'))
+    
     startTuple = (2016, 7,15,11,54,30)
     endTuple = (2016,7,15,12,2,00)
-    targetFolder = 'Audio4/'
+    targetFolder = rootFolder
     targetFile = 'NNN-Fri-TEST.mp3'
-    uploadArchive(startTuple, endTuple, targetFolder, targetFile)
+    sftp, success = uploadArchive(startTuple, endTuple, targetFolder, targetFile)
+    print 'sftp -> ', str(sftp), ' ', str(type(sftp))
     #ftp.close()  
     sftp.close()
 

@@ -381,15 +381,20 @@ def buildChunkList (DTstart, DTend):
     chunkList = []
     
     duration = DTend - DTstart
+    #print 'duration -> ', duration
     
     fourHours = DT.timedelta(seconds=60*60*4)
+    #print fourHours
     if DTstart >= DTend or duration > fourHours: #start should be *before* the end!
         success = False
         return chunkList, success
     else:
         duraSeconds = duration.seconds
+        #print 'duraSeconds -> ', duraSeconds
         
         showHours, partialEnd = numArchives(DTstart, DTend)
+        #print 'showHours -> ', showHours
+        #print 'partialEnd -> ', partialEnd
         partialOffset = 0
         if partialEnd:
             partialOffset = 1
@@ -564,6 +569,8 @@ def audioConcat (sourceFolder, audioFile = 'new', postfix = '.mp3' ):
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))
+    print 'concatList:'
+    print concatList
     #if there are multiple audio files in the folder where we expect them ..
     if len(concatList) > 1:
         #then build sox command
@@ -786,8 +793,8 @@ def new2current(startTuple, endTuple, targetFolder, targetFile = 'new.mp3',
         print 'targetFilePath -> ',targetFilePath
         print 'finalFilePath -> ', finalFilePath
         sftp.rename(targetFilePath, finalFilePath) 
-    return sftp, success    
-
+    return sftp, success
+    
 
 import os
 import local
@@ -803,6 +810,7 @@ import pprint
 from subprocess import call
 
 from contextlib import contextmanager
+import os
 import sys
 
 import glob
@@ -848,25 +856,13 @@ if __name__ == '__main__':
     #startDelta = local.startDelta
     #endDelta = local.endDelta
     
-	'''
-    rootFolder = ''.join((local.remoteStub,'Audio4/'))
-    
-    startTuple = (2016, 7,15,11,54,30)
-    endTuple = (2016,7,15,12,2,00)
-    targetFolder = rootFolder
-    targetFile = 'NNN-Fri-TEST.mp3'
-    sftp, success = uploadArchive(startTuple, endTuple, targetFolder, targetFile)
-    print 'sftp -> ', str(sftp), ' ', str(type(sftp))
-    #ftp.close()  
-	'''
     ##########################################################################
     # DON'T FORGET TRAILING BACKSLASH FOR ALL PATH NAMES !!!!
     ##########################################################################
-	    
+    
     rootFolder = ''.join((local.remoteStub,'Audio3/'))
     #print 'rootFolder -> ', rootFolder
     
-	'''
     ############################################################
     # THU 7/21/2016
     ############################################################
@@ -946,7 +942,7 @@ if __name__ == '__main__':
     endTuple = (2016,7,22,17,03,00)
     targetFolder = ''.join((rootFolder, 'Fri1500/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-	'''    
+    
     # RedHot Record Jamboree archive for 7/22/2016
     startTuple = (2016, 7, 22, 19,00,00)
     endTuple = (2016,7,22,17,20,00)
@@ -961,10 +957,10 @@ if __name__ == '__main__':
     
     #ftp.close()  
     sftp.close()
-	'''
+    print '*SFTP* of audioArchive COMPLETE!!!'
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
-    print 'END of UploadArchiveCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
+    print 'END of UploadArchive -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print
 

@@ -860,7 +860,7 @@ if __name__ == '__main__':
     
     rootFolder = ''.join((local.remoteStub,'Audio3/'))
     print 'rootFolder -> ', rootFolder
-    
+    '''    
     ############################################################
     # THU 7/21/2016
     ############################################################
@@ -894,10 +894,11 @@ if __name__ == '__main__':
     endTuple = (2016,7,21,17,03,00)
     targetFolder = ''.join((rootFolder, 'Thu1500/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-    
+    '''
+    '''    
     # Global Beat's shoes archive for 7/21/2016
     startTuple = (2016, 7,21,19,00,00)
-    endTuple = (2016,7,21,17,21,00)
+    endTuple = (2016,7,21,21,03,00)
     targetFolder = ''.join((rootFolder, 'Thu1900/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)  
     
@@ -934,7 +935,7 @@ if __name__ == '__main__':
     endTuple = (2016,7,22,15,03,00)
     targetFolder = ''.join((rootFolder, 'Fri1300/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-    
+    '''    
     # Kitty Slick's shoes archive for 7/22/2016
     startTuple = (2016, 7, 22, 15,00,00)
     endTuple = (2016,7,22,17,03,00)
@@ -943,14 +944,14 @@ if __name__ == '__main__':
     
     # RedHot Record Jamboree archive for 7/22/2016
     startTuple = (2016, 7, 22, 19,00,00)
-    endTuple = (2016,7,22,17,20,00)
+    endTuple = (2016,7,22,20,20,00)
     targetFolder = ''.join((rootFolder, 'Fri1900/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)  
     
     # Rick's Rock Show archive for 7/22/2016
     startTuple = (2016, 7, 22, 20,00,00)
     endTuple = (2016,7,22,22,03,00)
-    targetFolder = ''.join((rootFolder, 'Fri2100/'))
+    targetFolder = ''.join((rootFolder, 'Fri2000/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)  
     
     #ftp.close()  

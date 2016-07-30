@@ -862,17 +862,17 @@ if __name__ == '__main__':
     print 'rootFolder -> ', rootFolder
     
     # Roundabout archive for 7/20/2016
-    startTuple = (2016, 7,20,15,00,00)
+    startTuple = (2016,7,20,15,0,0)
     endTuple = (2016,7,20,17,3,00)
     targetFolder = ''.join((rootFolder, 'Wed1500/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-    
+    """
     # Roll Out Rug or DownYonder archive for 7/20/2016
     startTuple = (2016, 7,20,19,00,00)
     endTuple = (2016,7,20,21,3,00)
     targetFolder = ''.join((rootFolder, 'Wed1900/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-    
+    """
     # Bruce Show archive for 7/20/2016
     startTuple = (2016, 7,20,21,00,00)
     endTuple = (2016,7,20,23,3,00)

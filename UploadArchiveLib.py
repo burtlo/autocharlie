@@ -467,8 +467,8 @@ def uniqueSubfolder (folder):
         folder = "".join((folder, '/'))
     print 'new folder -> ',folder
     os.chdir(current)
-    return folder # it's funny that this is the only exit for this function
-                # but it's not at the end ...
+    return folder
+
   
 
 def pad(shortStr, padChar = '0', fullLen = 2):
@@ -522,8 +522,10 @@ def createAudioChunks (chunkList):
 
         DeltaSeconds = chunk['TimeDelta'].total_seconds()
         #fullHour is a boolean
-        fullHour = (3540 < DeltaSeconds < 3660 ) # anywhere between 59 & 61 minutes ...     
-        targetMp3 = ''.join((targetFolder, '/', str(x), '.mp3'))
+        fullHour = (3540 < DeltaSeconds < 3660 ) # anywhere between 59 & 61 minutes ...  
+        if targetFolder[-1] != '/':
+            targetFolder = ''.join((targetFolder,'/'))
+        targetMp3 = ''.join((targetFolder, str(x), '.mp3'))
         if fullHour: # no trim necesary, just convert to mp3
             print tab,'fullHour [',str(x),']'
             print tab,'    ','SourceOgg -> ', str(SourceOgg)
@@ -665,7 +667,10 @@ def sendArchive (sourcePath, sourceFile, remotePath, remoteFileName):
         print "line 783:sftp string -> ",sftp
     sftp.put(sourceFile, remoteFileName)
     #myfile.close()
-    print 'SFTP of sendArchive COMPLETE!!!'
+    print '========================================================='
+    print 'SFTP of sendArchive COMPLETE!!!', str(DT.datetime.now() + relativedelta(microsecond=0))
+    print '========================================================='
+    print
     
     '''
     # renaming remote file should happen somewhere else
@@ -834,8 +839,8 @@ import key
 import SpinPapiLib as SPlib
 
 import datetime as DT
-from dateutil.relativedelta import *
-import calendar
+from dateutil.relativedelta import relativedelta
+#import calendar
 
 import pprint
 

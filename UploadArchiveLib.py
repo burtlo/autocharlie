@@ -781,9 +781,12 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
         print 'sourceAudio -> ', sourceAudio
         print 'targetFolder -> ' , targetFolder
         print 'targetFile -> ', targetFile
-        if type(sftp) == str:
-            print "line 783:sftp string -> ",sftp
-        sftp = sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
+        try: 
+            if type(sftp) == str:
+                print "line 783:sftp string -> ",sftp
+                return sftp, False
+        except UnboundLocalError:
+            sftp = sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
         deleteFolder(sourceFolder) # It was only a temp folder anyway
         return sftp, success
         

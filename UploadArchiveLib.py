@@ -349,8 +349,8 @@ def addNewRemoteFolders(charlieSched):
         subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
         destFolder =  ''.join((local.archiveDest, subFolder))
         try: #make remote audio archive folder if it hasn't been created yet
-        if type(sftp) == str:
-            print "line 353:sftp string -> ",sftp
+            if type(sftp) == str:
+                print "line 353:sftp string -> ",sftp
             sftp.mkdir(destFolder)
             print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
         except IOError:
@@ -882,7 +882,7 @@ if __name__ == '__main__':
     #startDelta = local.startDelta
     #endDelta = local.endDelta
     
-	'''
+    '''
     rootFolder = ''.join((local.remoteStub,'Audio4/'))
     
     startTuple = (2016, 7,15,11,54,30)
@@ -892,7 +892,7 @@ if __name__ == '__main__':
     sftp, success = uploadArchive(startTuple, endTuple, targetFolder, targetFile)
     print 'sftp -> ', str(sftp), ' ', str(type(sftp))
     #ftp.close()  
-	'''
+    '''
     ##########################################################################
     # DON'T FORGET TRAILING BACKSLASH FOR ALL PATH NAMES !!!!
     ##########################################################################
@@ -900,7 +900,7 @@ if __name__ == '__main__':
     rootFolder = ''.join((local.remoteStub,'Audio3/'))
     #print 'rootFolder -> ', rootFolder
     
-	'''
+    '''
     ############################################################
     # THU 7/21/2016
     ############################################################
@@ -995,7 +995,7 @@ if __name__ == '__main__':
     
     #ftp.close()  
     sftp.close()
-	'''
+    '''
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of UploadArchiveCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))

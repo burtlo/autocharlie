@@ -349,6 +349,8 @@ def addNewRemoteFolders(charlieSched):
         subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
         destFolder =  ''.join((local.archiveDest, subFolder))
         try: #make remote audio archive folder if it hasn't been created yet
+        if type(sftp) == str:
+            print "line 353:sftp string -> ",sftp
             sftp.mkdir(destFolder)
             print "NEW AUDIO ARCHIVE FOLDER CREATED -> ",destFolder
         except IOError:
@@ -358,6 +360,9 @@ def addNewRemoteFolders(charlieSched):
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)
     sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
+    print "sftp instantiation #0"
+    if type(sftp) == str:
+        print "line 364:sftp string -> ",sftp
     for day in charlieSched:
         for timeslot in charlieSched[day]:
              createRemoteFolder(timeslot)
@@ -640,15 +645,22 @@ def sendArchive (sourcePath, sourceFile, remotePath, remoteFileName):
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)
     sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
+    print "sftp instantiation #2"
+    if type(sftp) == str:
+        print "line 648:sftp string -> ",sftp
     #ftp.cwd(remotePath)   
     print 'remote path -> ', remotePath
     print 'remote file name -> ', remoteFileName
+    if type(sftp) == str:
+        print "line 655:sftp string -> ",sftp
     sftp.cwd(remotePath)
 
     os.chdir(sourcePath) # has been local.Mp3Staging
     #myfile = open(sourceFile, 'rb')
     print 'START: *SFTP* of audioArchive'    
     #ftp.storbinary('STOR ' + sourceFile , myfile)
+    if type(sftp) == str:
+        print "line 783:sftp string -> ",sftp
     sftp.put(sourceFile, remoteFileName)
     #myfile.close()
     print 'SFTP of sendArchive COMPLETE!!!'
@@ -723,6 +735,8 @@ def renameRemoteFile (oldRemoteFile, oldRemotePath, newRemoteFile,
         # to rename the file???
     # ANSWER: Not the way I read the docs ...
     #ftp.rename(oldPath, newPath)
+    if type(sftp) == str:
+        print "line 739:sftp string -> ",sftp
     sftp.rename(oldPath, newPath)
     
 def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
@@ -765,6 +779,8 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
         print 'sourceAudio -> ', sourceAudio
         print 'targetFolder -> ' , targetFolder
         print 'targetFile -> ', targetFile
+        if type(sftp) == str:
+            print "line 783:sftp string -> ",sftp
         sftp = sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
         deleteFolder(sourceFolder) # It was only a temp folder anyway
         return sftp, success
@@ -776,19 +792,37 @@ def new2current(startTuple, endTuple, targetFolder, targetFile = 'new.mp3',
     remote folder.
     '''
     sftp, success = uploadArchive(startTuple, endTuple, targetFolder, targetFile)
+    if type(sftp) == str:
+        print "line 796:sftp string -> ",sftp
     targetFilePath = ''.join((targetFolder,targetFile))
     finalFilePath = ''.join((targetFolder,finalFile))
     try: # remove the target file before we move the sourceMp3 to it ...
+        if type(sftp) == str:
+            print "line 801:sftp string -> ",sftp
         sftp.remove(finalFile)
     except: # or the target file is already gone 
         pass
     finally:
         print 'targetFilePath -> ',targetFilePath
         print 'finalFilePath -> ', finalFilePath
+        if type(sftp) == str:
+            print "line 809:sftp string -> ",sftp
         sftp.rename(targetFilePath, finalFilePath) 
     return sftp, success    
 
-
+def closeConnection(sftp):
+    r''' closes sftp connection
+    Accepts:
+    --------
+    sftp: instance of sftp class
+    Returns:
+    --------
+    Nada
+    '''
+    if type(sftp) == str:
+        print "line 805:sftp string -> ",sftp
+    sftp.close
+    
 import os
 import local
 import key

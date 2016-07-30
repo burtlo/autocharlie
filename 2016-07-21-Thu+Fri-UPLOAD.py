@@ -795,6 +795,8 @@ def new2current(startTuple, endTuple, targetFolder, targetFile = 'new.mp3',
         sftp.rename(targetFilePath, finalFilePath) 
     return sftp, success
     
+
+import os
 import local
 import key
 import SpinPapiLib as SPlib
@@ -859,8 +861,8 @@ if __name__ == '__main__':
     ##########################################################################
     
     rootFolder = ''.join((local.remoteStub,'Audio3/'))
-    print 'rootFolder -> ', rootFolder
-    '''    
+
+    '''
     ############################################################
     # THU 7/21/2016
     ############################################################
@@ -959,7 +961,7 @@ if __name__ == '__main__':
     print '*SFTP* of audioArchive COMPLETE!!!'
     print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
-    print 'END of UploadArchiveCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
+    print 'END of UploadArchive -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print
 

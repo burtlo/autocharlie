@@ -26,13 +26,13 @@ rootFolder = ''.join((local.remoteStub,'Audio3/'))
 # Sunday @ 2pm 7/24/2016
 startTuple = (2016, 7,24,14,00,00)
 endTuple =  (2016, 7,24,15,03,00)
-targetFolder = ''.join((rootFolder, 'Sunn1400/'))
+targetFolder = ''.join((rootFolder, 'Sun1400/'))
 sftp, success = new2current(startTuple, endTuple, targetFolder)
 
 # Sunday @ 3pm 7/24/2016
 startTuple = (2016, 7,24,15,00,00)
 endTuple =  (2016, 7,24,17,03,00)
-targetFolder = ''.join((rootFolder, 'Sunn1500/'))
+targetFolder = ''.join((rootFolder, 'Sun1500/'))
 sftp, success = new2current(startTuple, endTuple, targetFolder)
 
 '''

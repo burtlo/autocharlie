@@ -439,7 +439,7 @@ def buildChunkList (DTstart, DTend):
         return chunkList,success   
 
 def uniqueSubfolder (folder):
-    '''
+    ''' creates unique subfolder of folder
     accepts:
         folder: string representation of a folder path
     first attempted subfolder to create:
@@ -462,7 +462,9 @@ def uniqueSubfolder (folder):
         except:
             count += 1
     print 'old folder -> ',folder       
-    folder = "".join((folder, str(count), '/'))
+    folder = "".join((folder, str(count)))
+    if folder[-1] != '/':
+        folder = "".join((folder, '/'))
     print 'new folder -> ',folder
     os.chdir(current)
     return folder # it's funny that this is the only exit for this function

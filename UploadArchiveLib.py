@@ -864,13 +864,13 @@ day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            'Friday':4, 'Saturday':5, 'Sunday':6}
            
 remotePath = local.remote
+
+tab = '    '
            
 DEBUGGING = False
    
-
 if __name__ == '__main__':
     
-    tab = '    '
     #pp = pprint.PrettyPrinter(indent=4)
     
     #Now = DT.datetime.now() + relativedelta(microsecond=0)

@@ -980,7 +980,7 @@ if __name__ == '__main__':
     endTuple = (2016,7,22,17,03,00)
     targetFolder = ''.join((rootFolder, 'Fri1500/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)
-	'''    
+
     # RedHot Record Jamboree archive for 7/22/2016
     startTuple = (2016, 7, 22, 19,00,00)
     endTuple = (2016,7,22,17,20,00)
@@ -992,7 +992,8 @@ if __name__ == '__main__':
     endTuple = (2016,7,22,22,03,00)
     targetFolder = ''.join((rootFolder, 'Fri2100/'))
     sftp, success = new2current(startTuple, endTuple, targetFolder)  
-    
+    '''
+    '''
     #ftp.close()  
     sftp.close()
     '''

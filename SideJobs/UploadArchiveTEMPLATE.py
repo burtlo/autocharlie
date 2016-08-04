@@ -58,6 +58,7 @@ basis.
 # datetime object to time tuple:
 # time_tuple = dt_obj.timetuple()
 
+'''
 # Nearly Noon News, on Monday
 # This works if the cron job runs each Monday
 now = DT.datetime.now() + relativedelta(microsecond=0)
@@ -68,6 +69,9 @@ start = UAL.fullTimeTuple(startTuple, DT.datetime.now()).timetuple()
 end = UAL.fullTimeTuple( endTuple, DT.datetime.now()).timetuple()
 targetFolder = ''.join((rootFolder, 'NNN/Mon/'))
 sftp, success = UAL.new2current(start, end, targetFolder)
+'''
+
+
 '''
 
 ########################################
@@ -88,6 +92,40 @@ endTuple =  (2016, 7,24,17,03,00)
 targetFolder = ''.join((rootFolder, 'Sun1500/'))
 sftp, success = UAL.new2current(startTuple, endTuple, targetFolder)
 '''
+
+#########################################################
+# 1st setup of Nearly Noon News audio archives
+##########################################################
+
+# Thursday NNN @ 11:55AM 7/28/2016
+startTuple = (2016, 7, 28, 11,54,50)
+endTuple =  (2016, 7, 28, 12,02,30)
+targetFolder = ''.join((rootFolder, 'NNN/Thu/'))
+sftp, success = UAL.new2current(startTuple, endTuple, targetFolder)
+
+# Friday NNN @ 11:55AM 7/29/2016
+startTuple = (2016, 7, 29, 11,54,50)
+endTuple =  (2016, 7, 29, 12,02,30)
+targetFolder = ''.join((rootFolder, 'NNN/Fri/'))
+sftp, success = UAL.new2current(startTuple, endTuple, targetFolder)
+
+# Monday NNN @ 11:55AM 8/1/2016
+startTuple = (2016, 8,1,11,54,50)
+endTuple =  (2016, 8,1,12,02,30)
+targetFolder = ''.join((rootFolder, 'NNN/Mon/'))
+sftp, success = UAL.new2current(startTuple, endTuple, targetFolder)
+
+# Tuesday NNN @ 11:55AM 8/2/2016
+startTuple = (2016, 8,2,11,54,50)
+endTuple =  (2016, 8,2,12,02,30)
+targetFolder = ''.join((rootFolder, 'NNN/Tue/'))
+sftp, success = UAL.new2current(startTuple, endTuple, targetFolder)
+
+# Wednesday NNN @ 11:55AM 8/3/2016
+startTuple = (2016, 8,3,11,54,50)
+endTuple =  (2016, 8,3,12,02,30)
+targetFolder = ''.join((rootFolder, 'NNN/Wed/'))
+sftp, success = UAL.new2current(startTuple, endTuple, targetFolder)
 
 UAL.closeConnection(sftp)
 

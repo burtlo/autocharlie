@@ -819,6 +819,9 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
             time
         
     """
+    print 'startTuple[0:6] -> ', str(startTuple[0:6])
+    print '*startTuple[0:6] -> ', str(*startTuple[0:6])
+    print type(*startTuple[0:6])
     DTstart = DT.datetime(*startTuple[0:6]) #down to the second, no microseconds!
     DTend = DT.datetime(*endTuple[0:6])
     

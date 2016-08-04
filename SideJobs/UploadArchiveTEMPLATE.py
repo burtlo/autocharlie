@@ -55,14 +55,17 @@ basis.
 #################################################################
 '''
 
+# datetime object to time tuple:
+# time_tuple = dt_obj.timetuple()
+
 # Nearly Noon News, on Monday
 # This works if the cron job runs each Monday
 now = DT.datetime.now() + relativedelta(microsecond=0)
 nowtuple = now.timetuple()
 startTuple =(11, 55, 0) # 11:55am
 endTuple = (12, 2, 30) # 12:02:30 -just past noon
-start = UAL.fullTimeTuple(startTuple, DT.datetime.now())
-end = UAL.fullTimeTuple( endTuple, DT.datetime.now())
+start = UAL.fullTimeTuple(startTuple, DT.datetime.now()).timetuple()
+end = UAL.fullTimeTuple( endTuple, DT.datetime.now()).timetuple()
 targetFolder = ''.join((rootFolder, 'NNN/Mon/'))
 sftp, success = UAL.new2current(start, end, targetFolder)
 '''

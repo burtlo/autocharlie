@@ -259,6 +259,48 @@ def mytime2DT(time):
     if now < DTtime: 
         DTtime = DTtime - DT.timedelta(days=1)
     return DTtime
+    
+def fullTimeTuple(shortTuple, DTobj):
+    ''' Turns a short tuple (hr, min, sec) into a long tuple (year, month, day,
+                    hour, min, sec)
+    accepts:
+    -------
+        shortTuple: tuple of 3 ints
+            (hour, minute, second)
+        DTobj: datetime object
+            typical use-case: DTobj = datetime.now()
+    returns:
+    --------
+        longTuple: tuple of 6 ints
+            (year, month, day, hour, min, sec) : microseconds = 0
+    '''
+    longTuple = DTobj + relativedelta(hour=shortTuple[0], minute =shortTuple[1], second=shortTuple[2], microsecond=0)
+    return longTuple
+
+def realTuple2spinTuple(realTuple, startSpinDay):
+    ''' accepts timeTuple, and converts it to Spinitron time.
+    accepts:
+    --------
+        realTuple: 6 element tuple of ints
+            (year, month, day, hour, min, sec)
+        startSpinDay: int [0..23]
+            represents the hour that the spinitron day starts in military time
+    returns:
+    --------
+        spinTuple: 6 element tuple of ints
+            if realTuple happens after the midnight (always true), and before
+            the start of the spinitron day, then the day element of the tuple
+            will become day minus one, to adjust to spinitron time.
+    '''
+    realList = list(realTuple)
+    if realTuple[3] < startSpinDay:
+        realList[3] -= 1
+        newTuple = tuple(realList)
+        return newTuple
+    return realTuple
+            
+        
+
 
 def numArchives(start,end):
     '''
@@ -601,7 +643,9 @@ def buildArchive (DTstart, DTend):
     to know start and end of file.
     accepts:
         DTstart - startTime as datetime object
+            *real-time, not spin-time*
         DTend - startTime as datetime object
+            *real-time, not spin-time*
     returns:
         tempFolder: string 
             represents folder where concatted mp3 exists
@@ -753,10 +797,12 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
     Accepts:
     --------
         startTuple: datetime.tuple
+            *real-time, not spin-time*
             ex: startTuple = (2008, 11, 12, 13, 51, 18)
             dt_obj = DT.datetime(*startTuple[0:6])
             = 2008-Nov-12 13:51:18
         endTuple: datetime.tuple
+            *real-time, not spin-time*
             endTuple - startTuple should be 4 hours or less!!!
         targetFolder: string
             string that defines pathname, should end in "/"
@@ -800,6 +846,26 @@ def new2current(startTuple, endTuple, targetFolder, targetFile = 'new.mp3',
     r''' Creates and uploads archive to new audio file in specified remote
     folder.  Then, moves new audio file to final audio file, also in specified
     remote folder.
+    accepts:
+    -------
+        startTuple: 6 element tuple
+            *real-time, not spin-time*
+            all 6 elements are ints: (year, month, day, hour, minute, second)
+        endTuple: 6 element tuple
+            *real-time, not spin-time*
+            same structure as startTuple
+        targetFolder: string
+            string representation of path, I think it ends with a "/"
+        targetFile: string
+            name of audio file, with appropriate postfix
+        finalFile: string
+            name of final audio file, same postfix as targetFile
+            
+    returns:
+    --------
+        sftp: SFTP object per pysftp
+            I have seen errors where sftp was returned as a string. Always 
+            print the string if the sftp object gets cast as a string
     '''
     sftp, success = uploadArchive(startTuple, endTuple, targetFolder, targetFile)
     if type(sftp) == str:
@@ -808,7 +874,7 @@ def new2current(startTuple, endTuple, targetFolder, targetFile = 'new.mp3',
     finalFilePath = ''.join((targetFolder,finalFile))
     try: # remove the target file before we move the sourceMp3 to it ...
         if type(sftp) == str:
-            print "line 801:sftp string -> ",sftp
+            print "line 870:sftp string -> ",sftp
         sftp.remove(finalFile)
     except: # or the target file is already gone 
         pass
@@ -816,7 +882,7 @@ def new2current(startTuple, endTuple, targetFolder, targetFile = 'new.mp3',
         print 'targetFilePath -> ',targetFilePath
         print 'finalFilePath -> ', finalFilePath
         if type(sftp) == str:
-            print "line 809:sftp string -> ",sftp
+            print "line 878:sftp string -> ",sftp
         sftp.rename(targetFilePath, finalFilePath) 
     return sftp, success    
 
@@ -830,7 +896,7 @@ def closeConnection(sftp):
     Nada
     '''
     if type(sftp) == str:
-        print "line 805:sftp string -> ",sftp
+        print "line 893:sftp string -> ",sftp
     sftp.close
     
 import os

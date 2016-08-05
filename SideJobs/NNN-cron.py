@@ -27,7 +27,7 @@ rootFolder = ''.join((local.remoteStub,'Audio3/'))
 
 # Nearly Noon News, this job should run Mon - Fri @ 12:15
 now = DT.datetime.now() + relativedelta(microsecond=0)
-aday = UAL.num2dayShort(now.weekday()) # 3 letter string (ex: 'Mon')
+aday = UAL.num2dayShort[now.weekday()] # 3 letter string (ex: 'Mon')
 nowtuple = now.timetuple()
 startTuple =(11, 55, 0) # 11:55am
 endTuple = (12, 2, 30) # 12:02:30 -just past noon

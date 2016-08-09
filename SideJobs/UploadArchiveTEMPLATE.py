@@ -6,6 +6,8 @@ Created on Fri Jul 29, 2016
 
 UploadArchive.py
 
+### NOW: With added LOGGING power!!! ###
+
 """
 
 import local
@@ -13,6 +15,15 @@ import local
 import UploadArchiveLib as UAL
 import datetime as DT
 from dateutil.relativedelta import relativedelta
+
+import logging
+
+def LarryLog():
+    r'''
+    This should probably go to myClasses as its own class.  Variables can be
+    passed in to fire up different default instances of the debugging module
+    '''
+    pass
     
 remotePath = local.remote
            

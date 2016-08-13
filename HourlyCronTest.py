@@ -632,7 +632,11 @@ if __name__ == '__main__':
             subfolder = ''.join((day2shortDay[spinDay], showStart)) # ex: Sun1300
             remoteTargetFolder = ''.join((local.remoteTesting, subfolder))
             #ftp.cwd(remoteTargetFolder)
-            sftp.cwd(remoteTargetFolder)
+            try:
+                sftp.cwd(remoteTargetFolder)
+            except IOError:
+                sftp.mkdir(remoteTargetFolder)
+                sftp.cwd(remoteTargetFolder)
 
             os.chdir(local.Mp3Staging)
             

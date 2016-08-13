@@ -6,7 +6,7 @@
 
 MAINLOG="/home/lmadeo/testlog/hourly_log.txt
 TEMPLOG="/home/lmadeo/testlog/temp_hourly.txt"
-ARCHIVER="/home/lmadeo/source/autocharlie/HourlyCron.py"
+ARCHIVER="/home/lmadeo/source/autocharlie/HourlyCronTest.py"
 python $ARCHIVER > $TEMPLOG 2>&1
 
 SUCCESS=$?

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# cron runs this script, this script runs archiver, and sends
+# logs to the right place.  If the archiver kicks out an error
+# another program is kicked off which will notifiy the proper authorities!!!
+
+MAINLOG="/home/lmadeo/log/hourly_log.txt
+TEMPLOG="/home/lmadeo/log/temp_hourly.txt"
+ARCHIVER="/home/lmadeo/source/autocharlie/HourlyCron.py"
+python $ARCHIVER > $TEMPLOG 2>&1
+
+SUCCESS=$?
+
+if [ $SUCCESS = 0 ]
+	cat $TEMPLOG >> $MAINLOG
+else
+	cat $TEMPLOG | pipeEmail.py
+	$TEMPLOG >> $MAINLOG
+fi

@@ -290,6 +290,7 @@ class SchedInfo(object):
         a +=  str(self.weekOfTheMonth) + ' *}'
         return a
         
+    
 def NegOne():
     return -1
 

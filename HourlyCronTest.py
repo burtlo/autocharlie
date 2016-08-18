@@ -633,6 +633,7 @@ if __name__ == '__main__':
             remoteTargetFolder = ''.join((local.remoteTesting, subfolder))
             #ftp.cwd(remoteTargetFolder)
             try:
+                print "remoteTargetFolder -> ",remoteTargetFolder
                 sftp.cwd(remoteTargetFolder)
             except IOError:
                 sftp.mkdir(remoteTargetFolder)

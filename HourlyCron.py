@@ -93,10 +93,11 @@ def getCharlieSched():
     os.chdir(current)
     return charlieSched
     
-def getCurrentTime():
+def getCurrentTime(endDelta):
     '''
     accepts:
-        no inputs, grabs current time from datetime module
+        endDelta(int) represents minutes before or after the end of the show
+            typically comes from local.endDelta
     returns:
         LastHour(int (0 .. 23))
         fullDayString (ex: 'Sunday')
@@ -542,9 +543,6 @@ def addNewRemoteFolders(charlieSched):
         return destFolder
     
     #ftp = ftplib.FTP(key.host, key.username, key.passwd)
-    print key.host
-    print key.username
-    print key.passwd
     sftp = pysftp.Connection(host=key.host, username=key.username, password=key.passwd)
     #ftp.connect(host = key.host, port=key.port)
     for day in charlieSched:
@@ -622,7 +620,7 @@ if __name__ == '__main__':
     
 
     #LastHour is one hour ago if EndDelta is greater than zero
-    LastHour, today = getCurrentTime()
+    LastHour, today = getCurrentTime(local.endDelta)
     #adjust time to Spinitron time
     spinDay = day2spinDay(today, LastHour, startSpinDay) #spinDay of *last archivable chunk*
     print tab, 'LastHour -> ', LastHour

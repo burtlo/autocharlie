@@ -595,10 +595,10 @@ DEBUGGING = False
 startDelta = local.startDelta
 endDelta = local.endDelta
 startSpinDay = local.startSpinDay
+tab = '    '
 
 if __name__ == '__main__':
     
-    tab = '    '
     pp = pprint.PrettyPrinter(indent=4)
     
     #Now,as defined below, is actually the start of today
@@ -610,11 +610,6 @@ if __name__ == '__main__':
     print '===================================================================='    
     #print 'ThisHour -> ', str(ThisHour)
     
-    '''
-    startDelta = local.startDelta
-    endDelta = local.endDelta
-    startSpinDay = local.startSpinDay
-    '''
     
     #grab most recentCharlieSched pickle out of designated folder
     charlieSched = getCharlieSched()

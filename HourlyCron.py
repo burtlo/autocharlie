@@ -592,6 +592,9 @@ day2num = {'Monday':0, 'Tuesday':1, 'Wednesday':2, 'Thursday':3,
            
 DEBUGGING = False
    
+startDelta = local.startDelta
+endDelta = local.endDelta
+startSpinDay = local.startSpinDay
 
 if __name__ == '__main__':
     
@@ -607,9 +610,11 @@ if __name__ == '__main__':
     print '===================================================================='    
     #print 'ThisHour -> ', str(ThisHour)
     
+    '''
     startDelta = local.startDelta
     endDelta = local.endDelta
     startSpinDay = local.startSpinDay
+    '''
     
     #grab most recentCharlieSched pickle out of designated folder
     charlieSched = getCharlieSched()

@@ -18,7 +18,6 @@ import sys
 # use stdin if it's full                                                        
 if not sys.stdin.isatty():
     input_stream = sys.stdin
-    print 'line 14'
     
     # Open a plain text file for reading.  For this example, assume that
     # the text file contains only ASCII characters.

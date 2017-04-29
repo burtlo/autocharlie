@@ -1,3 +1,11 @@
+.spyderworkspace
+2016*
+*test*
+blah.txt
+nohup.out
+err.txt
+*Test*
+2017*
 *.pyc
 *~
 *.bak

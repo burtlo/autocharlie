@@ -25,10 +25,10 @@ A good start on fixing this would be to disambiguate the following:
                 OnairTime:
 example:                
 {'Tuesday': {u'08:00:00-06:00:00': 
-	{'OffairTime': u'08:00:00', 
-	'ShowList': [u'DriftlessMorning'], 
-	'Archivable': True, 
-	'OnairTime': u'06:00:00'}
+    {'OffairTime': u'08:00:00', 
+    'ShowList': [u'DriftlessMorning'], 
+    'Archivable': True, 
+    'OnairTime': u'06:00:00'}
      }
 }
 
@@ -215,9 +215,17 @@ def getShows2Archive (sched, LastHour, spinDay):
         #print
         #print 'GS2A show -> ',str(show)
         #print 'GS2A sched[day][show] -> ', str(sched[day][show])
-        showHour = int(str(sched[spinDay][show]['OffairTime']).split(':')[0]) 
+        showTimeList = sched[spinDay][show]['OffairTime'].split(':')
+        #showHour = int(str(sched[spinDay][show]['OffairTime']).split(':')[0])
+        showHour = int(showTimeList[0])
+        showMinute = int(showTimeList[1])
+        print("NEW DEBUG **********************************")
+        print("getShows2Archive")
+        print("LastHour: ()".format(LastHour))
         #showHour = int(str(show['OffairTime']).split(':')[0])
-        if showHour == LastHour:
+        if (showHour == LastHour and showMinute == 0) or
+           (showHour == LastHour - 1 and showMinute > 0):
+            print("showHour: {}".format(showHour))
             retList.append(sched[spinDay][show])
     return retList   
     

@@ -223,8 +223,8 @@ def getShows2Archive (sched, LastHour, spinDay):
         print("getShows2Archive")
         print("LastHour: ()".format(LastHour))
         #showHour = int(str(show['OffairTime']).split(':')[0])
-        if (showHour == LastHour and showMinute == 0) or
-           (showHour == LastHour - 1 and showMinute > 0):
+        if ((showHour == LastHour and showMinute == 0) or
+           (showHour == LastHour - 1 and showMinute > 0)):
             print("showHour: {}".format(showHour))
             retList.append(sched[spinDay][show])
     return retList   

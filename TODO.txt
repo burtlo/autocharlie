@@ -1,3 +1,13 @@
+
+The following folders may be required by certain functionality:
+    Mp3Staging
+    SideJobs
+    tempAudio
+    tmpMp3
+Code should be updated to insure that it still works, even if folders do not 
+pre-exist ...
+======================================================================
+
 Sunday Feb. 18, 2018
 ====================
 

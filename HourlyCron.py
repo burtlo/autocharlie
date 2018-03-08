@@ -431,7 +431,7 @@ def cleanOutFolder(folder, extension=''):
         os.remove(''.join((folder,'/',el)))
     os.chdir(current)
     return hatchetList
-def trailingSlash (folder):
+def trailingSlash(folder):
     '''
     ensure that a folder has a trailing slash if it doesn't already
     return folder name with guaranteed trailing slash
@@ -447,12 +447,12 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     '''
     concatenate all audio files with the specified postfix
         (audio source files sorted alphabetically)
-    copy concatenated audio file into destFolder, name = "New.<postfix>"
+    copy concatenated audio file into destFolder, name = "new.<postfix>"
     returns 1 on success
     '''
     print 'START: audioConcat()'
     sourceFolder = trailingSlash(sourceFolder)
-    destFolder = trailingSlash(sourceFolder)
+    destFolder = trailingSlash(destFolder)
     current = os.getcwd()
     print "current: " + current
     print "sourceFolder: " + sourceFolder
@@ -487,6 +487,7 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
         print 'ERROR: no audio files in ',sourceFolder, ' to concat'
     #return to current working dir 
     os.chdir(current)
+    print 'current: ' + os.getcwd()
     print 'END: audioConcat'
 
 def createAudioChunks(chunkList, tmpFolder):

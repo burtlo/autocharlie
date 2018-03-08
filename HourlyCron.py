@@ -450,11 +450,17 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     copy concatenated audio file into destFolder, name = "New.<postfix>"
     returns 1 on success
     '''
+    print 'START: audioConcat()'
     sourceFolder = trailingSlash(sourceFolder)
     destFolder = trailingSlash(sourceFolder)
     current = os.getcwd()
+    print "current: " + current
+    print "sourceFolder: " + sourceFolder
+    print "destFolder: " + destFolder
     os.chdir(sourceFolder)
     targetFile = ''.join((destFolder,'new',postfix))
+    print "targetFile: " + targetFile
+
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))
@@ -704,20 +710,15 @@ if __name__ == '__main__':
 
             os.chdir(local.Mp3Staging)
             
-            #ftp magic upload
             localMp3 = 'new.mp3'
-            #myfile = open(localMp3, 'rb')
-            print 'START: *SFTP* of audioArchive'    
-            #ftp.storbinary('STOR ' + localMp3 , myfile)
+            print 'START: *SFTP* of audioArchive'
+            print 'cwd: ' + os.getcwd()
             sftp.put(localMp3)
-            #myfile.close()
-            # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
-            #ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
             sourceMp3 = localMp3 # to increase readability of sftp.rename ...
             try: # we will try to remove the target file before we move the sourceMp3 to it ...
                 sftp.remove('current.mp3')
             except:
-                pass
+                print "DEBUG: current.mp3 is not in current directory"
             finally:
                 sftp.rename(sourceMp3, 'current.mp3') # not really 'local' mp3 anymore ...
                 print '*SFTP* of audioArchive COMPLETE!!!'

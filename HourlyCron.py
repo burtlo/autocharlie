@@ -431,6 +431,7 @@ def cleanOutFolder(folder, extension=''):
         os.remove(''.join((folder,'/',el)))
     os.chdir(current)
     return hatchetList
+
 def trailingSlash(folder):
     '''
     ensure that a folder has a trailing slash if it doesn't already
@@ -445,21 +446,20 @@ def trailingSlash(folder):
 
 def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     '''
+    This function is run after buildChunkList()
+    The source file should contain one or more audio files to concatenate
     concatenate all audio files with the specified postfix
         (audio source files sorted alphabetically)
     copy concatenated audio file into destFolder, name = "new.<postfix>"
-    returns 1 on success
     '''
+    print '+++++++++++++++++++++++++++'
     print 'START: audioConcat()'
     sourceFolder = trailingSlash(sourceFolder)
     destFolder = trailingSlash(destFolder)
     current = os.getcwd()
-    print "current: " + current
-    print "sourceFolder: " + sourceFolder
-    print "destFolder: " + destFolder
     os.chdir(sourceFolder)
     targetFile = ''.join((destFolder,'new',postfix))
-    print "targetFile: " + targetFile
+    # print "targetFile: " + targetFile
 
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
@@ -470,7 +470,8 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
         cmd = concatList
         cmd.insert(0,'sox')
         cmd.append(targetFile)
-        print '+++++++++++++++++++++++++++++++++++++'
+        # print '+++++++++++++++++++++++++++++++++++++'
+        print sourceFolder + ' > ' + destFolder
         print 'audioConcat: ', cmd
         print '+++++++++++++++++++++++++++++++++++++'
         #execute sox command to concat audio files

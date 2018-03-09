@@ -25,10 +25,10 @@ A good start on fixing this would be to disambiguate the following:
                 OnairTime:
 example:                
 {'Tuesday': {u'08:00:00-06:00:00': 
-	{'OffairTime': u'08:00:00', 
-	'ShowList': [u'DriftlessMorning'], 
-	'Archivable': True, 
-	'OnairTime': u'06:00:00'}
+    {'OffairTime': u'08:00:00', 
+    'ShowList': [u'DriftlessMorning'], 
+    'Archivable': True, 
+    'OnairTime': u'06:00:00'}
      }
 }
 
@@ -112,21 +112,17 @@ def getCurrentTime(endDelta):
     if endDelta > 0: 
         if endDelta < local.startHourlyCron: # tail end of show ends in time to build archive
             LastHourRaw = ThisHour + relativedelta(hours = -0)
-            print 'line 113'
         else: # tail end of show ends AFTER archiver is ready for it
             LastHourRaw = ThisHour + relativedelta(hours = -0)
-            print 'line 116'
     else: # no tail added to show archive, so no spill over to next hour 
         LastHourRaw = ThisHour + relativedelta(hours = -1)   
-        print 'line 119'
-    print 'GT.LastHourRaw -> ', str(LastHourRaw)
-    print 'GT.LastHour.weekday() -> ', str(LastHourRaw.weekday())
+    # print 'GT.LastHourRaw -> ', str(LastHourRaw)
+    # print 'GT.LastHour.weekday() -> ', str(LastHourRaw.weekday())
     today = num2day[LastHourRaw.weekday()]
-    print 'GT.today -> ', str(today)
+    # print 'GT.today -> ', str(today)
 
     timeTuple = str(LastHourRaw).split(':')[0]
     LastHour = int(timeTuple.split(' ')[1])
-    #print LastHour
     return LastHour, today
     
 def day2spinDay(fullDayStr, hour, startSpinDay):
@@ -215,9 +211,17 @@ def getShows2Archive (sched, LastHour, spinDay):
         #print
         #print 'GS2A show -> ',str(show)
         #print 'GS2A sched[day][show] -> ', str(sched[day][show])
-        showHour = int(str(sched[spinDay][show]['OffairTime']).split(':')[0]) 
+        showTimeList = sched[spinDay][show]['OffairTime'].split(':')
+        #showHour = int(str(sched[spinDay][show]['OffairTime']).split(':')[0])
+        showHour = int(showTimeList[0])
+        showMinute = int(showTimeList[1])
+        # print("NEW DEBUG **********************************")
+        # print("getShows2Archive")
+        # print("LastHour: ()".format(LastHour))
         #showHour = int(str(show['OffairTime']).split(':')[0])
-        if showHour == LastHour:
+        if ((showHour == LastHour and showMinute == 0) or
+           (showHour == LastHour - 1 and showMinute > 0)):
+            print("showHour: {}".format(showHour))
             retList.append(sched[spinDay][show])
     return retList   
     
@@ -299,20 +303,17 @@ def buildChunkList(show, spinDay):
     #determine start and end of show, with deltas added in
     startHour = strTime2timeObject(show['OnairTime'])
 
-    print 'startHour -> ', str(startHour)
-    print 'spinDay22day(spinDay, startHour) ->',
+    # print 'startHour -> ', str(startHour)
+    # print 'spinDay22day(spinDay, startHour) ->',
     print spinDay22day(spinDay, startHour, startSpinDay)
-    print 'showStart(showOnairTime) -> ', str(show['OnairTime'])
-    print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour, startSpinDay))
+    # print 'showStart(showOnairTime) -> ', str(show['OnairTime'])
+    # print 'showStart(day) -> ',str(spinDay22day(spinDay, startHour, startSpinDay))
     
     showStart = mytime2DT(show['OnairTime']) + relativedelta(minutes=startDelta)
-    #endHour = strTime2timeObject(show['OffairTime'])
     showEnd = mytime2DT(show['OffairTime']) + relativedelta(minutes=endDelta)
 
     print 'showStart -> ', str(showStart)
     print 'showEnd -> ', str(showEnd)
-    print type(showEnd)
-    print
     
     # if start time > end time, then show must stradle midnight hour
     if showStart > showEnd:
@@ -322,20 +323,12 @@ def buildChunkList(show, spinDay):
         
     duration = showEnd - showStart
     duraSeconds = duration.seconds
-    print 'duraSeconds -> ', duraSeconds
-
-    print 'show duration: -> ', str(duration)
-    print 'type(duration) -> ', str(type(duration))
-    print 'showStart -> ', str(showStart)
-    print 'showEnd -> ', str(showEnd)
     
     showHours, partialEnd = numArchives(showStart, showEnd)
-    print showHours #start counting @ zero
-    print range(showHours)
+    # print range(showHours)
     partialOffset = 0
     if partialEnd:
         partialOffset = 1
-    
     
     chunkList = []
     chunk= {}
@@ -345,6 +338,7 @@ def buildChunkList(show, spinDay):
     if showHours == 1 and partialEnd == True:
         chunk['StartTime'] = showStart
         chunk['TimeDelta'] = showEnd - showStart
+        chunkList.append(chunk)
     
     else: #not an edge case
         # offset = time from beginning of show to end of first hour
@@ -428,21 +422,45 @@ def cleanOutFolder(folder, extension=''):
     os.chdir(folder)
     rex = ''.join(('*',extension))
     hatchetList = list(glob.iglob(rex))
+    test = glob.glob(rex)
+    if sorted(hatchetList) == sorted(test):
+        print 'hatchetList: same, same'
+    else:
+        print 'hatchetList: strangely, not the same.'
     for el in hatchetList:
         os.remove(''.join((folder,'/',el)))
     os.chdir(current)
     return hatchetList
 
+def trailingSlash(folder):
+    '''
+    ensure that a folder has a trailing slash if it doesn't already
+    return folder name with guaranteed trailing slash
+    '''
+    if len(folder) == 0:
+        print "DEBUG: folderSlash: string(?) of len 0"
+        return "/"
+    if folder[-1] != '/':
+        return folder + '/'
+    return folder
+
 def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
     '''
+    This function is run after buildChunkList()
+    The source file should contain one or more audio files to concatenate
     concatenate all audio files with the specified postfix
         (audio source files sorted alphabetically)
-    copy concatenated audio file into destFolder, name = "New.<postfix>"
-    returns 1 on success
+    copy concatenated audio file into destFolder, name = "new.<postfix>"
     '''
+    print '+++++++++++++++++++++++++++'
+    print 'START: audioConcat()'
+    sourceFolder = trailingSlash(sourceFolder)
+    destFolder = trailingSlash(destFolder)
     current = os.getcwd()
     os.chdir(sourceFolder)
     targetFile = ''.join((destFolder,'new',postfix))
+    # print "targetFile: " + targetFile
+
     #grab list of files in sourceFolder
     rex = ''.join(('*',postfix))
     concatList = sorted(list(glob.iglob(rex)))
@@ -452,19 +470,25 @@ def audioConcat(sourceFolder, destFolder, postfix = '.mp3'):
         cmd = concatList
         cmd.insert(0,'sox')
         cmd.append(targetFile)
-        print '+++++++++++++++++++++++++++++++++++++'
+        # print '+++++++++++++++++++++++++++++++++++++'
+        print sourceFolder + ' > ' + destFolder
         print 'audioConcat: ', cmd
         print '+++++++++++++++++++++++++++++++++++++'
         #execute sox command to concat audio files
         call(cmd)
     #else, if there is only one audio file, rename it and move it
     elif len(concatList) == 1:
+        # maybe sox command needs to be invoked to convert from ogg to mp3
+        print 'DEBUG: audioConcat-> len(concatList == 1)'
         sourceFile = ''.join((sourceFolder,concatList[0]))
-        os.rename(sourceAudio, targetFile)
+        print 'sourceFile: ', sourceFile
+        print 'targetFile: ', targetFile
+        os.rename(sourceFile, targetFile)
     else: # no audio files in folder
         print 'ERROR: no audio files in ',sourceFolder, ' to concat'
     #return to current working dir 
     os.chdir(current)
+    print 'current: ' + os.getcwd()
     print 'END: audioConcat'
 
 def createAudioChunks(chunkList, tmpFolder):
@@ -480,7 +504,7 @@ def createAudioChunks(chunkList, tmpFolder):
     else:
         print tmpFolder, ' started empty.'
     for x, chunk in enumerate(chunkList):
-        print 'chunk #' + str(x)
+        # print 'chunk #' + str(x)
         year = str(chunk['StartTime'].timetuple().tm_year)
         month = pad(str(chunk['StartTime'].timetuple().tm_mon))
         day = pad(str(chunk['StartTime'].timetuple().tm_mday))
@@ -493,19 +517,19 @@ def createAudioChunks(chunkList, tmpFolder):
         fullHour = (3540 < DeltaSeconds < 3660 )        
         targetMp3 = ''.join((tmpFolder, '/', str(x), '.mp3'))
         if fullHour: # no trim necesary, just convert to mp3
-            print tab,'fullHour [',str(x),']'
-            print tab,'    ','SourceOgg -> ', str(SourceOgg)
-            print tab,'    ', 'targetMp3 -> ', str(targetMp3)
+            # print tab,'fullHour [',str(x),']'
+            # print tab,'    ','SourceOgg -> ', str(SourceOgg)
+            # print tab,'    ', 'targetMp3 -> ', str(targetMp3)
             cmd = ['sox', SourceOgg, targetMp3]
             print cmd
             call(cmd)
         else: #trim the hour long archive down to size
             startTrim = str(60 * int(minute))
-            print tab,'Not fullHour [',str(x),']'
-            print tab,'    SourceOgg -> ', str(SourceOgg)
-            print tab,'    targetMp3 -> ', str(targetMp3)
-            print tab,'    startTrim -> ', str(startTrim)
-            print tab,'    DeltaSeconds -> ', str(DeltaSeconds)
+            # print tab,'Not fullHour [',str(x),']'
+            # print tab,'    SourceOgg -> ', str(SourceOgg)
+            # print tab,'    targetMp3 -> ', str(targetMp3)
+            # print tab,'    startTrim -> ', str(startTrim)
+            # print tab,'    DeltaSeconds -> ', str(DeltaSeconds)
             cmd = ['sox', SourceOgg, targetMp3, 'trim', startTrim, str(DeltaSeconds)]
             print cmd
             call(cmd)    
@@ -531,7 +555,7 @@ def addNewRemoteFolders(charlieSched):
         tempList = timeslot.split('-') #split timeslot @ dashes ex: 'Sat-20:00:00-22:00:00'
         timeList = tempList[1].split(':') #split start time ex: 15:00:00
         subFolder = ''.join((tempList[0],timeList[0], timeList[1]))
-        destFolder =  ''.join((local.archiveDest, subFolder))
+        destFolder =  trailingSlash(''.join((local.archiveDest, subFolder)))
 
         try:
             sftp.mkdir(destFolder)
@@ -656,10 +680,10 @@ if __name__ == '__main__':
     for show in showsToArchive:
         # build list of audio archive chunks to concat
         chunkList = buildChunkList(show, spinDay)
-        print "====================="
-        print "PrettyPrint chunkList:"
-        pp.pprint(chunkList)
-        print "====== END: PrettyPrint chunkList ===="
+        # print "====================="
+        # print "PrettyPrint chunkList:"
+        # pp.pprint(chunkList)
+        # print "====== END: PrettyPrint chunkList ===="
         
         # create correct mp3 for each chunk of show to archive
         createAudioChunks(chunkList, local.tmpMp3)
@@ -680,26 +704,23 @@ if __name__ == '__main__':
             #ftp.cwd(remoteTargetFolder)
             try:
                 sftp.cwd(remoteTargetFolder)
+                print 'DEBUG: remoteTargetFolder = ', remoteTargetFolder
             except IOError:
+                print 'DEBUG: Building remote folder: ', remoteTargetFolder
                 sftp.mkdir(remoteTargetFolder)
                 sftp.cwd(remoteTargetFolder)
 
             os.chdir(local.Mp3Staging)
             
-            #ftp magic upload
             localMp3 = 'new.mp3'
-            #myfile = open(localMp3, 'rb')
-            print 'START: *SFTP* of audioArchive'    
-            #ftp.storbinary('STOR ' + localMp3 , myfile)
+            print 'START: *SFTP* of audioArchive'
+            print 'cwd: ' + os.getcwd()
             sftp.put(localMp3)
-            #myfile.close()
-            # Using scp, er, ftp, mv "new.mp3" to "current.mp3"
-            #ftp.rename(localMp3, 'current.mp3') # not really "local" mp3 anymore ...
             sourceMp3 = localMp3 # to increase readability of sftp.rename ...
             try: # we will try to remove the target file before we move the sourceMp3 to it ...
                 sftp.remove('current.mp3')
             except:
-                pass
+                print "DEBUG: current.mp3 is not in current directory"
             finally:
                 sftp.rename(sourceMp3, 'current.mp3') # not really 'local' mp3 anymore ...
                 print '*SFTP* of audioArchive COMPLETE!!!'
@@ -707,12 +728,7 @@ if __name__ == '__main__':
     if len(showsToArchive) > 0:
         #ftp.close()  
         sftp.close()
-    print        
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print 'END of HourlyCron -> ', str(DT.datetime.now() + relativedelta(microsecond=0))
     print '++++++++++++++++++++++++++++++++++++++++++++++'
     print
-
-
-
-        

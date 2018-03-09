@@ -26,7 +26,9 @@ if not sys.stdin.isatty():
     if msg.get_payload().strip(" ") != "": # magic trick to detect an empty message
         
         me = "djgravy@mwt.net"
-        you = "lmadeo@wdrt.org"
+        #you = "lmadeo@wdrt.org"
+	# Added operations@wdrt.org, 2017-03-04, dklann@wdrt.org
+        you = "lmadeo@wdrt.org,operations@wdrt.org"
         #msg['Subject'] = 'The contents of %s' % myText
         msg['Subject'] = 'Error message from autoCharlie ...'
         msg['From'] = me

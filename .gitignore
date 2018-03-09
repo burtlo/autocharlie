@@ -6,6 +6,8 @@ nohup.out
 err.txt
 *Test*
 2017*
+*.swp
+*.swo
 *.pyc
 *~
 *.bak
@@ -15,3 +17,9 @@ key.py
 local.py
 tags
 TAGS
+Mp3Staging
+TEST*
+tempAudio
+tmpMp3
+SideJobs
+temp*

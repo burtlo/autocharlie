@@ -433,7 +433,7 @@ def buildChunkList (DTstart, DTend):
         success = True                                    
         return chunkList,success   
 
-def uniqueSubfolder (folder):
+def uniqueSubfolder(folder):
     '''
     accepts:
         folder: string representation of a folder path
@@ -472,6 +472,7 @@ def pad(shortStr, padChar = '0', fullLen = 2):
         len (int) desired length of output string
     returns:
         a string with padding prepended
+    typical use: accept '9' and return '09'
     '''
     padding = ''
     for i in range(fullLen - len(shortStr)):
@@ -489,7 +490,7 @@ def createAudioChunks (chunkList):
         targetFolder with alphanumerically sorted mp3 files
         (ex: 0.mp3, 1.mp3, 2.mp3)
     returns:
-        targetFolder path as string, atrgetFolder contains audioChunk mp3s
+        targetFolder path as string, targetFolder contains audioChunk mp3s
     '''
    
     #make tempAudioFolder if it doesn't already exist
@@ -497,7 +498,7 @@ def createAudioChunks (chunkList):
     tempAudioFolder = "".join((local.path,'tempAudio'))
     try:
         os.chdir(tempAudioFolder)
-    except:
+    except: # TODO: what is the error that above line would raise
         os.mkdir(tempAudioFolder)
     targetFolder = uniqueSubfolder(tempAudioFolder)
     

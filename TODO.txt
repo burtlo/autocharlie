@@ -1,0 +1,37 @@
+
+The following folders may be required by certain functionality:
+    Mp3Staging
+    SideJobs
+    tempAudio
+    tmpMp3
+Code should be updated to insure that it still works, even if folders do not 
+pre-exist ...
+======================================================================
+
+Sunday Feb. 18, 2018
+====================
+
+debugging notes:
+
+added print statements to getShows2Archive()
+line 222 of HourlyCron.py
+
+called from line 642
+
+LastHour is determined by getCurrentTime
+
+
+EXAMPLE of MESSED UP job:
+========================
+
+line 161108
+TUC Radio
+
+
+++++++++++++++++++++++++++++++ OH NO ++++++++++++++++++++++++++++++++++
+
+My changes to the archiver are being tracked on bitbucket
+
+I NEED TO ATTACH THIS ACCOUNT TO GITHUB, instead of bitbucket!!!
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

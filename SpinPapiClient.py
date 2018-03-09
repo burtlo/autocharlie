@@ -91,7 +91,3 @@ class SpinPapiClient:
 
     return ('http://' + self.host + self.url
         + '?' + the_query + '&signature=' + signature)
-
-
-    
-#

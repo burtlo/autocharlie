@@ -6,13 +6,10 @@ AutoCharlie creates and uploads audio archives to the WDRT radio website. It tra
 
 ## Table of Contents
 * [Motivation](#motivation)
-* [Code Example](#code-example)
 * [Environment](#environment)
+* [Spinitron API](#spinitron-api)
+* [Other Dependencies](#other-dependencies)
 * [Installation](#installation)
-* [File Descriptions](#file-descriptions)
-* [Usage](#usage)
-* [Examples of use](#examples-of-use)
-* [Bugs](#bugs)
 * [Tests](#tests)
 * [Authors](#authors)
 * [License](#license)
@@ -37,15 +34,15 @@ The code for the python client of the Spinitron API is already included in this 
 * git clone https://github.com/Hillmonkey/autocharlie
 * create Hourly cron job (TODO: flesh out description)
 * update key.py to contain the following information:
-** userid and secret for SpinPapi API
-** Domain Name (host) of website that will host audio archives
-** username, and SFTP password (passwd) for SFTPing audio archives to website
+	* userid and secret for SpinPapi API
+	* Domain Name (host) of website that will host audio archives
+	* username, and SFTP password (passwd) for SFTPing audio archives to website
 * update local.py so that AutoCharlie knows where things are
-** path: typically ~/autocharlie
-** localStub: where log files will be sent (make sure that this syncs up with cron job)
-** remote: (TODO: choose "remote" or "remoteStub", remoteStub is more consistent)
-** remoteTesting: this is a remote folder to send files to when testing a new version of AutoCharlie
-** archiveSource: in my case this folder is NFS mounted from another machine on the network
+	* path: typically ~/autocharlie
+	* localStub: where log files will be sent (make sure that this syncs up with cron job)
+	* remote: (TODO: choose "remote" or "remoteStub", remoteStub is more consistent)
+	* remoteTesting: this is a remote folder to send files to when testing a new version of AutoCharlie
+	* archiveSource: in my case this folder is NFS mounted from another machine on the network
 * create a cronjob using ` example-cronjob.txt` as a model
 
 ## Tests

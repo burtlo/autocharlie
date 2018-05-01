@@ -30,23 +30,23 @@ The code for the python client of the Spinitron API is already included in this 
 * A file hierarchy containing hour long audio archives (TODO: flesh out description)
 
 ## Installation
-* sudo apt-get update && sudo apt-get install sox
-* git clone https://github.com/Hillmonkey/autocharlie
-* create Hourly cron job (TODO: flesh out description)
-* update key.py to contain the following information:
-	* userid and secret for SpinPapi API
-	* Domain Name (host) of website that will host audio archives
-	* username, and SFTP password (passwd) for SFTPing audio archives to website
-* update local.py so that AutoCharlie knows where things are
-	* path: typically ~/autocharlie
-	* localStub: where log files will be sent (make sure that this syncs up with cron job)
-	* remote: (TODO: choose "remote" or "remoteStub", remoteStub is more consistent)
-	* remoteTesting: this is a remote folder to send files to when testing a new version of AutoCharlie
-	* archiveSource: in my case this folder is NFS mounted from another machine on the network
+* `sudo apt-get update && sudo apt-get install sox`
+* `git clone https://github.com/Hillmonkey/autocharlie`
+* create Hourly and Weekly cron job (see [example-cronjob.txt](example-cronjob.txt))
+* update `key.py` to contain the following information:
+	* `userid` and `secret` for SpinPapi API
+	* Domain Name (`host`) of website that will host audio archives
+	* `username`, and SFTP password (`passwd`) for SFTPing audio archives to website
+* update `local.py` so that AutoCharlie knows where things are
+	* `path`: `~/autocharlie` for example
+	* `localStub`: where log files will be sent (make sure that this syncs up with cron job)
+	* `remote`: (TODO: choose "remote" or "remoteStub", remoteStub is more consistent)
+	* `remoteTesting`: this is a remote folder to send files to when testing a new version of AutoCharlie
+	* `archiveSource`: in original use case this folder is NFS mounted
 * create a cronjob using ` example-cronjob.txt` as a model
 
 ## Tests
-No testing is implemented at this time
+No test coverage :(
 
 ## Authors
 

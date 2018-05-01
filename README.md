@@ -31,6 +31,8 @@ The code for the python client of the Spinitron API is already included in this 
 
 ## Installation
 * `sudo apt-get update && sudo apt-get install sox`
+	* `sudo apt-get install libsox-fmt-all` (from Universe repository for Ubuntu, in order to install audio codecs)
+	* see [this](https://askubuntu.com/questions/148638/how-do-i-enable-the-universe-repository) to enable the Universe repository
 * `git clone https://github.com/Hillmonkey/autocharlie`
 * create Hourly and Weekly cron job (see [example-cronjob.txt](example-cronjob.txt))
 * update `key.py` to contain the following information:

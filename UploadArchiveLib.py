@@ -701,7 +701,11 @@ def sendArchive (sourcePath, sourceFile, remotePath, remoteFileName):
     print 'remote file name -> ', remoteFileName
     if type(sftp) == str:
         print "line 655:sftp string -> ",sftp
-    sftp.cwd(remotePath)
+
+    try:
+        sftp.cwd(remotePath)
+    except:  # better to know exact error to catch
+        sftp.mkdir(remotePath, mode=764)
 
     os.chdir(sourcePath) # has been local.Mp3Staging
     #myfile = open(sourceFile, 'rb')
@@ -839,7 +843,7 @@ def uploadArchive(startTuple, endTuple, targetFolder, targetFile):
             if type(sftp) == str:
                 print "line 783:sftp string -> ",sftp
                 return sftp, False
-        except UnboundLocalError:
+        except UnboundLocalError: # strange that default behavior is run as an exception
             sftp = sendArchive(sourceFolder, sourceAudio, targetFolder, targetFile)
         deleteFolder(sourceFolder) # It was only a temp folder anyway
         return sftp, success

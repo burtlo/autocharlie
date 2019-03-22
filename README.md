@@ -47,6 +47,31 @@ The code for the python client of the Spinitron API is already included in this 
 	* `archiveSource`: in original use case this folder is NFS mounted
 * create a cronjob using ` example-cronjob.txt` as a model
 
+## Local Development
+
+A Dockerfile is found within this repository to create a Docker Image that attempts to match the environment that this code will execute. To create this image run:
+
+```bash
+$ docker build -t autocharlie .
+```
+
+This names the Docker image *autocharlie*. To verify it was created you can ask docker to show you all the images it has in its registry:
+
+```bash
+$ docker images
+REPOSITORY                            TAG                 IMAGE ID            CREATED             SIZE
+autocharlie                           latest              45a374402e85        6 minutes ago       184MB
+<none>                                <none>              0c03edf1150e        9 minutes ago       156MB
+<none>                                <none>              cc9cfab99677        13 minutes ago      118MB
+habitat/default-studio-x86_64-linux   0.78.0              f24a730e974b        9 days ago          416MB
+ubuntu                                16.04               9361ce633ff1        10 days ago         118MB
+```
+
+The image enables you to create containers. To create a container workspace that mounts your current filesystem run:
+
+```bash
+$ docker run -it -v /Users/franklinwebber/src/autocharlie:/share autocharlie /bin/bash
+```
 ## Tests
 No test coverage :(
 

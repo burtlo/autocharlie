@@ -1,0 +1,14 @@
+# TODO: Needs description
+pklSourcePath="PickleCurrent/2016-02-08:17:22.pkl"
+# TODO: Needs description
+pklDestPath="PickleCurrent"
+# TODO: Needs description
+startDelta=5
+# TODO: Needs description
+endDelta=5
+# TODO: Needs description
+startSpinDay=0
+# TODO: Needs description
+charlieSchedPath="./"
+# TODO: Needs description
+archiveDest='/share/'
